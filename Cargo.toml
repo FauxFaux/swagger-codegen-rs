@@ -1,0 +1,8 @@
+[package]
+name = "shipliftier-gen"
+version = "0.1.0"
+authors = ["Chris West (Faux) <git@goeswhere.com>"]
+
+[dependencies]
+failure = "0.1"
+yaml-rust = "0.4"
