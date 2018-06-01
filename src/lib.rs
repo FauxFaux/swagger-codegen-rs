@@ -7,6 +7,30 @@ use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
+struct Struct {
+    name: String,
+    description: String,
+    fields: Vec<Field>,
+}
+
+struct Field {
+    data_type: DataType,
+    description: String,
+}
+
+enum DataType {
+    U64,
+    I64,
+    U32,
+    I32,
+    U16,
+    I16,
+    U8,
+    I8,
+    IpAddr,
+    String,
+}
+
 pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
@@ -17,6 +41,8 @@ pub fn go() -> Result<(), Error> {
             .as_hash()
             .ok_or_else(|| format_err!("doc must be a hash"))?)?
     );
+
+    let mut structs = Vec::new();
 
     for (def_name, def) in doc["definitions"]
         .as_hash()
@@ -32,9 +58,12 @@ pub fn go() -> Result<(), Error> {
 
         let mut current_keys = keys(def)?;
 
-        if current_keys.remove("description") {
-            get_string(def, "description")?;
-        }
+        let description = if current_keys.remove("description") {
+            get_string(def, "description")?
+        } else {
+            ""
+        };
+
         current_keys.remove("example");
         current_keys.remove("required");
         current_keys.remove("x-nullable");
@@ -44,11 +73,18 @@ pub fn go() -> Result<(), Error> {
         } else if current_keys.remove("type") {
             match get_string(def, "type")? {
                 "object" => {
-                    ensure!(
-                        current_keys.remove("properties")
-                            || current_keys.remove("additionalProperties"),
-                        "objects must have properties"
-                    );
+                    if current_keys.remove("properties") {
+                        structs.push(Struct {
+                            name: def_name.to_string(),
+                            description: description.to_string(),
+                            fields: properties_to_fields(get_hash(def, "properties")?)?,
+                        })
+                    } else {
+                        ensure!(
+                            current_keys.remove("additionalProperties"),
+                            "must have properties"
+                        );
+                    }
                 }
                 "array" => {
                     ensure!(current_keys.remove("items"), "arrays must have items");
@@ -129,6 +165,38 @@ fn process_method(op: &Hash) -> Result<(), Error> {
         current_keys
     );
     Ok(())
+}
+
+fn properties_to_fields(hash: &Hash) -> Result<Vec<Field>, Error> {
+    let mut ret = Vec::new();
+
+    for (name, props) in hash.into_iter() {
+        let name = name
+            .as_str()
+            .ok_or_else(|| format_err!("field name must be string: {:?}", name))?;
+        let props = props
+            .as_hash()
+            .ok_or_else(|| format_err!("field props must be hash: {:?}", props))?;
+
+        let mut current_keys = keys(props)?;
+
+        current_keys.remove("type");
+        current_keys.remove("description");
+        current_keys.remove("format");
+        match get_string(props, "type")? {
+            "integer" => (),
+            "string" => (),
+            other => bail!("unrecognised type: {}", other),
+        }
+
+        ensure!(
+            current_keys.is_empty(),
+            "unrecognised keys: {:?}",
+            current_keys
+        );
+    }
+
+    Ok(ret)
 }
 
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
