@@ -8,17 +8,29 @@ use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
+#[derive(Debug, Clone)]
 struct Struct {
     name: String,
     description: String,
     fields: Vec<Field>,
 }
 
+#[derive(Debug, Clone)]
 struct Field {
-    data_type: DataType,
+    name: String,
+    data_type: FieldType,
     description: String,
+    nullable: Option<bool>,
 }
 
+#[derive(Debug, Clone)]
+enum FieldType {
+    Ref(String),
+    Inner(usize),
+    Simple(DataType),
+}
+
+#[derive(Copy, Debug, Clone)]
 enum DataType {
     U64,
     I64,
@@ -28,6 +40,9 @@ enum DataType {
     I16,
     U8,
     I8,
+    F32,
+    F64,
+    Bool,
     IpAddr,
     String,
 }
@@ -46,13 +61,18 @@ pub fn go() -> Result<(), Error> {
 
     let mut structs = Vec::new();
 
-    properties_to_fields(
-        &mut structs,
-        &[],
-        doc["definitions"]
-            .as_hash()
-            .ok_or_else(|| format_err!("no definitions"))?,
-    ).with_context(|_| format_err!("processing defintions"))?;
+    println!(
+        "{:?}",
+        properties_to_fields(
+            &mut structs,
+            &[],
+            doc["definitions"]
+                .as_hash()
+                .ok_or_else(|| format_err!("no definitions"))?,
+        ).with_context(|_| format_err!("processing defintions"))?
+    );
+
+    println!("{:?}", structs);
 
     for (path_url, path) in doc["paths"]
         .as_hash()
@@ -124,10 +144,11 @@ fn properties_to_fields(
 ) -> Result<Vec<Field>, Error> {
     let mut ret = Vec::new();
 
-    for (field_name, field) in hash.into_iter() {
-        let field_name: &str = field_name
+    for (name, field) in hash.into_iter() {
+        let name: String = name
             .as_str()
-            .ok_or_else(|| format_err!("non-string field name: {:?}", field))?;
+            .ok_or_else(|| format_err!("non-string field name: {:?}", field))?
+            .to_string();
         let field: &Hash = field
             .as_hash()
             .ok_or_else(|| format_err!("non-hash field body"))?;
@@ -135,9 +156,9 @@ fn properties_to_fields(
         let mut current_keys = keys(field)?;
 
         let description = if current_keys.remove("description") {
-            get_string(field, "description")?
+            get_string(field, "description")?.to_string()
         } else {
-            ""
+            String::new()
         };
 
         current_keys.remove("example");
@@ -167,7 +188,7 @@ fn properties_to_fields(
             };
 
             let new_struct = Struct {
-                name: field_name.to_string(),
+                name: name.to_string(),
                 description: description.to_string(),
                 fields: properties_to_fields(
                     new_structs,
@@ -175,6 +196,13 @@ fn properties_to_fields(
                     get_hash(field, "properties")?,
                 )?,
             };
+
+            ret.push(Field {
+                name,
+                description,
+                nullable: None, // TODO: when is x-nullable available?
+                data_type: FieldType::Inner(new_structs.len()),
+            });
 
             new_structs.push(new_struct);
         } else if current_keys.remove("additionalProperties") {
@@ -191,16 +219,23 @@ fn properties_to_fields(
                 "object" if current_keys.is_empty() => {
                     // TODO: Total bullshit. No idea what this should do.
                 }
-                "object" => bail!("{}: type object, but no properties", field_name),
+                "object" => bail!("{}: type object, but no properties", name),
                 "array" => {
                     ensure!(
                         current_keys.remove("items"),
                         "{}: arrays must have items",
-                        field_name
+                        name
                     );
                     current_keys.remove("default");
                 }
                 "integer" => {
+                    ret.push(Field {
+                        name,
+                        description,
+                        nullable: None,
+                        data_type: FieldType::Simple(DataType::I64), // TODO: narrow
+                    });
+
                     current_keys.remove("format");
                     current_keys.remove("minimum");
                     current_keys.remove("maximum");
@@ -208,14 +243,35 @@ fn properties_to_fields(
                 }
                 "number" => {
                     current_keys.remove("default");
+
+                    ret.push(Field {
+                        name,
+                        description,
+                        nullable: None,
+                        data_type: FieldType::Simple(DataType::F64),
+                    });
                 }
                 "boolean" => {
                     current_keys.remove("default");
+
+                    ret.push(Field {
+                        name,
+                        description,
+                        nullable: None,
+                        data_type: FieldType::Simple(DataType::Bool),
+                    });
                 }
                 "string" => {
                     current_keys.remove("enum");
                     current_keys.remove("format");
                     current_keys.remove("default");
+
+                    ret.push(Field {
+                        name,
+                        description,
+                        nullable: None,
+                        data_type: FieldType::Simple(DataType::String),
+                    });
                 }
                 other => bail!("unimplemented def type: {}", other),
             }
@@ -227,8 +283,7 @@ fn properties_to_fields(
 
         ensure!(
             current_keys.is_empty(),
-            "{}: unrecognised keys: {:?}",
-            field_name,
+            "unrecognised keys: {:?}",
             current_keys
         );
     }
