@@ -380,6 +380,7 @@ fn optional_number(hash: &Hash, key: &str) -> Result<Option<f64>, Error> {
 
 fn as_number(val: &Yaml) -> Result<f64, Error> {
     val.as_f64()
+        .or_else(|| val.as_i64().map(f64))
         .ok_or_else(|| format_err!("not number: {:?}", val))
 }
 
