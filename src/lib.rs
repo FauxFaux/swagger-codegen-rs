@@ -1,9 +1,13 @@
+extern crate cast;
 #[macro_use]
 extern crate failure;
+extern crate result;
 extern crate yaml_rust;
 
+use cast::f64;
 use failure::Error;
 use failure::ResultExt;
+use result::ResultOptionExt;
 use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
@@ -31,19 +35,41 @@ enum FieldType {
     Unknown,
 }
 
+#[derive(Debug, Copy, Clone)]
+enum IntegerFormat {
+    Unspecified,
+    I8,
+    I16,
+    I32,
+    I64,
+    U8,
+    U16,
+    U32,
+    U64,
+}
+
+#[derive(Debug, Copy, Clone)]
+enum NumberFormat {
+    Unspecified,
+}
+
 #[derive(Copy, Debug, Clone)]
 enum DataType {
-    U64,
-    I64,
-    U32,
-    I32,
-    U16,
-    I16,
-    U8,
-    I8,
-    F32,
-    F64,
-    Bool,
+    Integer {
+        min: Option<i64>,
+        max: Option<i64>,
+        default: Option<i64>,
+        format: IntegerFormat,
+    },
+    Number {
+        min: Option<f64>,
+        max: Option<f64>,
+        default: Option<f64>,
+        format: NumberFormat,
+    },
+    Bool {
+        default: Option<bool>,
+    },
     IpAddr,
     String,
 }
@@ -243,16 +269,28 @@ fn properties_to_fields(
                     current_keys.remove("maximum");
                     current_keys.remove("default");
 
-                    FieldType::Simple(DataType::I64) // TODO: narrow
+                    FieldType::Simple(DataType::Integer {
+                        min: optional_integer(field, "minimum")?,
+                        max: optional_integer(field, "maximum")?,
+                        default: optional_integer(field, "default")?,
+                        format: IntegerFormat::Unspecified,
+                    })
                 }
                 "number" => {
                     current_keys.remove("default");
 
-                    FieldType::Simple(DataType::F64) // TODO: narrow
+                    FieldType::Simple(DataType::Number {
+                        min: optional_number(field, "minimum")?,
+                        max: optional_number(field, "maximum")?,
+                        default: optional_number(field, "default")?,
+                        format: NumberFormat::Unspecified,
+                    })
                 }
                 "boolean" => {
                     current_keys.remove("default");
-                    FieldType::Simple(DataType::Bool)
+                    FieldType::Simple(DataType::Bool {
+                        default: optional_bool(field, "default")?,
+                    })
                 }
                 "string" => {
                     current_keys.remove("enum");
@@ -282,7 +320,6 @@ fn properties_to_fields(
             required,
         })
     }
-
 
     ensure!(
         required.is_empty(),
@@ -315,10 +352,48 @@ fn get_string<'h>(hash: &'h Hash, key: &str) -> Result<&'h str, Error> {
 }
 
 fn get_bool(hash: &Hash, key: &str) -> Result<bool, Error> {
-    get(hash, key).and_then(|y| {
-        y.as_bool()
-            .ok_or_else(|| format_err!("key '{}' not bool: {:?}", key, y))
-    })
+    Ok(get(hash, key)
+        .and_then(as_bool)
+        .with_context(|_| format_err!("key: {}", key))?)
+}
+
+fn optional_bool(hash: &Hash, key: &str) -> Result<Option<bool>, Error> {
+    Ok(get(hash, key)
+        .ok()
+        .map(as_bool)
+        .invert()
+        .with_context(|_| format_err!("key: {}", key))?)
+}
+
+fn as_bool(val: &Yaml) -> Result<bool, Error> {
+    val.as_bool()
+        .ok_or_else(|| format_err!("not bool: {:?}", val))
+}
+
+fn optional_number(hash: &Hash, key: &str) -> Result<Option<f64>, Error> {
+    Ok(get(hash, key)
+        .ok()
+        .map(as_number)
+        .invert()
+        .with_context(|_| format_err!("key: {}", key))?)
+}
+
+fn as_number(val: &Yaml) -> Result<f64, Error> {
+    val.as_f64()
+        .ok_or_else(|| format_err!("not number: {:?}", val))
+}
+
+fn optional_integer(hash: &Hash, key: &str) -> Result<Option<i64>, Error> {
+    Ok(get(hash, key)
+        .ok()
+        .map(as_integer)
+        .invert()
+        .with_context(|_| format_err!("key: {}", key))?)
+}
+
+fn as_integer(val: &Yaml) -> Result<i64, Error> {
+    val.as_i64()
+        .ok_or_else(|| format_err!("not integer: {:?}", val))
 }
 
 fn get_vec<'h>(hash: &'h Hash, key: &str) -> Result<&'h Vec<Yaml>, Error> {
