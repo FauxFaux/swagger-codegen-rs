@@ -48,6 +48,7 @@ pub fn go() -> Result<(), Error> {
 
     properties_to_fields(
         &mut structs,
+        &[],
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
@@ -116,7 +117,11 @@ fn process_method(op: &Hash) -> Result<(), Error> {
     Ok(())
 }
 
-fn properties_to_fields(new_structs: &mut Vec<Struct>, hash: &Hash) -> Result<Vec<Field>, Error> {
+fn properties_to_fields(
+    new_structs: &mut Vec<Struct>,
+    required: &[&str],
+    hash: &Hash,
+) -> Result<Vec<Field>, Error> {
     let mut ret = Vec::new();
 
     for (field_name, field) in hash.into_iter() {
@@ -136,7 +141,6 @@ fn properties_to_fields(new_structs: &mut Vec<Struct>, hash: &Hash) -> Result<Ve
         };
 
         current_keys.remove("example");
-        current_keys.remove("required");
         current_keys.remove("x-nullable");
 
         if current_keys.remove("properties") {
@@ -149,10 +153,27 @@ fn properties_to_fields(new_structs: &mut Vec<Struct>, hash: &Hash) -> Result<Ve
                 );
             }
 
+            let required = if current_keys.remove("required") {
+                get_vec(field, "required")?
+                    .into_iter()
+                    .map(|yaml| {
+                        yaml.as_str().ok_or_else(|| {
+                            format_err!("required param must be string, not {:?}", yaml)
+                        })
+                    })
+                    .collect::<Result<Vec<&str>, Error>>()?
+            } else {
+                Vec::new()
+            };
+
             let new_struct = Struct {
                 name: field_name.to_string(),
                 description: description.to_string(),
-                fields: properties_to_fields(new_structs, get_hash(field, "properties")?)?,
+                fields: properties_to_fields(
+                    new_structs,
+                    &required,
+                    get_hash(field, "properties")?,
+                )?,
             };
 
             new_structs.push(new_struct);
