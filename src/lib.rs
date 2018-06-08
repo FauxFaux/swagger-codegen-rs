@@ -10,8 +10,6 @@ use yaml_rust::Yaml;
 
 #[derive(Debug, Clone)]
 struct Struct {
-    name: String,
-    description: String,
     fields: Vec<Field>,
 }
 
@@ -21,6 +19,7 @@ struct Field {
     data_type: FieldType,
     description: String,
     nullable: Option<bool>,
+    required: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -63,18 +62,20 @@ pub fn go() -> Result<(), Error> {
 
     let mut structs = Vec::new();
 
-    println!(
-        "{:?}",
-        properties_to_fields(
-            &mut structs,
-            &[],
-            doc["definitions"]
-                .as_hash()
-                .ok_or_else(|| format_err!("no definitions"))?,
-        ).with_context(|_| format_err!("processing defintions"))?
-    );
+    for p in properties_to_fields(
+        &mut structs,
+        &[],
+        doc["definitions"]
+            .as_hash()
+            .ok_or_else(|| format_err!("no definitions"))?,
+    ).with_context(|_| format_err!("processing defintions"))?
+    {
+        println!("{:?}", p)
+    }
 
-    println!("{:?}", structs);
+    for s in structs {
+        println!("{:?}", s);
+    }
 
     for (path_url, path) in doc["paths"]
         .as_hash()
@@ -145,6 +146,7 @@ fn properties_to_fields(
     hash: &Hash,
 ) -> Result<Vec<Field>, Error> {
     let mut ret = Vec::new();
+    let mut required: HashSet<&str> = required.into_iter().cloned().collect();
 
     for (name, field) in hash.into_iter() {
         let name: String = name
@@ -171,6 +173,8 @@ fn properties_to_fields(
             None
         };
 
+        let required = required.remove(name.as_str());
+
         let data_type = if current_keys.remove("properties") {
             if current_keys.remove("type") {
                 let object = get_string(field, "type")?;
@@ -195,8 +199,6 @@ fn properties_to_fields(
             };
 
             let new_struct = Struct {
-                name: name.to_string(),
-                description: description.to_string(),
                 fields: properties_to_fields(
                     new_structs,
                     &required,
@@ -277,8 +279,16 @@ fn properties_to_fields(
             description,
             data_type,
             nullable,
+            required,
         })
     }
+
+
+    ensure!(
+        required.is_empty(),
+        "required properties which aren't present: {:?}",
+        required
+    );
 
     Ok(ret)
 }
