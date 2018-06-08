@@ -28,6 +28,8 @@ enum FieldType {
     Ref(String),
     Inner(usize),
     Simple(DataType),
+    #[deprecated]
+    Unknown,
 }
 
 #[derive(Copy, Debug, Clone)]
@@ -169,7 +171,7 @@ fn properties_to_fields(
             None
         };
 
-        if current_keys.remove("properties") {
+        let data_type = if current_keys.remove("properties") {
             if current_keys.remove("type") {
                 let object = get_string(field, "type")?;
                 ensure!(
@@ -202,14 +204,9 @@ fn properties_to_fields(
                 )?,
             };
 
-            ret.push(Field {
-                name,
-                description,
-                nullable,
-                data_type: FieldType::Inner(new_structs.len()),
-            });
-
+            let new_id = new_structs.len();
             new_structs.push(new_struct);
+            FieldType::Inner(new_id)
         } else if current_keys.remove("additionalProperties") {
             current_keys.remove("type");
 
@@ -217,12 +214,15 @@ fn properties_to_fields(
 
             // ?????
             current_keys.remove("default");
+            FieldType::Unknown
         } else if current_keys.remove("allOf") {
             current_keys.remove("type"); // must be object?
+            FieldType::Unknown
         } else if current_keys.remove("type") {
             match get_string(field, "type")? {
                 "object" if current_keys.is_empty() => {
                     // TODO: Total bullshit. No idea what this should do.
+                    FieldType::Unknown
                 }
                 "object" => bail!("{}: type object, but no properties", name),
                 "array" => {
@@ -232,65 +232,52 @@ fn properties_to_fields(
                         name
                     );
                     current_keys.remove("default");
+
+                    FieldType::Unknown
                 }
                 "integer" => {
-                    ret.push(Field {
-                        name,
-                        description,
-                        nullable,
-                        data_type: FieldType::Simple(DataType::I64), // TODO: narrow
-                    });
-
                     current_keys.remove("format");
                     current_keys.remove("minimum");
                     current_keys.remove("maximum");
                     current_keys.remove("default");
+
+                    FieldType::Simple(DataType::I64) // TODO: narrow
                 }
                 "number" => {
                     current_keys.remove("default");
 
-                    ret.push(Field {
-                        name,
-                        description,
-                        nullable,
-                        data_type: FieldType::Simple(DataType::F64),
-                    });
+                    FieldType::Simple(DataType::F64) // TODO: narrow
                 }
                 "boolean" => {
                     current_keys.remove("default");
-
-                    ret.push(Field {
-                        name,
-                        description,
-                        nullable,
-                        data_type: FieldType::Simple(DataType::Bool),
-                    });
+                    FieldType::Simple(DataType::Bool)
                 }
                 "string" => {
                     current_keys.remove("enum");
                     current_keys.remove("format");
                     current_keys.remove("default");
-
-                    ret.push(Field {
-                        name,
-                        description,
-                        nullable,
-                        data_type: FieldType::Simple(DataType::String),
-                    });
+                    FieldType::Simple(DataType::String)
                 }
                 other => bail!("unimplemented def type: {}", other),
             }
         } else if 1 == current_keys.len() && current_keys.remove("$ref") {
-
+            FieldType::Ref(get_string(field, "$ref")?.to_string())
         } else {
             bail!("bad type");
-        }
+        };
 
         ensure!(
             current_keys.is_empty(),
             "unrecognised keys: {:?}",
             current_keys
         );
+
+        ret.push(Field {
+            name,
+            description,
+            data_type,
+            nullable,
+        })
     }
 
     Ok(ret)
