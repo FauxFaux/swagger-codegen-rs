@@ -44,67 +44,10 @@ pub fn go() -> Result<(), Error> {
 
     let mut structs = Vec::new();
 
-    for (def_name, def) in doc["definitions"]
+    properties_to_fields(&mut structs, doc["definitions"]
         .as_hash()
-        .ok_or_else(|| format_err!("no definitions"))?
-        .into_iter()
-    {
-        let def_name: &str = def_name
-            .as_str()
-            .ok_or_else(|| format_err!("non-string definition name: {:?}", def_name))?;
-        let def: &Hash = def
-            .as_hash()
-            .ok_or_else(|| format_err!("non-hash definition body"))?;
+        .ok_or_else(|| format_err!("no definitions"))?)?;
 
-        let mut current_keys = keys(def)?;
-
-        let description = if current_keys.remove("description") {
-            get_string(def, "description")?
-        } else {
-            ""
-        };
-
-        current_keys.remove("example");
-        current_keys.remove("required");
-        current_keys.remove("x-nullable");
-
-        if current_keys.remove("allOf") {
-            current_keys.remove("type"); // must be object?
-        } else if current_keys.remove("type") {
-            match get_string(def, "type")? {
-                "object" => {
-                    if current_keys.remove("properties") {
-                        structs.push(Struct {
-                            name: def_name.to_string(),
-                            description: description.to_string(),
-                            fields: properties_to_fields(get_hash(def, "properties")?)?,
-                        })
-                    } else {
-                        ensure!(
-                            current_keys.remove("additionalProperties"),
-                            "must have properties"
-                        );
-                    }
-                }
-                "array" => {
-                    ensure!(current_keys.remove("items"), "arrays must have items");
-                }
-                "string" => {
-                    ensure!(current_keys.remove("enum"), "strings must be enums?");
-                    current_keys.remove("default");
-                }
-                other => bail!("unimplemented def type: {}", other),
-            }
-        } else if current_keys.remove("properties") {
-            // fake object?
-        }
-
-        ensure!(
-            current_keys.is_empty(),
-            "unrecognised keys: {:?}",
-            current_keys
-        );
-    }
     for (path_url, path) in doc["paths"]
         .as_hash()
         .ok_or_else(|| format_err!("no paths"))?
@@ -167,31 +110,79 @@ fn process_method(op: &Hash) -> Result<(), Error> {
     Ok(())
 }
 
-fn properties_to_fields(hash: &Hash) -> Result<Vec<Field>, Error> {
+fn properties_to_fields(new_structs: &mut Vec<Struct>, hash: &Hash) -> Result<Vec<Field>, Error> {
+
     let mut ret = Vec::new();
 
-    for (name, props) in hash.into_iter() {
-        let name = name
+    for (field_name, field) in hash.into_iter() {
+        let field_name: &str = field_name
             .as_str()
-            .ok_or_else(|| format_err!("field name must be string: {:?}", name))?;
-        let props = props
+            .ok_or_else(|| format_err!("non-string field name: {:?}", field))?;
+        let field: &Hash = field
             .as_hash()
-            .ok_or_else(|| format_err!("field props must be hash: {:?}", props))?;
+            .ok_or_else(|| format_err!("non-hash field body"))?;
 
-        let mut current_keys = keys(props)?;
+        let mut current_keys = keys(field)?;
 
-        current_keys.remove("type");
-        current_keys.remove("description");
-        current_keys.remove("format");
-        match get_string(props, "type")? {
-            "integer" => (),
-            "string" => (),
-            other => bail!("unrecognised type: {}", other),
+        let description = if current_keys.remove("description") {
+            get_string(field, "description")?
+        } else {
+            ""
+        };
+
+        current_keys.remove("example");
+        current_keys.remove("required");
+        current_keys.remove("x-nullable");
+
+        if current_keys.remove("allOf") {
+            current_keys.remove("type"); // must be object?
+        } else if current_keys.remove("type") || current_keys.contains("properties") {
+            match get_string(field, "type")? {
+                "object" => {
+                    if current_keys.remove("properties") {
+                        let new_struct = Struct {
+                            name: field_name.to_string(),
+                            description: description.to_string(),
+                            fields: properties_to_fields(new_structs, get_hash(field, "properties")?)?,
+                        };
+
+                        new_structs.push(new_struct);
+                    } else {
+                        ensure!(
+                            current_keys.remove("additionalProperties"),
+                            "must have properties"
+                        );
+                    }
+                }
+                "array" => {
+                    ensure!(current_keys.remove("items"), "{}: arrays must have items", field_name);
+                }
+                "integer" => {
+                    current_keys.remove("format");
+                    current_keys.remove("minimum");
+                    current_keys.remove("maximum");
+                    current_keys.remove("default");
+                }
+                "boolean" => {
+                    current_keys.remove("default");
+                }
+                "string" => {
+                    current_keys.remove("enum");
+                    current_keys.remove("format");
+                    current_keys.remove("default");
+                }
+                other => bail!("unimplemented def type: {}", other),
+            }
+        } else if 1 == current_keys.len() && current_keys.remove("$ref") {
+
+        } else {
+            bail!("bad type");
         }
 
         ensure!(
             current_keys.is_empty(),
-            "unrecognised keys: {:?}",
+            "{}: unrecognised keys: {:?}",
+            field_name,
             current_keys
         );
     }
