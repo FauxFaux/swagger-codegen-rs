@@ -53,7 +53,7 @@ enum NumberFormat {
     Unspecified,
 }
 
-#[derive(Copy, Debug, Clone)]
+#[derive(Debug, Clone)]
 enum DataType {
     Integer {
         min: Option<i64>,
@@ -71,6 +71,8 @@ enum DataType {
         default: Option<bool>,
     },
     IpAddr,
+    DateTime,
+    Enum(Vec<String>),
     String,
 }
 
@@ -261,10 +263,25 @@ fn properties_to_fields(
                     );
                     current_keys.remove("default");
 
-                    FieldType::Unknown
+                    FieldType::Unknown // TODO
                 }
                 "integer" => {
-                    current_keys.remove("format");
+                    let format = if current_keys.remove("format") {
+                        match get_string(field, "format")? {
+                            "int8" => IntegerFormat::I8,
+                            "int16" => IntegerFormat::I16,
+                            "int32" => IntegerFormat::I32,
+                            "int64" => IntegerFormat::I64,
+                            "uint8" => IntegerFormat::U8,
+                            "uint16" => IntegerFormat::U16,
+                            "uint32" => IntegerFormat::U32,
+                            "uint64" => IntegerFormat::U64,
+                            other => bail!("unsupported integer format: {}", other),
+                        }
+                    } else {
+                        IntegerFormat::Unspecified
+                    };
+
                     current_keys.remove("minimum");
                     current_keys.remove("maximum");
                     current_keys.remove("default");
@@ -273,7 +290,7 @@ fn properties_to_fields(
                         min: optional_integer(field, "minimum")?,
                         max: optional_integer(field, "maximum")?,
                         default: optional_integer(field, "default")?,
-                        format: IntegerFormat::Unspecified,
+                        format,
                     })
                 }
                 "number" => {
@@ -292,12 +309,28 @@ fn properties_to_fields(
                         default: optional_bool(field, "default")?,
                     })
                 }
-                "string" => {
-                    current_keys.remove("enum");
-                    current_keys.remove("format");
-                    current_keys.remove("default");
-                    FieldType::Simple(DataType::String)
-                }
+                "string" => FieldType::Simple(if current_keys.remove("format") {
+                    match get_string(field, "format")? {
+                        "ip-address" => DataType::IpAddr,
+                        "dateTime" => DataType::DateTime,
+                        other => bail!("unsupported string format: {}", other),
+                    }
+                } else if current_keys.remove("enum") {
+                    current_keys.remove("default"); // TODO
+
+                    DataType::Enum(
+                        get_vec(field, "enum")?
+                            .into_iter()
+                            .map(as_str)
+                            .map(|result| result.map(|r| r.to_string()))
+                            .collect::<Result<Vec<String>, Error>>()?,
+                    )
+
+                } else {
+                    current_keys.remove("default"); // TODO
+
+                    DataType::String
+                }),
                 other => bail!("unimplemented def type: {}", other),
             }
         } else if 1 == current_keys.len() && current_keys.remove("$ref") {
@@ -345,10 +378,12 @@ fn get<'h>(hash: &'h Hash, key: &str) -> Result<&'h Yaml, Error> {
 }
 
 fn get_string<'h>(hash: &'h Hash, key: &str) -> Result<&'h str, Error> {
-    get(hash, key).and_then(|y| {
-        y.as_str()
-            .ok_or_else(|| format_err!("key '{}' not string: {:?}", key, y))
-    })
+    get(hash, key).and_then(as_str)
+}
+
+fn as_str(yaml: &Yaml) -> Result<&str, Error> {
+    yaml.as_str()
+        .ok_or_else(|| format_err!("not string: {:?}", yaml))
 }
 
 fn get_bool(hash: &Hash, key: &str) -> Result<bool, Error> {
