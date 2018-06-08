@@ -162,7 +162,12 @@ fn properties_to_fields(
         };
 
         current_keys.remove("example");
-        current_keys.remove("x-nullable");
+
+        let nullable = if current_keys.remove("x-nullable") {
+            Some(get_bool(field, "x-nullable")?)
+        } else {
+            None
+        };
 
         if current_keys.remove("properties") {
             if current_keys.remove("type") {
@@ -200,7 +205,7 @@ fn properties_to_fields(
             ret.push(Field {
                 name,
                 description,
-                nullable: None, // TODO: when is x-nullable available?
+                nullable,
                 data_type: FieldType::Inner(new_structs.len()),
             });
 
@@ -232,7 +237,7 @@ fn properties_to_fields(
                     ret.push(Field {
                         name,
                         description,
-                        nullable: None,
+                        nullable,
                         data_type: FieldType::Simple(DataType::I64), // TODO: narrow
                     });
 
@@ -247,7 +252,7 @@ fn properties_to_fields(
                     ret.push(Field {
                         name,
                         description,
-                        nullable: None,
+                        nullable,
                         data_type: FieldType::Simple(DataType::F64),
                     });
                 }
@@ -257,7 +262,7 @@ fn properties_to_fields(
                     ret.push(Field {
                         name,
                         description,
-                        nullable: None,
+                        nullable,
                         data_type: FieldType::Simple(DataType::Bool),
                     });
                 }
@@ -269,7 +274,7 @@ fn properties_to_fields(
                     ret.push(Field {
                         name,
                         description,
-                        nullable: None,
+                        nullable,
                         data_type: FieldType::Simple(DataType::String),
                     });
                 }
@@ -309,6 +314,13 @@ fn get_string<'h>(hash: &'h Hash, key: &str) -> Result<&'h str, Error> {
     get(hash, key).and_then(|y| {
         y.as_str()
             .ok_or_else(|| format_err!("key '{}' not string: {:?}", key, y))
+    })
+}
+
+fn get_bool(hash: &Hash, key: &str) -> Result<bool, Error> {
+    get(hash, key).and_then(|y| {
+        y.as_bool()
+            .ok_or_else(|| format_err!("key '{}' not bool: {:?}", key, y))
     })
 }
 
