@@ -72,8 +72,13 @@ enum DataType {
     },
     IpAddr,
     DateTime,
-    Enum(Vec<String>),
-    String,
+    Enum {
+        values: Vec<String>,
+        default: Option<String>,
+    },
+    String {
+        default: Option<String>,
+    },
 }
 
 pub fn go() -> Result<(), Error> {
@@ -236,6 +241,7 @@ fn properties_to_fields(
 
             let new_id = new_structs.len();
             new_structs.push(new_struct);
+
             FieldType::Inner(new_id)
         } else if current_keys.remove("additionalProperties") {
             current_keys.remove("type");
@@ -316,20 +322,28 @@ fn properties_to_fields(
                         other => bail!("unsupported string format: {}", other),
                     }
                 } else if current_keys.remove("enum") {
-                    current_keys.remove("default"); // TODO
+                    let default = if current_keys.remove("default") {
+                        Some(get_string(field, "default")?.to_string())
+                    } else {
+                        None
+                    };
 
-                    DataType::Enum(
-                        get_vec(field, "enum")?
+                    DataType::Enum {
+                        values: get_vec(field, "enum")?
                             .into_iter()
                             .map(as_str)
                             .map(|result| result.map(|r| r.to_string()))
                             .collect::<Result<Vec<String>, Error>>()?,
-                    )
-
+                        default,
+                    }
                 } else {
-                    current_keys.remove("default"); // TODO
+                    let default = if current_keys.remove("default") {
+                        Some(get_string(field, "default")?.to_string())
+                    } else {
+                        None
+                    };
 
-                    DataType::String
+                    DataType::String { default }
                 }),
                 other => bail!("unimplemented def type: {}", other),
             }
