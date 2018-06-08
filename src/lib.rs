@@ -31,6 +31,7 @@ enum FieldType {
     Ref(String),
     Inner(usize),
     Simple(DataType),
+    AllOf(Vec<FieldType>),
     #[deprecated]
     Unknown,
 }
@@ -278,8 +279,23 @@ fn field_type(
         current_keys.remove("default");
         FieldType::Unknown
     } else if current_keys.remove("allOf") {
-        current_keys.remove("type"); // must be object?
-        FieldType::Unknown
+        if current_keys.remove("type") {
+            let object = get_string(field, "type")?;
+            ensure!(
+                "object" == object,
+                "field with `allOf` must have no type, or type object, not {:?}",
+                object
+            );
+        }
+
+        let mut ret = Vec::new();
+
+        for child in get_vec(field, "allOf")? {
+            let child = child.as_hash().ok_or_else(|| format_err!("non-hash in allOf"))?;
+            ret.push(field_type(child, &mut keys(child)?, new_structs)?)
+        }
+
+        FieldType::AllOf(ret)
     } else if current_keys.remove("type") {
         match get_string(field, "type")? {
             "object" if current_keys.is_empty() => {
@@ -289,7 +305,9 @@ fn field_type(
             "object" => bail!("type object, but no properties"),
             "array" => {
                 ensure!(current_keys.remove("items"), "arrays must have items");
-                current_keys.remove("default");
+                current_keys.remove("default"); // TODO
+                current_keys.remove("minItems"); // TODO
+                current_keys.remove("maxItems"); // TODO
 
                 FieldType::Unknown // TODO
             }
