@@ -32,6 +32,7 @@ enum FieldType {
     Inner(usize),
     Simple(DataType),
     AllOf(Vec<FieldType>),
+    Array(Box<FieldType>),
     #[deprecated]
     Unknown,
 }
@@ -211,6 +212,8 @@ fn properties_to_fields(
 
         let data_type = field_type(field, &mut current_keys, new_structs)?;
 
+        current_keys.remove("x-go-name"); // TODO?
+
         ensure!(
             current_keys.is_empty(),
             "unrecognised keys: {:?}",
@@ -308,8 +311,10 @@ fn field_type(
                 current_keys.remove("default"); // TODO
                 current_keys.remove("minItems"); // TODO
                 current_keys.remove("maxItems"); // TODO
+                let items = get_hash(field, "items")?;
+                let items = field_type(items, &mut keys(items)?, new_structs)?;
 
-                FieldType::Unknown // TODO
+                FieldType::Array(Box::new(items))
             }
             "integer" => {
                 let format = if current_keys.remove("format") {
