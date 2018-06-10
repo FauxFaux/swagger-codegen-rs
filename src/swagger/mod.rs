@@ -29,7 +29,12 @@ enum FieldType {
     Inner(usize),
     Simple(DataType),
     AllOf(Vec<FieldType>),
-    Array(Box<FieldType>),
+    Array {
+        item_type: Box<FieldType>,
+        min_items: Option<usize>,
+        max_items: Option<usize>,
+        null_default: bool,
+    },
     #[deprecated]
     Unknown,
 }

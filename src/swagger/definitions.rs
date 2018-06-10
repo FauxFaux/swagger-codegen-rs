@@ -1,5 +1,7 @@
-use failure::Error;
 use std::collections::HashSet;
+
+use cast::usize;
+use failure::Error;
 use yaml_rust::yaml::Hash;
 
 use super::*;
@@ -39,13 +41,15 @@ pub fn properties_to_fields(
 
         let required = required.remove(name.as_str());
 
-        let data_type = field_type(field, &mut current_keys, new_structs)?;
+        let data_type = field_type(field, &mut current_keys, new_structs)
+            .with_context(|_| format_err!("determining type of {}", name))?;
 
         current_keys.remove("x-go-name"); // TODO?
 
         ensure!(
             current_keys.is_empty(),
-            "unrecognised keys: {:?}",
+            "{}: unrecognised keys: {:?}",
+            &name,
             current_keys
         );
 
@@ -139,13 +143,29 @@ fn field_type(
             "object" => bail!("type object, but no properties"),
             "array" => {
                 ensure!(current_keys.remove("items"), "arrays must have items");
-                current_keys.remove("default"); // TODO
-                current_keys.remove("minItems"); // TODO
-                current_keys.remove("maxItems"); // TODO
+                let null_default = if current_keys.remove("default") {
+                    let default = get(field, "default")?;
+
+                    if !default.is_null() {
+                        bail!("unsupported array default: {:?}", default)
+                    }
+
+                    true
+                } else {
+                    false
+                };
+
+                current_keys.remove("minItems");
+                current_keys.remove("maxItems");
                 let items = get_hash(field, "items")?;
                 let items = field_type(items, &mut keys(items)?, new_structs)?;
 
-                FieldType::Array(Box::new(items))
+                FieldType::Array {
+                    item_type: Box::new(items),
+                    min_items: optional_integer(field, "minItems")?.map(usize).invert()?,
+                    max_items: optional_integer(field, "maxItems")?.map(usize).invert()?,
+                    null_default,
+                }
             }
             "integer" => {
                 let format = if current_keys.remove("format") {
