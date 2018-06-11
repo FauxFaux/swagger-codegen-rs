@@ -71,7 +71,7 @@ pub fn properties_to_fields(
     Ok(ret)
 }
 
-fn field_type(
+pub fn field_type(
     field: &Hash,
     current_keys: &mut HashSet<&str>,
     new_structs: &mut Vec<Struct>,
@@ -215,6 +215,7 @@ fn field_type(
                 match get_string(field, "format")? {
                     "ip-address" => DataType::IpAddr,
                     "dateTime" => DataType::DateTime,
+                    "json" => DataType::Json,
                     other => bail!("unsupported string format: {}", other),
                 }
             } else if current_keys.remove("enum") {
@@ -231,6 +232,10 @@ fn field_type(
                         .map(|result| result.map(|r| r.to_string()))
                         .collect::<Result<Vec<String>, Error>>()?,
                     default,
+                }
+            } else if current_keys.remove("pattern") {
+                DataType::MatchString {
+                    pattern: get_string(field, "pattern")?.to_string(),
                 }
             } else {
                 let default = if current_keys.remove("default") {

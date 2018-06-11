@@ -24,7 +24,7 @@ pub struct Field {
 }
 
 #[derive(Debug, Clone)]
-enum FieldType {
+pub enum FieldType {
     Ref(String),
     Inner(usize),
     Simple(DataType),
@@ -76,15 +76,20 @@ enum DataType {
     },
     IpAddr,
     DateTime,
+    Json,
     Enum {
         values: Vec<String>,
         default: Option<String>,
+    },
+    MatchString {
+        pattern: String,
     },
     String {
         default: Option<String>,
     },
 }
 
+#[derive(Debug, Copy, Clone)]
 enum HttpMethod {
     GET,
     POST,
