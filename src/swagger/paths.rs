@@ -92,14 +92,31 @@ fn process_param(param: &Hash) -> Result<(), Error> {
         ""
     };
 
-    current_keys.remove("required"); // TODO
+    let required = if current_keys.remove("required") {
+        Some(get_bool(param, "required"))
+    } else {
+        None
+    };
 
-    if current_keys.remove("schema") {
-        // TODO
+    let param_type = if current_keys.remove("schema") {
+        let schema = get_hash(param, "schema")?;
+        let mut schema_keys = keys(schema)?;
+        schema_keys.remove("example");
+
+        let field_result = definitions::field_type(schema, &mut schema_keys, &mut Vec::new());
+        // TODO: new_structs
+
+        ensure!(
+            schema_keys.is_empty(),
+            "unrecognised schema keys: {:?}",
+            schema_keys
+        );
+
+        field_result
     } else {
         definitions::field_type(param, &mut current_keys, &mut Vec::new())
-            .with_context(|_| format_err!("finding type of {}", name))?; // TODO: new_structs
-    }
+        // TODO: new_structs
+    }.with_context(|_| format_err!("finding type of {:?}", name))?;
 
     ensure!(
         current_keys.is_empty(),

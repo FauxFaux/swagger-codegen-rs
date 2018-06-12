@@ -77,6 +77,7 @@ enum DataType {
     IpAddr,
     DateTime,
     Json,
+    Binary,
     Enum {
         values: Vec<String>,
         default: Option<String>,

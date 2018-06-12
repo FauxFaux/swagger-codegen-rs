@@ -136,11 +136,19 @@ pub fn field_type(
         FieldType::AllOf(ret)
     } else if current_keys.remove("type") {
         match get_string(field, "type")? {
-            "object" if current_keys.is_empty() => {
+            "object"
+                if current_keys.is_empty()
+                    // the `example:` case here seems to be just an attempt to provide an example
+                    // to something else in an existing allOf union type
+                    || (1 == current_keys.len() && current_keys.contains("example")) =>
+            {
                 // TODO: Total bullshit. No idea what this should do.
                 FieldType::Unknown
             }
-            "object" => bail!("type object, but no properties"),
+            "object" => bail!(
+                "type object, but no properties, only {:?} (nothing would be a different case)",
+                current_keys
+            ),
             "array" => {
                 ensure!(current_keys.remove("items"), "arrays must have items");
                 let null_default = if current_keys.remove("default") {
@@ -216,6 +224,7 @@ pub fn field_type(
                     "ip-address" => DataType::IpAddr,
                     "dateTime" => DataType::DateTime,
                     "json" => DataType::Json,
+                    "binary" => DataType::Binary,
                     other => bail!("unsupported string format: {}", other),
                 }
             } else if current_keys.remove("enum") {
