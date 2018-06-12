@@ -3,7 +3,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn paths(paths: &Hash) -> Result<(), Error> {
+pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
     for (path_url, path) in paths.into_iter() {
         let path_url: &str = path_url
             .as_str()
@@ -12,12 +12,13 @@ pub fn paths(paths: &Hash) -> Result<(), Error> {
             .as_hash()
             .ok_or_else(|| format_err!("non-hash path body"))?;
 
-        process_methods(path).with_context(|_| format_err!("processing path: {:?}", path_url))?;
+        process_methods(path, new_structs)
+            .with_context(|_| format_err!("processing path: {:?}", path_url))?;
     }
     Ok(())
 }
 
-fn process_methods(path: &Hash) -> Result<(), Error> {
+fn process_methods(path: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
     for (http_method, op) in path.into_iter() {
         let http_method = match http_method
             .as_str()
@@ -34,13 +35,14 @@ fn process_methods(path: &Hash) -> Result<(), Error> {
         process_method(
             op.as_hash()
                 .ok_or_else(|| format_err!("non-hash op body: {:?}", op))?,
+            new_structs,
         ).with_context(|_| format_err!("processing {:?}", http_method))?;
     }
 
     Ok(())
 }
 
-fn process_method(op: &Hash) -> Result<(), Error> {
+fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
     let mut current_keys = keys(op)?;
 
     current_keys.remove("summary");
@@ -57,6 +59,7 @@ fn process_method(op: &Hash) -> Result<(), Error> {
                 param
                     .as_hash()
                     .ok_or_else(|| format_err!("non-hash parameter"))?,
+                new_structs,
             )?;
         }
     }
@@ -71,7 +74,7 @@ fn process_method(op: &Hash) -> Result<(), Error> {
     Ok(())
 }
 
-fn process_param(param: &Hash) -> Result<(), Error> {
+fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
     let mut current_keys = keys(param)?;
 
     current_keys.remove("name");
@@ -103,8 +106,7 @@ fn process_param(param: &Hash) -> Result<(), Error> {
         let mut schema_keys = keys(schema)?;
         schema_keys.remove("example");
 
-        let field_result = definitions::field_type(schema, &mut schema_keys, &mut Vec::new());
-        // TODO: new_structs
+        let field_result = definitions::field_type(schema, &mut schema_keys, new_structs);
 
         ensure!(
             schema_keys.is_empty(),
@@ -114,8 +116,7 @@ fn process_param(param: &Hash) -> Result<(), Error> {
 
         field_result
     } else {
-        definitions::field_type(param, &mut current_keys, &mut Vec::new())
-        // TODO: new_structs
+        definitions::field_type(param, &mut current_keys, new_structs)
     }.with_context(|_| format_err!("finding type of {:?}", name))?;
 
     ensure!(

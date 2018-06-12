@@ -26,7 +26,7 @@ pub fn go() -> Result<(), Error> {
         println!("{:?}", p)
     }
 
-    for s in structs {
+    for s in &structs {
         println!("{:?}", s);
     }
 
@@ -34,6 +34,7 @@ pub fn go() -> Result<(), Error> {
         doc["paths"]
             .as_hash()
             .ok_or_else(|| format_err!("no paths"))?,
+        &mut structs,
     )?;
 
     Ok(())
