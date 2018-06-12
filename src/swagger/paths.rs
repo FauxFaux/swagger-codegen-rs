@@ -1,3 +1,4 @@
+use cast::u16;
 use failure::Error;
 use yaml_rust::yaml::Hash;
 
@@ -52,7 +53,6 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error>
     current_keys.remove("tags");
     current_keys.remove("operationId");
 
-    current_keys.remove("responses");
     if current_keys.remove("parameters") {
         for param in get_vec(op, "parameters")? {
             process_param(
@@ -64,7 +64,14 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error>
         }
     }
 
-    get_hash(op, "responses")?;
+    current_keys.remove("responses");
+    for (code, resp) in get_hash(op, "responses")? {
+        let code = u16(as_integer(code)?)?;
+        let resp: &Hash = resp
+            .as_hash()
+            .ok_or_else(|| format_err!("non-hash response {}", code))?;
+        process_response(resp, new_structs).with_context(|_| format_err!("response {}", code))?;
+    }
 
     ensure!(
         current_keys.is_empty(),
@@ -123,6 +130,43 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Erro
         current_keys.is_empty(),
         "{:?}: unrecognised keys: {:?}",
         name,
+        current_keys
+    );
+
+    Ok(())
+}
+
+fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+    let mut current_keys = keys(resp)?;
+    current_keys.remove("description");
+    current_keys.remove("examples");
+
+    if current_keys.remove("headers") {
+        for (header_name, header) in get_hash(resp, "headers")? {
+            let header_name = as_str(header_name)?;
+            let header = header
+                .as_hash()
+                .ok_or_else(|| format_err!("non-hash header: {:?}", header))?;
+            let mut header_keys = keys(header)?;
+            header_keys.remove("description");
+            let header_type = definitions::field_type(header, &mut header_keys, new_structs)?;
+            ensure!(
+                header_keys.is_empty(),
+                "unsupported header keys: {:?}",
+                header_keys
+            );
+        }
+    }
+
+    if current_keys.remove("schema") {
+        let schema = get_hash(resp, "schema")?;
+        let mut schema_keys = keys(schema)?;
+        definitions::field_type(schema, &mut schema_keys, new_structs)?;
+    }
+
+    ensure!(
+        current_keys.is_empty(),
+        "unrecognised response body keys: {:?}",
         current_keys
     );
 

@@ -195,6 +195,14 @@ pub fn field_type(
                 current_keys.remove("minimum");
                 current_keys.remove("maximum");
                 current_keys.remove("default");
+                current_keys.remove("enum"); // TODO: ? Maybe not worth supporting.
+
+                // Kind:
+                //  description: "Kind of change"
+                //  type: "integer"
+                //  format: "uint8"
+                //  enum: [0, 1, 2]
+                //  x-nullable: false
 
                 FieldType::Simple(DataType::Integer {
                     min: optional_integer(field, "minimum")?,
@@ -260,6 +268,9 @@ pub fn field_type(
     } else if 1 == current_keys.len() && current_keys.remove("$ref") {
         FieldType::Ref(get_string(field, "$ref")?.to_string())
     } else {
-        bail!("bad type");
+        bail!(
+            "bad type, couldn't guess expectation from: {:?}",
+            current_keys
+        );
     })
 }
