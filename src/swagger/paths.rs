@@ -161,12 +161,18 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<Param, E
 
 fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<Response, Error> {
     let mut current_keys = keys(resp)?;
-    current_keys.remove("description");
+    let description = if current_keys.remove("description") {
+        get_string(resp, "description")?.to_string()
+    } else {
+        String::new()
+    };
     current_keys.remove("examples");
+
+    let mut headers = HashMap::new();
 
     if current_keys.remove("headers") {
         for (header_name, header) in get_hash(resp, "headers")? {
-            let header_name = as_str(header_name)?;
+            let header_name = as_str(header_name)?.to_string();
             let header = header
                 .as_hash()
                 .ok_or_else(|| format_err!("non-hash header: {:?}", header))?;
@@ -178,14 +184,22 @@ fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<Respon
                 "unsupported header keys: {:?}",
                 header_keys
             );
+
+            headers.insert(header_name, Header { header_type });
         }
     }
 
-    if current_keys.remove("schema") {
+    let resp_type = if current_keys.remove("schema") {
         let schema = get_hash(resp, "schema")?;
         let mut schema_keys = keys(schema)?;
-        definitions::field_type(schema, &mut schema_keys, new_structs)?;
-    }
+        Some(definitions::field_type(
+            schema,
+            &mut schema_keys,
+            new_structs,
+        )?)
+    } else {
+        None
+    };
 
     ensure!(
         current_keys.is_empty(),
@@ -193,5 +207,9 @@ fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<Respon
         current_keys
     );
 
-    Ok(Response {})
+    Ok(Response {
+        description,
+        headers,
+        resp_type,
+    })
 }

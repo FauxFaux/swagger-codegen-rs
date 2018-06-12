@@ -30,12 +30,14 @@ pub fn go() -> Result<(), Error> {
         println!("{:?}", s);
     }
 
-    swagger::paths::paths(
+    for p in swagger::paths::paths(
         doc["paths"]
             .as_hash()
             .ok_or_else(|| format_err!("no paths"))?,
         &mut structs,
-    )?;
+    )? {
+        println!("{:?}", p);
+    }
 
     Ok(())
 }

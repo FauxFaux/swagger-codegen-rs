@@ -91,15 +91,18 @@ enum DataType {
     },
 }
 
+#[derive(Debug, Clone)]
 pub struct Endpoint {
     ops: HashMap<HttpMethod, Operation>,
 }
 
+#[derive(Debug, Clone)]
 pub struct Operation {
     params: Vec<Param>,
     responses: Vec<Response>,
 }
 
+#[derive(Debug, Clone)]
 pub struct Param {
     name: String,
     loc: ParamLocation,
@@ -108,7 +111,17 @@ pub struct Param {
     param_type: FieldType,
 }
 
-pub struct Response {}
+#[derive(Debug, Clone)]
+pub struct Response {
+    description: String,
+    headers: HashMap<String, Header>,
+    resp_type: Option<FieldType>,
+}
+
+#[derive(Debug, Clone)]
+pub struct Header {
+    header_type: FieldType,
+}
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 enum HttpMethod {
