@@ -4,7 +4,8 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<Vec<Endpoint>, Error> {
+    let mut ret = Vec::new();
     for (path_url, path) in paths.into_iter() {
         let path_url: &str = path_url
             .as_str()
@@ -13,13 +14,20 @@ pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
             .as_hash()
             .ok_or_else(|| format_err!("non-hash path body"))?;
 
-        process_methods(path, new_structs)
-            .with_context(|_| format_err!("processing path: {:?}", path_url))?;
+        ret.push(Endpoint {
+            ops: process_methods(path, new_structs)
+                .with_context(|_| format_err!("processing path: {:?}", path_url))?,
+        });
     }
-    Ok(())
+    Ok(ret)
 }
 
-fn process_methods(path: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+fn process_methods(
+    path: &Hash,
+    new_structs: &mut Vec<Struct>,
+) -> Result<HashMap<HttpMethod, Operation>, Error> {
+    let mut ret = HashMap::new();
+
     for (http_method, op) in path.into_iter() {
         let http_method = match http_method
             .as_str()
@@ -33,17 +41,20 @@ fn process_methods(path: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Err
             other => bail!("unsupported http method: {}", other),
         };
 
-        process_method(
-            op.as_hash()
-                .ok_or_else(|| format_err!("non-hash op body: {:?}", op))?,
-            new_structs,
-        ).with_context(|_| format_err!("processing {:?}", http_method))?;
+        ret.insert(
+            http_method,
+            process_method(
+                op.as_hash()
+                    .ok_or_else(|| format_err!("non-hash op body: {:?}", op))?,
+                new_structs,
+            ).with_context(|_| format_err!("processing {:?}", http_method))?,
+        );
     }
 
-    Ok(())
+    Ok(ret)
 }
 
-fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation, Error> {
     let mut current_keys = keys(op)?;
 
     current_keys.remove("summary");
@@ -53,16 +64,19 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error>
     current_keys.remove("tags");
     current_keys.remove("operationId");
 
+    let mut params = Vec::new();
     if current_keys.remove("parameters") {
         for param in get_vec(op, "parameters")? {
-            process_param(
+            params.push(process_param(
                 param
                     .as_hash()
                     .ok_or_else(|| format_err!("non-hash parameter"))?,
                 new_structs,
-            )?;
+            )?);
         }
     }
+
+    let mut responses = Vec::new();
 
     current_keys.remove("responses");
     for (code, resp) in get_hash(op, "responses")? {
@@ -70,7 +84,9 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error>
         let resp: &Hash = resp
             .as_hash()
             .ok_or_else(|| format_err!("non-hash response {}", code))?;
-        process_response(resp, new_structs).with_context(|_| format_err!("response {}", code))?;
+        responses.push(
+            process_response(resp, new_structs).with_context(|_| format_err!("response {}", code))?,
+        );
     }
 
     ensure!(
@@ -78,10 +94,11 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error>
         "unrecognised keys: {:?}",
         current_keys
     );
-    Ok(())
+
+    Ok(Operation { params, responses })
 }
 
-fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<Param, Error> {
     let mut current_keys = keys(param)?;
 
     current_keys.remove("name");
@@ -89,10 +106,10 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Erro
 
     let name = get_string(param, "name")?;
     let loc = match get_string(param, "in")? {
-        "query" => (),
-        "body" => (),
-        "path" => (),
-        "header" => (),
+        "query" => ParamLocation::Query,
+        "body" => ParamLocation::Body,
+        "path" => ParamLocation::Path,
+        "header" => ParamLocation::Header,
         other => bail!("invalid `in` location: {}", other),
     };
 
@@ -103,7 +120,7 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Erro
     };
 
     let required = if current_keys.remove("required") {
-        Some(get_bool(param, "required"))
+        Some(get_bool(param, "required")?)
     } else {
         None
     };
@@ -133,10 +150,16 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Erro
         current_keys
     );
 
-    Ok(())
+    Ok(Param {
+        name: name.to_string(),
+        loc,
+        description: description.to_string(),
+        required,
+        param_type,
+    })
 }
 
-fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Error> {
+fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<Response, Error> {
     let mut current_keys = keys(resp)?;
     current_keys.remove("description");
     current_keys.remove("examples");
@@ -170,5 +193,5 @@ fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<(), Er
         current_keys
     );
 
-    Ok(())
+    Ok(Response {})
 }

@@ -2,6 +2,7 @@ use cast::f64;
 use failure::Error;
 use failure::ResultExt;
 use result::ResultOptionExt;
+use std::collections::HashMap;
 use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
@@ -90,13 +91,40 @@ enum DataType {
     },
 }
 
-#[derive(Debug, Copy, Clone)]
+pub struct Endpoint {
+    ops: HashMap<HttpMethod, Operation>,
+}
+
+pub struct Operation {
+    params: Vec<Param>,
+    responses: Vec<Response>,
+}
+
+pub struct Param {
+    name: String,
+    loc: ParamLocation,
+    description: String,
+    required: Option<bool>,
+    param_type: FieldType,
+}
+
+pub struct Response {}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 enum HttpMethod {
     GET,
     POST,
     HEAD,
     PUT,
     DELETE,
+}
+
+#[derive(Debug, Copy, Clone, Eq, PartialEq)]
+enum ParamLocation {
+    Query,
+    Body,
+    Path,
+    Header,
 }
 
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
