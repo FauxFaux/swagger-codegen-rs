@@ -12,16 +12,16 @@ pub mod paths;
 
 #[derive(Debug, Clone)]
 pub struct Struct {
-    fields: Vec<Field>,
+    pub fields: Vec<Field>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Field {
-    name: String,
-    data_type: FieldType,
-    description: String,
-    nullable: Option<bool>,
-    required: bool,
+    pub name: String,
+    pub data_type: FieldType,
+    pub description: String,
+    pub nullable: Option<bool>,
+    pub required: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -59,7 +59,7 @@ enum NumberFormat {
 }
 
 #[derive(Debug, Clone)]
-enum DataType {
+pub enum DataType {
     Integer {
         min: Option<i64>,
         max: Option<i64>,
