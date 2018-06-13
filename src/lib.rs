@@ -21,7 +21,7 @@ pub fn go() -> Result<(), Error> {
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
-    ).with_context(|_| format_err!("processing defintions"))?
+    ).with_context(|_| format_err!("processing definitions"))?
     {
         println!("{:?}", p)
     }
