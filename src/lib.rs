@@ -20,6 +20,8 @@ pub fn go() -> Result<(), Error> {
 
     let mut rendered_as = HashMap::new();
 
+    let mut rendered = Vec::new();
+
     for p in swagger::definitions::properties_to_fields(
         &mut structs,
         &[],
@@ -28,7 +30,7 @@ pub fn go() -> Result<(), Error> {
             .ok_or_else(|| format_err!("no definitions"))?,
     ).with_context(|_| format_err!("processing definitions"))?
     {
-        render::render_top(&p, &mut rendered_as, &structs)
+        render::render_top(&p, &mut rendered_as, &structs, &mut rendered)
             .with_context(|_| format_err!("rendering definition {}", p.name))?;
     }
 
