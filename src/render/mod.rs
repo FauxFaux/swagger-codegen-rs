@@ -19,6 +19,7 @@ pub enum Rendered {
 pub enum FlatField {
     Data(DataType),
     InternalType(String),
+    Tainted,
 }
 
 pub fn render_top(
@@ -27,12 +28,25 @@ pub fn render_top(
     structs: &Vec<Struct>,
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
-    Ok(match &p.data_type {
+    let name = p.name.to_string();
+    let typed = render_type(&name, &p.data_type, rendered_as, structs, into)?;
+    Ok(typed)
+}
+
+pub fn render_type(
+    name_hint: &str,
+    data_type: &FieldType,
+    rendered_as: &HashMap<usize, String>,
+    structs: &Vec<Struct>,
+    into: &mut Vec<Rendered>,
+) -> Result<FlatField, Error> {
+
+    Ok(match data_type {
         FieldType::Inner(id) => {
-            let name = p.name.to_string();
             // BORROW CHECKER
+            let name = name_hint.to_string();
             let created = Rendered::Struct {
-                name: name.to_string(),
+                name: name_hint.to_string(),
                 description: String::new(), // TODO,
                 fields: structs[*id]
                     .fields
@@ -43,7 +57,12 @@ pub fn render_top(
             into.push(created);
             FlatField::InternalType(name)
         }
+        FieldType::Array { item_type, .. } => {
+            // TODO: nullable / item limits / fixed size array?
+            render_type("", &item_type, rendered_as, structs, into)?
+        },
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
-        other => unimplemented!("top-level type: {:?}", other),
+        FieldType::Unknown => FlatField::Tainted,
+        other => bail!("type: {:?}", other),
     })
 }
