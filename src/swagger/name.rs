@@ -24,26 +24,48 @@ pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Erro
     }
 
     for field in &mut props {
-        let borrow_thoroughly_checked = match field.data_type {
-            FieldType::Ref(ref id) => {
-                ensure!(
-                    id.starts_with("#/definitions/"),
-                    "non-definitions ref: {}",
-                    id
-                );
-                let id = id["#/definitions/".len()..].to_string();
-                let id = *definitions
-                    .get(&id)
-                    .ok_or_else(|| format_err!("definition not found: {}", id))?;
-                Some(FieldType::Inner(id))
-            }
-            _ => None,
-        };
-
-        if let Some(val) = borrow_thoroughly_checked {
-            field.data_type = val;
+        if let Some(new_data_type) = deref(&definitions, &field.data_type)? {
+            field.data_type = new_data_type;
         }
     }
 
     Ok((props, structs))
+}
+
+fn deref(
+    definitions: &HashMap<String, usize>,
+    data_type: &FieldType,
+) -> Result<Option<FieldType>, Error> {
+    Ok(match data_type {
+        FieldType::Ref(ref id) => {
+            ensure!(
+                id.starts_with("#/definitions/"),
+                "non-definitions ref: {}",
+                id
+            );
+            let id = id["#/definitions/".len()..].to_string();
+            let id = *definitions
+                .get(&id)
+                .ok_or_else(|| format_err!("definition not found: {}", id))?;
+            Some(FieldType::Inner(id))
+        }
+        FieldType::Array {
+            item_type,
+            min_items,
+            max_items,
+            null_default,
+        } => if let Some(new) = deref(definitions, item_type)? {
+            // this would potentially be less horribly ugly if there was real struct, not an enum-embedded struct
+            Some(FieldType::Array {
+                item_type: Box::new(new),
+                min_items: *min_items,
+                max_items: *max_items,
+                null_default: *null_default,
+            })
+        } else {
+            None
+        },
+
+        _ => None,
+    })
 }
