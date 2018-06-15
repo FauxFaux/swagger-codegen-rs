@@ -29,7 +29,8 @@ pub fn render_top(
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     let name = p.name.to_string();
-    let typed = render_type(&name, &p.data_type, rendered_as, structs, into)?;
+    let typed = render_type(&name, &p.data_type, rendered_as, structs, into)
+        .with_context(|_| format_err!("named {}", name))?;
     Ok(typed)
 }
 
@@ -40,7 +41,6 @@ pub fn render_type(
     structs: &Vec<Struct>,
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
-
     Ok(match data_type {
         FieldType::Inner(id) => {
             // BORROW CHECKER
@@ -59,8 +59,14 @@ pub fn render_type(
         }
         FieldType::Array { item_type, .. } => {
             // TODO: nullable / item limits / fixed size array?
-            render_type("", &item_type, rendered_as, structs, into)?
-        },
+            render_type("", &item_type, rendered_as, structs, into)
+                .with_context(|_| format_err!("unpacking array"))?
+        }
+        #[cfg(nah)]
+        FieldType::Ref(id) if id.starts_with("#/definitions/") =>
+        {
+            FlatField::InternalType(id["#/definitions/".len()..].to_string())
+        }
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
         FieldType::Unknown => FlatField::Tainted,
         other => bail!("type: {:?}", other),
