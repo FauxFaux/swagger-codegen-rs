@@ -23,13 +23,22 @@ pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Erro
         }
     }
 
-    for field in &mut props {
+    deref_fields(&definitions, &mut props)?;
+
+    for s in &mut structs {
+        deref_fields(&definitions, &mut s.fields)?;
+    }
+
+    Ok((props, structs))
+}
+
+fn deref_fields(definitions: &HashMap<String, usize>, fields: &mut [Field]) -> Result<(), Error> {
+    for field in fields {
         if let Some(new_data_type) = deref(&definitions, &field.data_type)? {
             field.data_type = new_data_type;
         }
     }
-
-    Ok((props, structs))
+    Ok(())
 }
 
 fn deref(
