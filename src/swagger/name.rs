@@ -73,6 +73,15 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
         } else {
             None
         },
+        FieldType::AllOf(inner) => {
+            let mut new = Vec::new();
+            for child in inner {
+                new.push(deref(definitions, child)?.unwrap_or(child.clone()));
+            }
+            // TODO: would love to unpack the error handling into a map here
+            // TODO: can we work out if we didn't change anything, then not copy? Irrelevant.
+            Some(FieldType::AllOf(new))
+        }
 
         _ => None,
     })
