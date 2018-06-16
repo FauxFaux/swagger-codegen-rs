@@ -41,10 +41,7 @@ fn deref_fields(definitions: &Defs, fields: &mut [Field]) -> Result<(), Error> {
     Ok(())
 }
 
-fn deref(
-    definitions: &Defs,
-    data_type: &FieldType,
-) -> Result<Option<FieldType>, Error> {
+fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>, Error> {
     Ok(match data_type {
         FieldType::Ref(ref id) => {
             ensure!(
