@@ -62,11 +62,6 @@ pub fn render_type(
             render_type("", &item_type, rendered_as, structs, into)
                 .with_context(|_| format_err!("unpacking array"))?
         }
-        #[cfg(nah)]
-        FieldType::Ref(id) if id.starts_with("#/definitions/") =>
-        {
-            FlatField::InternalType(id["#/definitions/".len()..].to_string())
-        }
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
         FieldType::Unknown => FlatField::Tainted,
         other => bail!("type: {:?}", other),

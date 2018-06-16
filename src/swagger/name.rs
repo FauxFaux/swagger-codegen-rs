@@ -23,24 +23,30 @@ pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Erro
         definitions.insert(field.name.to_string(), field.data_type.clone());
     }
 
-    deref_fields(&definitions, &mut props)?;
+    maybe_transform_fields(&mut props, |f| deref(&definitions, &f.data_type))?;
 
     for s in &mut structs {
-        deref_fields(&definitions, &mut s.fields)?;
+        maybe_transform_fields(&mut s.fields, |f| deref(&definitions, &f.data_type))?;
     }
+
+    maybe_transform_fields(&mut props, |f| denest(&mut structs, &f.data_type))?;
 
     Ok((props, structs))
 }
 
-fn deref_fields(definitions: &Defs, fields: &mut [Field]) -> Result<(), Error> {
+fn maybe_transform_fields<F>(fields: &mut [Field], mut func: F) -> Result<(), Error>
+where
+    F: FnMut(&mut Field) -> Result<Option<FieldType>, Error>,
+{
     for field in fields {
-        if let Some(new_data_type) = deref(&definitions, &field.data_type)? {
+        if let Some(new_data_type) = func(field)? {
             field.data_type = new_data_type;
         }
     }
     Ok(())
 }
 
+/// `Some(new)` if it needs to change, otherwise `None`
 fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>, Error> {
     Ok(match data_type {
         FieldType::Ref(ref id) => {
@@ -83,6 +89,26 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
             Some(FieldType::AllOf(new))
         }
 
+        _ => None,
+    })
+}
+
+fn denest(structs: &mut Vec<Struct>, data_type: &FieldType) -> Result<Option<FieldType>, Error> {
+    Ok(match data_type {
+        FieldType::AllOf(inner) => {
+            let mut all_fields = Vec::new();
+            for child in inner {
+                all_fields.extend(
+                    match child {
+                        FieldType::Inner(id) => structs[*id].fields.iter(),
+                        other => bail!("unsupported denest: {:?}", child),
+                    }.cloned(),
+                );
+            }
+            let id = structs.len();
+            structs.push(Struct { fields: all_fields });
+            Some(FieldType::Inner(id))
+        }
         _ => None,
     })
 }
