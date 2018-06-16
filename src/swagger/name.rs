@@ -9,18 +9,18 @@ use swagger::Field;
 use swagger::FieldType;
 use swagger::Struct;
 
+type Defs = HashMap<String, FieldType>;
+
 pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Error> {
     let mut structs = Vec::new();
 
     let mut props = properties_to_fields(&mut structs, &[], definitions)
         .with_context(|_| format_err!("processing definitions"))?;
 
-    let mut definitions = HashMap::with_capacity(props.len());
+    let mut definitions: Defs = HashMap::with_capacity(props.len());
 
     for field in &props {
-        if let FieldType::Inner(id) = field.data_type {
-            definitions.insert(field.name.to_string(), id);
-        }
+        definitions.insert(field.name.to_string(), field.data_type.clone());
     }
 
     deref_fields(&definitions, &mut props)?;
@@ -32,7 +32,7 @@ pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Erro
     Ok((props, structs))
 }
 
-fn deref_fields(definitions: &HashMap<String, usize>, fields: &mut [Field]) -> Result<(), Error> {
+fn deref_fields(definitions: &Defs, fields: &mut [Field]) -> Result<(), Error> {
     for field in fields {
         if let Some(new_data_type) = deref(&definitions, &field.data_type)? {
             field.data_type = new_data_type;
@@ -42,7 +42,7 @@ fn deref_fields(definitions: &HashMap<String, usize>, fields: &mut [Field]) -> R
 }
 
 fn deref(
-    definitions: &HashMap<String, usize>,
+    definitions: &Defs,
     data_type: &FieldType,
 ) -> Result<Option<FieldType>, Error> {
     Ok(match data_type {
@@ -53,10 +53,12 @@ fn deref(
                 id
             );
             let id = id["#/definitions/".len()..].to_string();
-            let id = *definitions
+            let new_block: FieldType = definitions
                 .get(&id)
-                .ok_or_else(|| format_err!("definition not found: {}", id))?;
-            Some(FieldType::Inner(id))
+                .ok_or_else(|| format_err!("definition not found: {}", id))?
+                .clone();
+
+            Some(deref(definitions, &new_block)?.unwrap_or(new_block))
         }
         FieldType::Array {
             item_type,
