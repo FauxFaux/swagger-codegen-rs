@@ -8,6 +8,7 @@ use swagger::Field;
 use swagger::FieldType;
 use swagger::Struct;
 
+#[derive(Debug, Clone)]
 pub enum Rendered {
     Struct {
         name: String,
@@ -16,9 +17,11 @@ pub enum Rendered {
     },
 }
 
+#[derive(Debug, Clone)]
 pub enum FlatField {
     Data(DataType),
     InternalType(String),
+    Array(Box<FlatField>),
     Tainted,
 }
 
@@ -59,8 +62,10 @@ pub fn render_type(
         }
         FieldType::Array { item_type, .. } => {
             // TODO: nullable / item limits / fixed size array?
-            render_type("", &item_type, rendered_as, structs, into)
-                .with_context(|_| format_err!("unpacking array"))?
+            FlatField::Array(Box::new(
+                render_type("", &item_type, rendered_as, structs, into)
+                    .with_context(|_| format_err!("unpacking array"))?,
+            ))
         }
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
         FieldType::Unknown => FlatField::Tainted,

@@ -30,6 +30,10 @@ pub fn go() -> Result<(), Error> {
             .with_context(|_| format_err!("rendering definition {}", p.name))?;
     }
 
+    for s in &structs {
+        println!("{:?}", s)
+    }
+
     for p in swagger::paths::paths(
         doc["paths"]
             .as_hash()
