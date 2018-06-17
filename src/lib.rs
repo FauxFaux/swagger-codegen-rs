@@ -1,6 +1,7 @@
 extern crate cast;
 #[macro_use]
 extern crate failure;
+extern crate mime;
 extern crate result;
 extern crate yaml_rust;
 

@@ -101,7 +101,7 @@ fn denest(structs: &mut Vec<Struct>, data_type: &FieldType) -> Result<Option<Fie
                 all_fields.extend(
                     match child {
                         FieldType::Inner(id) => structs[*id].fields.iter(),
-                        other => bail!("unsupported denest: {:?}", child),
+                        other => bail!("unsupported denest: {:?}", other),
                     }.cloned(),
                 );
             }

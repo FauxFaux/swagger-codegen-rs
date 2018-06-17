@@ -1,6 +1,7 @@
 use cast::f64;
 use failure::Error;
 use failure::ResultExt;
+use mime::Mime;
 use result::ResultOptionExt;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -94,13 +95,17 @@ pub enum DataType {
 
 #[derive(Debug, Clone)]
 pub struct Endpoint {
+    path_url: String,
     ops: HashMap<HttpMethod, Operation>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Operation {
+    id: String,
     params: Vec<Param>,
-    responses: Vec<Response>,
+    consumes: Vec<Mime>,
+    produces: Vec<Mime>,
+    responses: HashMap<u16, Response>,
 }
 
 #[derive(Debug, Clone)]

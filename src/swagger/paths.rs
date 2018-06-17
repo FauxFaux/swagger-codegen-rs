@@ -1,5 +1,6 @@
 use cast::u16;
 use failure::Error;
+use mime::Mime;
 use yaml_rust::yaml::Hash;
 
 use super::*;
@@ -15,6 +16,7 @@ pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<Vec<Endpoint
             .ok_or_else(|| format_err!("non-hash path body"))?;
 
         ret.push(Endpoint {
+            path_url: path_url.to_string(),
             ops: process_methods(path, new_structs)
                 .with_context(|_| format_err!("processing path: {:?}", path_url))?,
         });
@@ -57,13 +59,6 @@ fn process_methods(
 fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation, Error> {
     let mut current_keys = keys(op)?;
 
-    current_keys.remove("summary");
-    current_keys.remove("description");
-    current_keys.remove("produces");
-    current_keys.remove("consumes");
-    current_keys.remove("tags");
-    current_keys.remove("operationId");
-
     let mut params = Vec::new();
     if current_keys.remove("parameters") {
         for param in get_vec(op, "parameters")? {
@@ -76,7 +71,7 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation,
         }
     }
 
-    let mut responses = Vec::new();
+    let mut responses = HashMap::new();
 
     current_keys.remove("responses");
     for (code, resp) in get_hash(op, "responses")? {
@@ -84,10 +79,35 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation,
         let resp: &Hash = resp
             .as_hash()
             .ok_or_else(|| format_err!("non-hash response {}", code))?;
-        responses.push(
+        responses.insert(
+            code,
             process_response(resp, new_structs).with_context(|_| format_err!("response {}", code))?,
         );
     }
+
+    current_keys.remove("summary"); // TODO
+    current_keys.remove("description"); // TODO
+    current_keys.remove("tags"); // TODO
+
+    let consumes = if current_keys.remove("consumes") {
+        get_vec(op, "consumes")?
+            .into_iter()
+            .map(as_mime)
+            .collect::<Result<Vec<Mime>, Error>>()?
+    } else {
+        Vec::new()
+    };
+
+    let produces = if current_keys.remove("produces") {
+        get_vec(op, "produces")?
+            .into_iter()
+            .map(as_mime)
+            .collect::<Result<Vec<Mime>, Error>>()?
+    } else {
+        Vec::new()
+    };
+
+    current_keys.remove("operationId");
 
     ensure!(
         current_keys.is_empty(),
@@ -95,7 +115,17 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation,
         current_keys
     );
 
-    Ok(Operation { params, responses })
+    Ok(Operation {
+        id: get_string(op, "operationId")?.to_string(),
+        consumes,
+        produces,
+        params,
+        responses,
+    })
+}
+
+fn as_mime(yaml: &Yaml) -> Result<Mime, Error> {
+    Ok(as_str(yaml)?.parse()?)
 }
 
 fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<Param, Error> {
