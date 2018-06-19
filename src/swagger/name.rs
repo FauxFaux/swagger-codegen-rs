@@ -8,14 +8,17 @@ use swagger::definitions::properties_to_fields;
 use swagger::Field;
 use swagger::FieldType;
 use swagger::Struct;
+use swagger::Endpoint;
 
 type Defs = HashMap<String, FieldType>;
 
-pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Error> {
+pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Error> {
     let mut structs = Vec::new();
 
     let mut props = properties_to_fields(&mut structs, &[], definitions)
         .with_context(|_| format_err!("processing definitions"))?;
+
+    let mut endpoints = super::paths::paths(paths, &mut structs)?;
 
     let mut definitions: Defs = HashMap::with_capacity(props.len());
 
@@ -23,13 +26,35 @@ pub fn definitions(definitions: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Erro
         definitions.insert(field.name.to_string(), field.data_type.clone());
     }
 
+    #[cfg(maybe_optimisation)]
     maybe_transform_fields(&mut props, |f| deref(&definitions, &f.data_type))?;
+
+    for e in &mut endpoints {
+        for op in e.ops.values_mut() {
+            for param in &mut op.params {
+                if let Some(new) = deref(&definitions, &param.param_type)? {
+                    param.param_type = new;
+                }
+            }
+
+            for resp in op.responses.values_mut() {
+                // BORROW CHECKER prevents
+                // if let Some(ref resp_type) = r.resp_type { r.resp_type = ..
+                if resp.resp_type.is_none() {
+                    continue;
+                }
+                if let Some(new) = deref(&definitions, resp.resp_type.as_ref().unwrap())? {
+                    resp.resp_type = Some(new);
+                }
+            }
+        }
+    }
 
     for s in &mut structs {
         maybe_transform_fields(&mut s.fields, |f| deref(&definitions, &f.data_type))?;
     }
 
-    maybe_transform_fields(&mut props, |f| denest(&mut structs, &f.data_type))?;
+    //maybe_transform_fields(&mut props, |f| denest(&mut structs, &f.data_type))?;
 
     Ok((props, structs))
 }
