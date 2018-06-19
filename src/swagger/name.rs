@@ -5,10 +5,10 @@ use failure::ResultExt;
 use yaml_rust::yaml::Hash;
 
 use swagger::definitions::properties_to_fields;
+use swagger::Endpoint;
 use swagger::Field;
 use swagger::FieldType;
 use swagger::Struct;
-use swagger::Endpoint;
 
 type Defs = HashMap<String, FieldType>;
 
@@ -54,7 +54,42 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(Vec<Field>, Vec<
         maybe_transform_fields(&mut s.fields, |f| deref(&definitions, &f.data_type))?;
     }
 
-    //maybe_transform_fields(&mut props, |f| denest(&mut structs, &f.data_type))?;
+    loop {
+        let old_structs = structs.clone();
+
+        let mut new_structs = Vec::new();
+
+        for s in &mut structs {
+            for f in &mut s.fields {
+                let maybe_new = if let FieldType::AllOf(ref inner) = f.data_type {
+                    let mut all_fields = Vec::new();
+                    for child in inner {
+                        all_fields.extend(
+                            match child {
+                                FieldType::Inner(id) => old_structs[*id].fields.iter(),
+                                other => bail!("unsupported denest: {:?}", other),
+                            }.cloned(),
+                        );
+                    }
+                    let id = old_structs.len() + new_structs.len();
+                    new_structs.push(Struct { fields: all_fields });
+                    Some(FieldType::Inner(id))
+                } else {
+                    None
+                };
+
+                if let Some(new) = maybe_new {
+                    f.data_type = new;
+                }
+            }
+        }
+
+        if new_structs.is_empty() {
+            break;
+        }
+
+        structs.extend(new_structs);
+    }
 
     Ok((props, structs))
 }
@@ -114,26 +149,6 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
             Some(FieldType::AllOf(new))
         }
 
-        _ => None,
-    })
-}
-
-fn denest(structs: &mut Vec<Struct>, data_type: &FieldType) -> Result<Option<FieldType>, Error> {
-    Ok(match data_type {
-        FieldType::AllOf(inner) => {
-            let mut all_fields = Vec::new();
-            for child in inner {
-                all_fields.extend(
-                    match child {
-                        FieldType::Inner(id) => structs[*id].fields.iter(),
-                        other => bail!("unsupported denest: {:?}", other),
-                    }.cloned(),
-                );
-            }
-            let id = structs.len();
-            structs.push(Struct { fields: all_fields });
-            Some(FieldType::Inner(id))
-        }
         _ => None,
     })
 }

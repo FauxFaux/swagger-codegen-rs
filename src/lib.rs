@@ -21,9 +21,9 @@ pub fn go() -> Result<(), Error> {
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
-            doc["paths"]
-                .as_hash()
-                .ok_or_else(|| format_err!("no paths"))?,
+        doc["paths"]
+            .as_hash()
+            .ok_or_else(|| format_err!("no paths"))?,
     ).with_context(|_| format_err!("processing definitions"))?;
 
     #[cfg(never)]
