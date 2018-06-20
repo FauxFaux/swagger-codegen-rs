@@ -17,7 +17,7 @@ pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let (props, mut structs) = swagger::name::definitions(
+    let (endpoints, mut structs) = swagger::name::definitions(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
@@ -26,10 +26,24 @@ pub fn go() -> Result<(), Error> {
             .ok_or_else(|| format_err!("no paths"))?,
     ).with_context(|_| format_err!("processing definitions"))?;
 
-    #[cfg(never)]
-    for p in props {
-        render::render_top(&p, &mut rendered_as, &structs, &mut rendered)
-            .with_context(|_| format_err!("rendering definition {}", p.name))?;
+    for endpoint in endpoints {
+        for (method, op) in endpoint.ops {
+            for param in op.params {
+                println!(
+                    "{} {:?} {} {:?}",
+                    endpoint.path_url,
+                    method,
+                    param.name,
+                    render::render_type(
+                        &param.name,
+                        &param.param_type,
+                        &mut HashMap::new(),
+                        &structs,
+                        &mut Vec::new()
+                    ).with_context(|_| format_err!("rendering param {}", param.name))?
+                );
+            }
+        }
     }
 
     Ok(())

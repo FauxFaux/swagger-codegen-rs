@@ -12,7 +12,10 @@ use swagger::Struct;
 
 type Defs = HashMap<String, FieldType>;
 
-pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(Vec<Field>, Vec<Struct>), Error> {
+pub fn definitions(
+    definitions: &Hash,
+    paths: &Hash,
+) -> Result<(Vec<Endpoint>, Vec<Struct>), Error> {
     let mut structs = Vec::new();
 
     let mut props = properties_to_fields(&mut structs, &[], definitions)
@@ -91,7 +94,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(Vec<Field>, Vec<
         structs.extend(new_structs);
     }
 
-    Ok((props, structs))
+    Ok((endpoints, structs))
 }
 
 fn maybe_transform_fields<F>(fields: &mut [Field], mut func: F) -> Result<(), Error>

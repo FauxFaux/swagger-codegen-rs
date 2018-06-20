@@ -95,26 +95,26 @@ pub enum DataType {
 
 #[derive(Debug, Clone)]
 pub struct Endpoint {
-    path_url: String,
-    ops: HashMap<HttpMethod, Operation>,
+    pub path_url: String,
+    pub ops: HashMap<HttpMethod, Operation>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Operation {
-    id: String,
-    params: Vec<Param>,
-    consumes: Vec<Mime>,
-    produces: Vec<Mime>,
-    responses: HashMap<u16, Response>,
+    pub id: String,
+    pub params: Vec<Param>,
+    pub consumes: Vec<Mime>,
+    pub produces: Vec<Mime>,
+    pub responses: HashMap<u16, Response>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Param {
-    name: String,
-    loc: ParamLocation,
-    description: String,
-    required: Option<bool>,
-    param_type: FieldType,
+    pub name: String,
+    pub loc: ParamLocation,
+    pub description: String,
+    pub required: Option<bool>,
+    pub param_type: FieldType,
 }
 
 #[derive(Debug, Clone)]
@@ -130,7 +130,7 @@ pub struct Header {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-enum HttpMethod {
+pub enum HttpMethod {
     GET,
     POST,
     HEAD,
@@ -139,7 +139,7 @@ enum HttpMethod {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-enum ParamLocation {
+pub enum ParamLocation {
     Query,
     Body,
     Path,
