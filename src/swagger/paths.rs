@@ -5,7 +5,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<Vec<Endpoint>, Error> {
+pub fn paths(paths: &Hash) -> Result<Vec<Endpoint>, Error> {
     let mut ret = Vec::new();
     for (path_url, path) in paths.into_iter() {
         let path_url: &str = path_url
@@ -17,7 +17,7 @@ pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<Vec<Endpoint
 
         ret.push(Endpoint {
             path_url: path_url.to_string(),
-            ops: process_methods(path, new_structs)
+            ops: process_methods(path)
                 .with_context(|_| format_err!("processing path: {:?}", path_url))?,
         });
     }
@@ -26,7 +26,6 @@ pub fn paths(paths: &Hash, new_structs: &mut Vec<Struct>) -> Result<Vec<Endpoint
 
 fn process_methods(
     path: &Hash,
-    new_structs: &mut Vec<Struct>,
 ) -> Result<HashMap<HttpMethod, Operation>, Error> {
     let mut ret = HashMap::new();
 
@@ -48,7 +47,6 @@ fn process_methods(
             process_method(
                 op.as_hash()
                     .ok_or_else(|| format_err!("non-hash op body: {:?}", op))?,
-                new_structs,
             ).with_context(|_| format_err!("processing {:?}", http_method))?,
         );
     }
@@ -56,7 +54,7 @@ fn process_methods(
     Ok(ret)
 }
 
-fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation, Error> {
+fn process_method(op: &Hash) -> Result<Operation, Error> {
     let mut current_keys = keys(op)?;
 
     let mut params = Vec::new();
@@ -66,7 +64,6 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation,
                 param
                     .as_hash()
                     .ok_or_else(|| format_err!("non-hash parameter"))?,
-                new_structs,
             )?);
         }
     }
@@ -81,7 +78,7 @@ fn process_method(op: &Hash, new_structs: &mut Vec<Struct>) -> Result<Operation,
             .ok_or_else(|| format_err!("non-hash response {}", code))?;
         responses.insert(
             code,
-            process_response(resp, new_structs).with_context(|_| format_err!("response {}", code))?,
+            process_response(resp).with_context(|_| format_err!("response {}", code))?,
         );
     }
 
@@ -128,7 +125,7 @@ fn as_mime(yaml: &Yaml) -> Result<Mime, Error> {
     Ok(as_str(yaml)?.parse()?)
 }
 
-fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<Param, Error> {
+fn process_param(param: &Hash) -> Result<Param, Error> {
     let mut current_keys = keys(param)?;
 
     current_keys.remove("name");
@@ -189,7 +186,7 @@ fn process_param(param: &Hash, new_structs: &mut Vec<Struct>) -> Result<Param, E
     })
 }
 
-fn process_response(resp: &Hash, new_structs: &mut Vec<Struct>) -> Result<Response, Error> {
+fn process_response(resp: &Hash) -> Result<Response, Error> {
     let mut current_keys = keys(resp)?;
     let description = if current_keys.remove("description") {
         get_string(resp, "description")?.to_string()

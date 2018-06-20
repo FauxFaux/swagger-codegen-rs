@@ -39,12 +39,11 @@ pub enum FieldType {
         max_items: Option<usize>,
         null_default: bool,
     },
-    #[deprecated]
     Unknown,
 }
 
 #[derive(Debug, Copy, Clone)]
-enum IntegerFormat {
+pub enum IntegerFormat {
     Unspecified,
     I8,
     I16,
@@ -57,7 +56,7 @@ enum IntegerFormat {
 }
 
 #[derive(Debug, Copy, Clone)]
-enum NumberFormat {
+pub enum NumberFormat {
     Unspecified,
 }
 

@@ -24,7 +24,7 @@ pub fn definitions(
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    let mut endpoints = super::paths::paths(paths, &mut structs)?;
+    let mut endpoints = super::paths::paths(paths)?;
 
     for e in &mut endpoints {
         for op in e.ops.values_mut() {
