@@ -29,7 +29,6 @@ pub struct Field {
 #[derive(Debug, Clone)]
 pub enum FieldType {
     Ref(String),
-    Inner(usize),
     Fields(Vec<Field>),
     Simple(DataType),
     AllOf(Vec<FieldType>),

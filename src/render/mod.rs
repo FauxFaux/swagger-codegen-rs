@@ -32,38 +32,23 @@ pub fn render_top(
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     let name = p.name.to_string();
-    let typed = render_type(&name, &p.data_type, rendered_as, structs, into)
-        .with_context(|_| format_err!("named {}", name))?;
-    Ok(typed)
+    Ok(render_type(&name, &p.data_type, into)
+        .with_context(|_| format_err!("named {}", name))?)
 }
 
 pub fn render_type(
     name_hint: &str,
     data_type: &FieldType,
-    rendered_as: &HashMap<usize, String>,
-    structs: &Vec<Struct>,
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     Ok(match data_type {
-        FieldType::Inner(id) => {
-            // BORROW CHECKER
-            let name = format!("{}{}", name_hint, id);
-            let created = Rendered::Struct {
-                name: name.to_string(),
-                description: String::new(), // TODO,
-                fields: structs[*id]
-                    .fields
-                    .iter()
-                    .map(|f| render_top(f, rendered_as, structs, into))
-                    .collect::<Result<Vec<FlatField>, Error>>()?,
-            };
-            into.push(created);
-            FlatField::InternalType(name)
+        FieldType::Fields(fields) => {
+            bail!("unimplemented! {:?}", fields);
         }
         FieldType::Array { item_type, .. } => {
             // TODO: nullable / item limits / fixed size array?
             FlatField::Array(Box::new(
-                render_type("", &item_type, rendered_as, structs, into)
+                render_type("", &item_type,  into)
                     .with_context(|_| format_err!("unpacking array"))?,
             ))
         }

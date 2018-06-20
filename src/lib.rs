@@ -38,8 +38,6 @@ pub fn go() -> Result<(), Error> {
                     render::render_type(
                         &param.name,
                         &param.param_type,
-                        &mut HashMap::new(),
-                        &structs,
                         &mut Vec::new()
                     ).with_context(|_| format_err!("rendering param {}", param.name))?
                 );

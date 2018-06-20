@@ -34,10 +34,7 @@ pub fn definitions(
                 }
 
                 let maybe_new = if let FieldType::AllOf(ref inner) = param.param_type {
-                    let fields = flatten_fields(&structs, inner)?;
-                    let id = structs.len();
-                    structs.push(Struct { fields });
-                    Some(FieldType::Inner(id))
+                    Some(FieldType::Fields(flatten_fields(&structs, inner)?))
                 } else {
                     None
                 };
@@ -72,10 +69,7 @@ pub fn definitions(
         for s in &mut structs {
             for f in &mut s.fields {
                 let maybe_new = if let FieldType::AllOf(ref inner) = f.data_type {
-                    let fields = flatten_fields(&old_structs, inner)?;
-                    let id = old_structs.len() + new_structs.len();
-                    new_structs.push(Struct { fields });
-                    Some(FieldType::Inner(id))
+                    Some(FieldType::Fields(flatten_fields(&old_structs, inner)?))
                 } else {
                     None
                 };
@@ -100,7 +94,7 @@ fn flatten_fields(structs: &[Struct], inner: &[FieldType]) -> Result<Vec<Field>,
     let mut all_fields = Vec::new();
     for child in inner {
         match child {
-            FieldType::Inner(id) => all_fields.extend(structs[*id].fields.iter().cloned()),
+            FieldType::Fields(fields) => all_fields.extend(fields.iter().cloned()),
             FieldType::Unknown => all_fields.push(Field {
                 name: "_".to_string(),
                 data_type: FieldType::Unknown,
