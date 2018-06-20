@@ -10,7 +10,7 @@ use swagger::Field;
 use swagger::FieldType;
 use swagger::Struct;
 
-type Defs = HashMap<String, FieldType>;
+type Defs = HashMap<String, Field>;
 
 pub fn definitions(
     definitions: &Hash,
@@ -18,19 +18,13 @@ pub fn definitions(
 ) -> Result<(Vec<Endpoint>, Vec<Struct>), Error> {
     let mut structs = Vec::new();
 
-    let mut props = properties_to_fields(&mut structs, &[], definitions)
-        .with_context(|_| format_err!("processing definitions"))?;
+    let definitions: Defs = properties_to_fields(&mut structs, &[], definitions)
+        .with_context(|_| format_err!("processing definitions"))?
+        .into_iter()
+        .map(|field| (field.name.to_string(), field))
+        .collect();
 
     let mut endpoints = super::paths::paths(paths, &mut structs)?;
-
-    let mut definitions: Defs = HashMap::with_capacity(props.len());
-
-    for field in &props {
-        definitions.insert(field.name.to_string(), field.data_type.clone());
-    }
-
-    #[cfg(maybe_optimisation)]
-    maybe_transform_fields(&mut props, |f| deref(&definitions, &f.data_type))?;
 
     for e in &mut endpoints {
         for op in e.ops.values_mut() {
@@ -145,6 +139,7 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
             let new_block: FieldType = definitions
                 .get(&id)
                 .ok_or_else(|| format_err!("definition not found: {}", id))?
+                .data_type
                 .clone();
 
             Some(deref(definitions, &new_block)?.unwrap_or(new_block))

@@ -14,7 +14,7 @@ pub fn properties_to_fields(
     let mut ret = Vec::new();
     let mut required: HashSet<&str> = required.into_iter().cloned().collect();
 
-    for (name, field) in hash.into_iter() {
+    for (name, field) in hash {
         let name: String = name
             .as_str()
             .ok_or_else(|| format_err!("non-string field name: {:?}", field))?
