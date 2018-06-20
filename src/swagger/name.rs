@@ -18,7 +18,7 @@ pub fn definitions(
 ) -> Result<(Vec<Endpoint>, Vec<Struct>), Error> {
     let mut structs = Vec::new();
 
-    let definitions: Defs = properties_to_fields(&mut structs, &[], definitions)
+    let definitions: Defs = properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
         .map(|field| (field.name.to_string(), field))

@@ -30,6 +30,7 @@ pub struct Field {
 pub enum FieldType {
     Ref(String),
     Inner(usize),
+    Fields(Vec<Field>),
     Simple(DataType),
     AllOf(Vec<FieldType>),
     Array {

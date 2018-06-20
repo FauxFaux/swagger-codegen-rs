@@ -6,11 +6,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn properties_to_fields(
-    new_structs: &mut Vec<Struct>,
-    required: &[&str],
-    hash: &Hash,
-) -> Result<Vec<Field>, Error> {
+pub fn properties_to_fields(required: &[&str], hash: &Hash) -> Result<Vec<Field>, Error> {
     let mut ret = Vec::new();
     let mut required: HashSet<&str> = required.into_iter().cloned().collect();
 
@@ -41,7 +37,7 @@ pub fn properties_to_fields(
 
         let required = required.remove(name.as_str());
 
-        let data_type = field_type(field, &mut current_keys, new_structs)
+        let data_type = field_type(field, &mut current_keys)
             .with_context(|_| format_err!("determining type of {}", name))?;
 
         current_keys.remove("x-go-name"); // TODO?
@@ -71,11 +67,7 @@ pub fn properties_to_fields(
     Ok(ret)
 }
 
-pub fn field_type(
-    field: &Hash,
-    current_keys: &mut HashSet<&str>,
-    new_structs: &mut Vec<Struct>,
-) -> Result<FieldType, Error> {
+pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<FieldType, Error> {
     Ok(if current_keys.remove("properties") {
         if current_keys.remove("type") {
             let object = get_string(field, "type")?;
@@ -98,14 +90,10 @@ pub fn field_type(
             Vec::new()
         };
 
-        let new_struct = Struct {
-            fields: properties_to_fields(new_structs, &required, get_hash(field, "properties")?)?,
-        };
-
-        let new_id = new_structs.len();
-        new_structs.push(new_struct);
-
-        FieldType::Inner(new_id)
+        FieldType::Fields(properties_to_fields(
+            &required,
+            get_hash(field, "properties")?,
+        )?)
     } else if current_keys.remove("additionalProperties") {
         current_keys.remove("type");
 
@@ -130,7 +118,7 @@ pub fn field_type(
             let child = child
                 .as_hash()
                 .ok_or_else(|| format_err!("non-hash in allOf"))?;
-            ret.push(field_type(child, &mut keys(child)?, new_structs)?)
+            ret.push(field_type(child, &mut keys(child)?)?)
         }
 
         FieldType::AllOf(ret)
@@ -166,7 +154,7 @@ pub fn field_type(
                 current_keys.remove("minItems");
                 current_keys.remove("maxItems");
                 let items = get_hash(field, "items")?;
-                let items = field_type(items, &mut keys(items)?, new_structs)?;
+                let items = field_type(items, &mut keys(items)?)?;
 
                 FieldType::Array {
                     item_type: Box::new(items),
