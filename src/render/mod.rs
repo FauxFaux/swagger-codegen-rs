@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use failure::Error;
 use failure::ResultExt;
 
@@ -8,7 +6,6 @@ use swagger::DataType;
 use swagger::Field;
 use swagger::FullType;
 use swagger::PartialType;
-use swagger::Struct;
 
 #[derive(Debug, Clone)]
 pub enum Rendered {
@@ -53,6 +50,5 @@ pub fn render_type(
         },
         FullType::Simple(simple) => FlatField::Data(simple.clone()),
         FullType::Unknown => FlatField::Tainted,
-        other => bail!("type: {:?}", other),
     })
 }

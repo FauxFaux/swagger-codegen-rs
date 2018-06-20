@@ -14,7 +14,6 @@ use swagger::Operation;
 use swagger::Param;
 use swagger::PartialType;
 use swagger::Response;
-use swagger::Struct;
 
 type Defs = HashMap<String, Field<PartialType>>;
 
@@ -38,7 +37,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint<Full
         });
     }
 
-    Ok((endpoints))
+    Ok(endpoints)
 }
 
 fn translate_op(
@@ -70,36 +69,6 @@ fn translate_op(
             .map(|(code, resp)| deref_response(definitions, (code, resp)))
             .collect::<Result<HashMap<u16, Response<FullType>>, Error>>()?,
     })
-}
-
-fn flatten_fields(inner: &[PartialType]) -> Result<Vec<Field<PartialType>>, Error> {
-    let mut all_fields = Vec::new();
-    for child in inner {
-        match child {
-            PartialType::Fields(fields) => all_fields.extend(fields.iter().cloned()),
-            PartialType::Unknown => all_fields.push(Field {
-                name: "_".to_string(),
-                data_type: PartialType::Unknown,
-                description: String::new(),
-                nullable: None,
-                required: false,
-            }),
-            other => bail!("unsupported flatten: {:?}", other),
-        }
-    }
-    Ok(all_fields)
-}
-
-fn maybe_transform_fields<F>(fields: &mut [Field<PartialType>], mut func: F) -> Result<(), Error>
-where
-    F: FnMut(&mut Field<PartialType>) -> Result<Option<PartialType>, Error>,
-{
-    for field in fields {
-        if let Some(new_data_type) = func(field)? {
-            field.data_type = new_data_type;
-        }
-    }
-    Ok(())
 }
 
 fn deref_response(

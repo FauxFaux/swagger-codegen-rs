@@ -12,10 +12,6 @@ pub mod definitions;
 pub mod name;
 pub mod paths;
 
-#[derive(Debug, Clone)]
-pub struct Struct<T> {
-    pub fields: Vec<Field<T>>,
-}
 
 #[derive(Debug, Clone)]
 pub struct Field<T> {
