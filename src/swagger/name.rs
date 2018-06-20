@@ -2,57 +2,74 @@ use std::collections::HashMap;
 
 use failure::Error;
 use failure::ResultExt;
+use result::ResultOptionExt;
 use yaml_rust::yaml::Hash;
 
 use swagger::definitions::properties_to_fields;
 use swagger::Endpoint;
 use swagger::Field;
+use swagger::FullType;
+use swagger::HttpMethod;
+use swagger::Operation;
+use swagger::Param;
 use swagger::PartialType;
+use swagger::Response;
 use swagger::Struct;
 
 type Defs = HashMap<String, Field<PartialType>>;
 
-pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint>, Error> {
+pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint<FullType>>, Error> {
     let definitions: Defs = properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    let mut endpoints = super::paths::paths(paths)?;
+    let mut endpoints = Vec::new();
 
-    for e in &mut endpoints {
-        for op in e.ops.values_mut() {
-            for param in &mut op.params {
-                if let Some(new) = deref(&definitions, &param.param_type)? {
-                    param.param_type = new;
-                }
-
-                let maybe_new = if let PartialType::AllOf(ref inner) = param.param_type {
-                    Some(PartialType::Fields(flatten_fields(inner)?))
-                } else {
-                    None
-                };
-
-                if let Some(new) = maybe_new {
-                    param.param_type = new;
-                }
-            }
-
-            for resp in op.responses.values_mut() {
-                // BORROW CHECKER prevents
-                // if let Some(ref resp_type) = r.resp_type { r.resp_type = ..
-                if resp.resp_type.is_none() {
-                    continue;
-                }
-                if let Some(new) = deref(&definitions, resp.resp_type.as_ref().unwrap())? {
-                    resp.resp_type = Some(new);
-                }
-            }
-        }
+    for e in super::paths::paths(paths)? {
+        endpoints.push(Endpoint {
+            path_url: e.path_url,
+            ops: e
+                .ops
+                .into_iter()
+                .map(|(code, op)| translate_op(op, &definitions).map(|op| (code, op)))
+                .collect::<Result<HashMap<HttpMethod, Operation<FullType>>, Error>>()?,
+        });
     }
 
     Ok((endpoints))
+}
+
+fn translate_op(
+    op: Operation<PartialType>,
+    definitions: &Defs,
+) -> Result<Operation<FullType>, Error> {
+    Ok(Operation::<FullType> {
+        id: op.id,
+        consumes: op.consumes,
+        produces: op.produces,
+
+        params: op
+            .params
+            .into_iter()
+            .map(|p| {
+                deref(definitions, &p.param_type).map(|new| Param::<FullType> {
+                    name: p.name,
+                    loc: p.loc,
+                    description: p.description,
+                    required: p.required,
+                    param_type: new,
+                })
+            })
+            .collect::<Result<Vec<Param<FullType>>, Error>>()?,
+
+        responses: op
+            .responses
+            .into_iter()
+            .map(|(code, resp)| deref_response(definitions, (code, resp)))
+            .collect::<Result<HashMap<u16, Response<FullType>>, Error>>()?,
+    })
 }
 
 fn flatten_fields(inner: &[PartialType]) -> Result<Vec<Field<PartialType>>, Error> {
@@ -85,8 +102,21 @@ where
     Ok(())
 }
 
-/// `Some(new)` if it needs to change, otherwise `None`
-fn deref(definitions: &Defs, data_type: &PartialType) -> Result<Option<PartialType>, Error> {
+fn deref_response(
+    definitions: &Defs,
+    (code, response): (u16, Response<PartialType>),
+) -> Result<(u16, Response<FullType>), Error> {
+    Ok((
+        code,
+        Response::<FullType> {
+            description: response.description,
+            headers: response.headers,
+            resp_type: response.resp_type.map(|r| deref(definitions, &r)).invert()?,
+        },
+    ))
+}
+
+fn deref(definitions: &Defs, data_type: &PartialType) -> Result<FullType, Error> {
     Ok(match data_type {
         PartialType::Ref(ref id) => {
             ensure!(
@@ -101,27 +131,26 @@ fn deref(definitions: &Defs, data_type: &PartialType) -> Result<Option<PartialTy
                 .data_type
                 .clone();
 
-            Some(deref(definitions, &new_block)?.unwrap_or(new_block))
+            deref(definitions, &new_block)?
         }
-        PartialType::Array { tee, constraints } => if let Some(new) = deref(definitions, tee)? {
-            // this would potentially be less horribly ugly if there was real struct, not an enum-embedded struct
-            Some(PartialType::Array {
-                tee: Box::new(new),
-                constraints: *constraints,
-            })
-        } else {
-            None
+        PartialType::Array { tee, constraints } => FullType::Array {
+            tee: Box::new(deref(definitions, tee)?),
+            constraints: *constraints,
         },
         PartialType::AllOf(inner) => {
             let mut new = Vec::new();
             for child in inner {
-                new.push(deref(definitions, child)?.unwrap_or(child.clone()));
+                match deref(definitions, &child)? {
+                    FullType::Fields(fields) => new.extend(fields),
+                    other => bail!("can't all-of {:?}", other),
+                }
             }
-            // TODO: would love to unpack the error handling into a map here
-            // TODO: can we work out if we didn't change anything, then not copy? Irrelevant.
-            Some(PartialType::AllOf(new))
+            FullType::Fields(new)
         }
-
-        _ => None,
+        PartialType::Fields(fields) => {
+            FullType::Fields(fields.into_iter().map(|_| unimplemented!()).collect())
+        }
+        PartialType::Simple(data_type) => FullType::Simple(data_type.clone()),
+        PartialType::Unknown => FullType::Unknown,
     })
 }

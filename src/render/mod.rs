@@ -6,9 +6,9 @@ use failure::ResultExt;
 use swagger::ArrayConstraints;
 use swagger::DataType;
 use swagger::Field;
+use swagger::FullType;
 use swagger::PartialType;
 use swagger::Struct;
-use swagger::FullType;
 
 #[derive(Debug, Clone)]
 pub enum Rendered {
@@ -37,22 +37,22 @@ pub fn render_top(p: &Field<FullType>, into: &mut Vec<Rendered>) -> Result<FlatF
 
 pub fn render_type(
     name_hint: &str,
-    data_type: &PartialType,
+    data_type: &FullType,
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     Ok(match data_type {
-        PartialType::Fields(fields) => {
+        FullType::Fields(fields) => {
             bail!("unimplemented! {:?}", fields);
         }
-        PartialType::Array { tee, constraints } => FlatField::Array {
+        FullType::Array { tee, constraints } => FlatField::Array {
             tee: Box::new(
                 render_type("unimplemented!", &tee, into)
                     .with_context(|_| format_err!("unpacking array"))?,
             ),
             constraints: constraints.clone(),
         },
-        PartialType::Simple(simple) => FlatField::Data(simple.clone()),
-        PartialType::Unknown => FlatField::Tainted,
+        FullType::Simple(simple) => FlatField::Data(simple.clone()),
+        FullType::Unknown => FlatField::Tainted,
         other => bail!("type: {:?}", other),
     })
 }

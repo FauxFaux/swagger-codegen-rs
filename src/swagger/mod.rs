@@ -109,39 +109,39 @@ pub enum DataType {
 }
 
 #[derive(Debug, Clone)]
-pub struct Endpoint {
+pub struct Endpoint<T> {
     pub path_url: String,
-    pub ops: HashMap<HttpMethod, Operation>,
+    pub ops: HashMap<HttpMethod, Operation<T>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Operation {
+pub struct Operation<T> {
     pub id: String,
-    pub params: Vec<Param>,
+    pub params: Vec<Param<T>>,
     pub consumes: Vec<Mime>,
     pub produces: Vec<Mime>,
-    pub responses: HashMap<u16, Response>,
+    pub responses: HashMap<u16, Response<T>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Param {
+pub struct Param<T> {
     pub name: String,
     pub loc: ParamLocation,
     pub description: String,
     pub required: Option<bool>,
-    pub param_type: PartialType,
+    pub param_type: T,
 }
 
 #[derive(Debug, Clone)]
-pub struct Response {
+pub struct Response<T> {
     description: String,
     headers: HashMap<String, Header>,
-    resp_type: Option<PartialType>,
+    resp_type: Option<T>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Header {
-    header_type: PartialType,
+    header_type: DataType,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]

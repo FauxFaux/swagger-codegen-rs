@@ -5,7 +5,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn paths(paths: &Hash) -> Result<Vec<Endpoint>, Error> {
+pub fn paths(paths: &Hash) -> Result<Vec<Endpoint<PartialType>>, Error> {
     let mut ret = Vec::new();
     for (path_url, path) in paths.into_iter() {
         let path_url: &str = path_url
@@ -24,7 +24,7 @@ pub fn paths(paths: &Hash) -> Result<Vec<Endpoint>, Error> {
     Ok(ret)
 }
 
-fn process_methods(path: &Hash) -> Result<HashMap<HttpMethod, Operation>, Error> {
+fn process_methods(path: &Hash) -> Result<HashMap<HttpMethod, Operation<PartialType>>, Error> {
     let mut ret = HashMap::new();
 
     for (http_method, op) in path.into_iter() {
@@ -52,7 +52,7 @@ fn process_methods(path: &Hash) -> Result<HashMap<HttpMethod, Operation>, Error>
     Ok(ret)
 }
 
-fn process_method(op: &Hash) -> Result<Operation, Error> {
+fn process_method(op: &Hash) -> Result<Operation<PartialType>, Error> {
     let mut current_keys = keys(op)?;
 
     let mut params = Vec::new();
@@ -123,7 +123,7 @@ fn as_mime(yaml: &Yaml) -> Result<Mime, Error> {
     Ok(as_str(yaml)?.parse()?)
 }
 
-fn process_param(param: &Hash) -> Result<Param, Error> {
+fn process_param(param: &Hash) -> Result<Param<PartialType>, Error> {
     let mut current_keys = keys(param)?;
 
     current_keys.remove("name");
@@ -184,7 +184,7 @@ fn process_param(param: &Hash) -> Result<Param, Error> {
     })
 }
 
-fn process_response(resp: &Hash) -> Result<Response, Error> {
+fn process_response(resp: &Hash) -> Result<Response<PartialType>, Error> {
     let mut current_keys = keys(resp)?;
     let description = if current_keys.remove("description") {
         get_string(resp, "description")?.to_string()
@@ -210,7 +210,11 @@ fn process_response(resp: &Hash) -> Result<Response, Error> {
                 header_keys
             );
 
-            headers.insert(header_name, Header { header_type });
+            if let PartialType::Simple(header_type) = header_type {
+                headers.insert(header_name, Header { header_type });
+            } else {
+                bail!("headers must be simple types, not {:?}", header_type);
+            }
         }
     }
 

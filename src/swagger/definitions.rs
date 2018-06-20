@@ -6,7 +6,10 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn properties_to_fields(required: &[&str], hash: &Hash) -> Result<Vec<Field<PartialType>>, Error> {
+pub fn properties_to_fields(
+    required: &[&str],
+    hash: &Hash,
+) -> Result<Vec<Field<PartialType>>, Error> {
     let mut ret = Vec::new();
     let mut required: HashSet<&str> = required.into_iter().cloned().collect();
 
