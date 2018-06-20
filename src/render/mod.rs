@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use failure::Error;
 use failure::ResultExt;
 
+use swagger::ArrayConstraints;
 use swagger::DataType;
 use swagger::Field;
 use swagger::FieldType;
@@ -21,7 +22,10 @@ pub enum Rendered {
 pub enum FlatField {
     Data(DataType),
     InternalType(String),
-    Array(Box<FlatField>),
+    Array {
+        tee: Box<FlatField>,
+        constraints: ArrayConstraints,
+    },
     Tainted,
 }
 
@@ -32,8 +36,7 @@ pub fn render_top(
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     let name = p.name.to_string();
-    Ok(render_type(&name, &p.data_type, into)
-        .with_context(|_| format_err!("named {}", name))?)
+    Ok(render_type(&name, &p.data_type, into).with_context(|_| format_err!("named {}", name))?)
 }
 
 pub fn render_type(
@@ -45,13 +48,13 @@ pub fn render_type(
         FieldType::Fields(fields) => {
             bail!("unimplemented! {:?}", fields);
         }
-        FieldType::Array { item_type, .. } => {
-            // TODO: nullable / item limits / fixed size array?
-            FlatField::Array(Box::new(
-                render_type("", &item_type,  into)
+        FieldType::Array { tee, constraints } => FlatField::Array {
+            tee: Box::new(
+                render_type("unimplemented!", &item_type, into)
                     .with_context(|_| format_err!("unpacking array"))?,
-            ))
-        }
+            ),
+            constraints,
+        },
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
         FieldType::Unknown => FlatField::Tainted,
         other => bail!("type: {:?}", other),

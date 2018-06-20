@@ -24,9 +24,7 @@ pub fn paths(paths: &Hash) -> Result<Vec<Endpoint>, Error> {
     Ok(ret)
 }
 
-fn process_methods(
-    path: &Hash,
-) -> Result<HashMap<HttpMethod, Operation>, Error> {
+fn process_methods(path: &Hash) -> Result<HashMap<HttpMethod, Operation>, Error> {
     let mut ret = HashMap::new();
 
     for (http_method, op) in path.into_iter() {

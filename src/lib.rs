@@ -35,11 +35,8 @@ pub fn go() -> Result<(), Error> {
                     method,
                     param.name,
                     param.loc,
-                    render::render_type(
-                        &param.name,
-                        &param.param_type,
-                        &mut Vec::new()
-                    ).with_context(|_| format_err!("rendering param {}", param.name))?
+                    render::render_type(&param.name, &param.param_type, &mut Vec::new())
+                        .with_context(|_| format_err!("rendering param {}", param.name))?
                 );
             }
         }
