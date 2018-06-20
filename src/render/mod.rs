@@ -42,7 +42,7 @@ pub fn render_type(
 ) -> Result<FlatField, Error> {
     Ok(match data_type {
         FullType::Fields(fields) => {
-            bail!("unimplemented! {:?}", fields);
+            bail!("unimplemented rendering fields {:?}", fields);
         }
         FullType::Array { tee, constraints } => FlatField::Array {
             tee: Box::new(

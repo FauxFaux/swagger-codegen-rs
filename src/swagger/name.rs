@@ -142,14 +142,26 @@ fn deref(definitions: &Defs, data_type: &PartialType) -> Result<FullType, Error>
             for child in inner {
                 match deref(definitions, &child)? {
                     FullType::Fields(fields) => new.extend(fields),
+                    FullType::Unknown => (),
                     other => bail!("can't all-of {:?}", other),
                 }
             }
             FullType::Fields(new)
         }
-        PartialType::Fields(fields) => {
-            FullType::Fields(fields.into_iter().map(|_| unimplemented!()).collect())
-        }
+        PartialType::Fields(fields) => FullType::Fields(
+            fields
+                .into_iter()
+                .map(|f| {
+                    deref(definitions, &f.data_type).map(|data_type| Field::<FullType> {
+                        name: f.name.to_string(),
+                        description: f.description.to_string(),
+                        nullable: f.nullable,
+                        required: f.required,
+                        data_type,
+                    })
+                })
+                .collect::<Result<Vec<Field<FullType>>, Error>>()?,
+        ),
         PartialType::Simple(data_type) => FullType::Simple(data_type.clone()),
         PartialType::Unknown => FullType::Unknown,
     })
