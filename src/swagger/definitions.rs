@@ -157,10 +157,12 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
                 let items = field_type(items, &mut keys(items)?)?;
 
                 FieldType::Array {
-                    item_type: Box::new(items),
-                    min_items: optional_integer(field, "minItems")?.map(usize).invert()?,
-                    max_items: optional_integer(field, "maxItems")?.map(usize).invert()?,
-                    null_default,
+                    tee: Box::new(items),
+                    constraints: ArrayConstraints {
+                        min_items: optional_integer(field, "minItems")?.map(usize).invert()?,
+                        max_items: optional_integer(field, "maxItems")?.map(usize).invert()?,
+                        null_default,
+                    },
                 }
             }
             "integer" => {

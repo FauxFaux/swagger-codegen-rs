@@ -8,8 +8,6 @@ extern crate yaml_rust;
 mod render;
 mod swagger;
 
-use std::collections::HashMap;
-
 use failure::Error;
 use failure::ResultExt;
 
@@ -17,7 +15,7 @@ pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let (endpoints, structs) = swagger::name::definitions(
+    let endpoints = swagger::name::definitions(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,

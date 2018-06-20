@@ -34,12 +34,12 @@ pub enum FieldType {
     AllOf(Vec<FieldType>),
     Array {
         tee: Box<FieldType>,
-        constriants: ArrayConstraints,
+        constraints: ArrayConstraints,
     },
     Unknown,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Copy, Clone)]
 pub struct ArrayConstraints {
     min_items: Option<usize>,
     max_items: Option<usize>,

@@ -29,12 +29,7 @@ pub enum FlatField {
     Tainted,
 }
 
-pub fn render_top(
-    p: &Field,
-    rendered_as: &HashMap<usize, String>,
-    structs: &Vec<Struct>,
-    into: &mut Vec<Rendered>,
-) -> Result<FlatField, Error> {
+pub fn render_top(p: &Field, into: &mut Vec<Rendered>) -> Result<FlatField, Error> {
     let name = p.name.to_string();
     Ok(render_type(&name, &p.data_type, into).with_context(|_| format_err!("named {}", name))?)
 }
@@ -50,10 +45,10 @@ pub fn render_type(
         }
         FieldType::Array { tee, constraints } => FlatField::Array {
             tee: Box::new(
-                render_type("unimplemented!", &item_type, into)
+                render_type("unimplemented!", &tee, into)
                     .with_context(|_| format_err!("unpacking array"))?,
             ),
-            constraints,
+            constraints: constraints.clone(),
         },
         FieldType::Simple(simple) => FlatField::Data(simple.clone()),
         FieldType::Unknown => FlatField::Tainted,

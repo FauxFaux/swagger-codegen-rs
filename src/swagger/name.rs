@@ -12,12 +12,7 @@ use swagger::Struct;
 
 type Defs = HashMap<String, Field>;
 
-pub fn definitions(
-    definitions: &Hash,
-    paths: &Hash,
-) -> Result<(Vec<Endpoint>, Vec<Struct>), Error> {
-    let mut structs = Vec::new();
-
+pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint>, Error> {
     let definitions: Defs = properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
@@ -34,7 +29,7 @@ pub fn definitions(
                 }
 
                 let maybe_new = if let FieldType::AllOf(ref inner) = param.param_type {
-                    Some(FieldType::Fields(flatten_fields(&structs, inner)?))
+                    Some(FieldType::Fields(flatten_fields(inner)?))
                 } else {
                     None
                 };
@@ -57,40 +52,10 @@ pub fn definitions(
         }
     }
 
-    for s in &mut structs {
-        maybe_transform_fields(&mut s.fields, |f| deref(&definitions, &f.data_type))?;
-    }
-
-    loop {
-        let old_structs = structs.clone();
-
-        let mut new_structs = Vec::new();
-
-        for s in &mut structs {
-            for f in &mut s.fields {
-                let maybe_new = if let FieldType::AllOf(ref inner) = f.data_type {
-                    Some(FieldType::Fields(flatten_fields(&old_structs, inner)?))
-                } else {
-                    None
-                };
-
-                if let Some(new) = maybe_new {
-                    f.data_type = new;
-                }
-            }
-        }
-
-        if new_structs.is_empty() {
-            break;
-        }
-
-        structs.extend(new_structs);
-    }
-
-    Ok((endpoints, structs))
+    Ok((endpoints))
 }
 
-fn flatten_fields(structs: &[Struct], inner: &[FieldType]) -> Result<Vec<Field>, Error> {
+fn flatten_fields(inner: &[FieldType]) -> Result<Vec<Field>, Error> {
     let mut all_fields = Vec::new();
     for child in inner {
         match child {
@@ -138,18 +103,11 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
 
             Some(deref(definitions, &new_block)?.unwrap_or(new_block))
         }
-        FieldType::Array {
-            item_type,
-            min_items,
-            max_items,
-            null_default,
-        } => if let Some(new) = deref(definitions, item_type)? {
+        FieldType::Array { tee, constraints } => if let Some(new) = deref(definitions, tee)? {
             // this would potentially be less horribly ugly if there was real struct, not an enum-embedded struct
             Some(FieldType::Array {
-                item_type: Box::new(new),
-                min_items: *min_items,
-                max_items: *max_items,
-                null_default: *null_default,
+                tee: Box::new(new),
+                constraints: *constraints,
             })
         } else {
             None
