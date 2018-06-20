@@ -47,9 +47,9 @@ pub fn render_type(
     Ok(match data_type {
         FieldType::Inner(id) => {
             // BORROW CHECKER
-            let name = name_hint.to_string();
+            let name = format!("{}{}", name_hint, id);
             let created = Rendered::Struct {
-                name: name_hint.to_string(),
+                name: name.to_string(),
                 description: String::new(), // TODO,
                 fields: structs[*id]
                     .fields

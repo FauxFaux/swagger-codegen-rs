@@ -38,6 +38,19 @@ pub fn definitions(
                 if let Some(new) = deref(&definitions, &param.param_type)? {
                     param.param_type = new;
                 }
+
+                let maybe_new = if let FieldType::AllOf(ref inner) = param.param_type {
+                    let fields = flatten_fields(&structs, inner)?;
+                    let id = structs.len();
+                    structs.push(Struct { fields });
+                    Some(FieldType::Inner(id))
+                } else {
+                    None
+                };
+
+                if let Some(new) = maybe_new {
+                    param.param_type = new;
+                }
             }
 
             for resp in op.responses.values_mut() {
@@ -65,17 +78,9 @@ pub fn definitions(
         for s in &mut structs {
             for f in &mut s.fields {
                 let maybe_new = if let FieldType::AllOf(ref inner) = f.data_type {
-                    let mut all_fields = Vec::new();
-                    for child in inner {
-                        all_fields.extend(
-                            match child {
-                                FieldType::Inner(id) => old_structs[*id].fields.iter(),
-                                other => bail!("unsupported denest: {:?}", other),
-                            }.cloned(),
-                        );
-                    }
+                    let fields = flatten_fields(&old_structs, inner)?;
                     let id = old_structs.len() + new_structs.len();
-                    new_structs.push(Struct { fields: all_fields });
+                    new_structs.push(Struct { fields });
                     Some(FieldType::Inner(id))
                 } else {
                     None
@@ -95,6 +100,24 @@ pub fn definitions(
     }
 
     Ok((endpoints, structs))
+}
+
+fn flatten_fields(structs: &[Struct], inner: &[FieldType]) -> Result<Vec<Field>, Error> {
+    let mut all_fields = Vec::new();
+    for child in inner {
+        match child {
+            FieldType::Inner(id) => all_fields.extend(structs[*id].fields.iter().cloned()),
+            FieldType::Unknown => all_fields.push(Field {
+                name: "_".to_string(),
+                data_type: FieldType::Unknown,
+                description: String::new(),
+                nullable: None,
+                required: false,
+            }),
+            other => bail!("unsupported flatten: {:?}", other),
+        }
+    }
+    Ok(all_fields)
 }
 
 fn maybe_transform_fields<F>(fields: &mut [Field], mut func: F) -> Result<(), Error>

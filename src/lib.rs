@@ -30,10 +30,11 @@ pub fn go() -> Result<(), Error> {
         for (method, op) in endpoint.ops {
             for param in op.params {
                 println!(
-                    "{} {:?} {} {:?}",
+                    "{} {:?} {} {:?} {:?}",
                     endpoint.path_url,
                     method,
                     param.name,
+                    param.loc,
                     render::render_type(
                         &param.name,
                         &param.param_type,
