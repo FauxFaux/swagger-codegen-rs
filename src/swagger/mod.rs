@@ -13,29 +13,40 @@ pub mod name;
 pub mod paths;
 
 #[derive(Debug, Clone)]
-pub struct Struct {
-    pub fields: Vec<Field>,
+pub struct Struct<T> {
+    pub fields: Vec<Field<T>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Field {
+pub struct Field<T> {
     pub name: String,
-    pub data_type: FieldType,
+    pub data_type: T,
     pub description: String,
     pub nullable: Option<bool>,
     pub required: bool,
 }
 
 #[derive(Debug, Clone)]
-pub enum FieldType {
-    Ref(String),
-    Fields(Vec<Field>),
+pub enum FullType {
     Simple(DataType),
-    AllOf(Vec<FieldType>),
+    Fields(Vec<Field<FullType>>),
     Array {
-        tee: Box<FieldType>,
+        tee: Box<FullType>,
         constraints: ArrayConstraints,
     },
+    Unknown,
+}
+
+#[derive(Debug, Clone)]
+pub enum PartialType {
+    Simple(DataType),
+    Fields(Vec<Field<PartialType>>),
+    Array {
+        tee: Box<PartialType>,
+        constraints: ArrayConstraints,
+    },
+    AllOf(Vec<PartialType>),
+    Ref(String),
     Unknown,
 }
 
@@ -118,19 +129,19 @@ pub struct Param {
     pub loc: ParamLocation,
     pub description: String,
     pub required: Option<bool>,
-    pub param_type: FieldType,
+    pub param_type: PartialType,
 }
 
 #[derive(Debug, Clone)]
 pub struct Response {
     description: String,
     headers: HashMap<String, Header>,
-    resp_type: Option<FieldType>,
+    resp_type: Option<PartialType>,
 }
 
 #[derive(Debug, Clone)]
 pub struct Header {
-    header_type: FieldType,
+    header_type: PartialType,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]

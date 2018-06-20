@@ -6,8 +6,9 @@ use failure::ResultExt;
 use swagger::ArrayConstraints;
 use swagger::DataType;
 use swagger::Field;
-use swagger::FieldType;
+use swagger::PartialType;
 use swagger::Struct;
+use swagger::FullType;
 
 #[derive(Debug, Clone)]
 pub enum Rendered {
@@ -29,29 +30,29 @@ pub enum FlatField {
     Tainted,
 }
 
-pub fn render_top(p: &Field, into: &mut Vec<Rendered>) -> Result<FlatField, Error> {
+pub fn render_top(p: &Field<FullType>, into: &mut Vec<Rendered>) -> Result<FlatField, Error> {
     let name = p.name.to_string();
     Ok(render_type(&name, &p.data_type, into).with_context(|_| format_err!("named {}", name))?)
 }
 
 pub fn render_type(
     name_hint: &str,
-    data_type: &FieldType,
+    data_type: &PartialType,
     into: &mut Vec<Rendered>,
 ) -> Result<FlatField, Error> {
     Ok(match data_type {
-        FieldType::Fields(fields) => {
+        PartialType::Fields(fields) => {
             bail!("unimplemented! {:?}", fields);
         }
-        FieldType::Array { tee, constraints } => FlatField::Array {
+        PartialType::Array { tee, constraints } => FlatField::Array {
             tee: Box::new(
                 render_type("unimplemented!", &tee, into)
                     .with_context(|_| format_err!("unpacking array"))?,
             ),
             constraints: constraints.clone(),
         },
-        FieldType::Simple(simple) => FlatField::Data(simple.clone()),
-        FieldType::Unknown => FlatField::Tainted,
+        PartialType::Simple(simple) => FlatField::Data(simple.clone()),
+        PartialType::Unknown => FlatField::Tainted,
         other => bail!("type: {:?}", other),
     })
 }

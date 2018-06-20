@@ -6,7 +6,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn properties_to_fields(required: &[&str], hash: &Hash) -> Result<Vec<Field>, Error> {
+pub fn properties_to_fields(required: &[&str], hash: &Hash) -> Result<Vec<Field<PartialType>>, Error> {
     let mut ret = Vec::new();
     let mut required: HashSet<&str> = required.into_iter().cloned().collect();
 
@@ -67,7 +67,7 @@ pub fn properties_to_fields(required: &[&str], hash: &Hash) -> Result<Vec<Field>
     Ok(ret)
 }
 
-pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<FieldType, Error> {
+pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<PartialType, Error> {
     Ok(if current_keys.remove("properties") {
         if current_keys.remove("type") {
             let object = get_string(field, "type")?;
@@ -90,7 +90,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
             Vec::new()
         };
 
-        FieldType::Fields(properties_to_fields(
+        PartialType::Fields(properties_to_fields(
             &required,
             get_hash(field, "properties")?,
         )?)
@@ -101,7 +101,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
 
         // ?????
         current_keys.remove("default");
-        FieldType::Unknown
+        PartialType::Unknown
     } else if current_keys.remove("allOf") {
         if current_keys.remove("type") {
             let object = get_string(field, "type")?;
@@ -121,7 +121,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
             ret.push(field_type(child, &mut keys(child)?)?)
         }
 
-        FieldType::AllOf(ret)
+        PartialType::AllOf(ret)
     } else if current_keys.remove("type") {
         match get_string(field, "type")? {
             "object"
@@ -131,7 +131,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
                     || (1 == current_keys.len() && current_keys.contains("example")) =>
             {
                 // TODO: Total bullshit. No idea what this should do.
-                FieldType::Unknown
+                PartialType::Unknown
             }
             "object" => bail!(
                 "type object, but no properties, only {:?} (nothing would be a different case)",
@@ -156,7 +156,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
                 let items = get_hash(field, "items")?;
                 let items = field_type(items, &mut keys(items)?)?;
 
-                FieldType::Array {
+                PartialType::Array {
                     tee: Box::new(items),
                     constraints: ArrayConstraints {
                         min_items: optional_integer(field, "minItems")?.map(usize).invert()?,
@@ -194,7 +194,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
                 //  enum: [0, 1, 2]
                 //  x-nullable: false
 
-                FieldType::Simple(DataType::Integer {
+                PartialType::Simple(DataType::Integer {
                     min: optional_integer(field, "minimum")?,
                     max: optional_integer(field, "maximum")?,
                     default: optional_integer(field, "default")?,
@@ -204,7 +204,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
             "number" => {
                 current_keys.remove("default");
 
-                FieldType::Simple(DataType::Number {
+                PartialType::Simple(DataType::Number {
                     min: optional_number(field, "minimum")?,
                     max: optional_number(field, "maximum")?,
                     default: optional_number(field, "default")?,
@@ -213,11 +213,11 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
             }
             "boolean" => {
                 current_keys.remove("default");
-                FieldType::Simple(DataType::Bool {
+                PartialType::Simple(DataType::Bool {
                     default: optional_bool(field, "default")?,
                 })
             }
-            "string" => FieldType::Simple(if current_keys.remove("format") {
+            "string" => PartialType::Simple(if current_keys.remove("format") {
                 match get_string(field, "format")? {
                     "ip-address" => DataType::IpAddr,
                     "dateTime" => DataType::DateTime,
@@ -256,7 +256,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Fiel
             other => bail!("unimplemented def type: {}", other),
         }
     } else if 1 == current_keys.len() && current_keys.remove("$ref") {
-        FieldType::Ref(get_string(field, "$ref")?.to_string())
+        PartialType::Ref(get_string(field, "$ref")?.to_string())
     } else {
         bail!(
             "bad type, couldn't guess expectation from: {:?}",

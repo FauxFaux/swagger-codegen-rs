@@ -7,10 +7,10 @@ use yaml_rust::yaml::Hash;
 use swagger::definitions::properties_to_fields;
 use swagger::Endpoint;
 use swagger::Field;
-use swagger::FieldType;
+use swagger::PartialType;
 use swagger::Struct;
 
-type Defs = HashMap<String, Field>;
+type Defs = HashMap<String, Field<PartialType>>;
 
 pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint>, Error> {
     let definitions: Defs = properties_to_fields(&[], definitions)
@@ -28,8 +28,8 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint>, Er
                     param.param_type = new;
                 }
 
-                let maybe_new = if let FieldType::AllOf(ref inner) = param.param_type {
-                    Some(FieldType::Fields(flatten_fields(inner)?))
+                let maybe_new = if let PartialType::AllOf(ref inner) = param.param_type {
+                    Some(PartialType::Fields(flatten_fields(inner)?))
                 } else {
                     None
                 };
@@ -55,14 +55,14 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint>, Er
     Ok((endpoints))
 }
 
-fn flatten_fields(inner: &[FieldType]) -> Result<Vec<Field>, Error> {
+fn flatten_fields(inner: &[PartialType]) -> Result<Vec<Field<PartialType>>, Error> {
     let mut all_fields = Vec::new();
     for child in inner {
         match child {
-            FieldType::Fields(fields) => all_fields.extend(fields.iter().cloned()),
-            FieldType::Unknown => all_fields.push(Field {
+            PartialType::Fields(fields) => all_fields.extend(fields.iter().cloned()),
+            PartialType::Unknown => all_fields.push(Field {
                 name: "_".to_string(),
-                data_type: FieldType::Unknown,
+                data_type: PartialType::Unknown,
                 description: String::new(),
                 nullable: None,
                 required: false,
@@ -73,9 +73,9 @@ fn flatten_fields(inner: &[FieldType]) -> Result<Vec<Field>, Error> {
     Ok(all_fields)
 }
 
-fn maybe_transform_fields<F>(fields: &mut [Field], mut func: F) -> Result<(), Error>
+fn maybe_transform_fields<F>(fields: &mut [Field<PartialType>], mut func: F) -> Result<(), Error>
 where
-    F: FnMut(&mut Field) -> Result<Option<FieldType>, Error>,
+    F: FnMut(&mut Field<PartialType>) -> Result<Option<PartialType>, Error>,
 {
     for field in fields {
         if let Some(new_data_type) = func(field)? {
@@ -86,16 +86,16 @@ where
 }
 
 /// `Some(new)` if it needs to change, otherwise `None`
-fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>, Error> {
+fn deref(definitions: &Defs, data_type: &PartialType) -> Result<Option<PartialType>, Error> {
     Ok(match data_type {
-        FieldType::Ref(ref id) => {
+        PartialType::Ref(ref id) => {
             ensure!(
                 id.starts_with("#/definitions/"),
                 "non-definitions ref: {}",
                 id
             );
             let id = id["#/definitions/".len()..].to_string();
-            let new_block: FieldType = definitions
+            let new_block: PartialType = definitions
                 .get(&id)
                 .ok_or_else(|| format_err!("definition not found: {}", id))?
                 .data_type
@@ -103,23 +103,23 @@ fn deref(definitions: &Defs, data_type: &FieldType) -> Result<Option<FieldType>,
 
             Some(deref(definitions, &new_block)?.unwrap_or(new_block))
         }
-        FieldType::Array { tee, constraints } => if let Some(new) = deref(definitions, tee)? {
+        PartialType::Array { tee, constraints } => if let Some(new) = deref(definitions, tee)? {
             // this would potentially be less horribly ugly if there was real struct, not an enum-embedded struct
-            Some(FieldType::Array {
+            Some(PartialType::Array {
                 tee: Box::new(new),
                 constraints: *constraints,
             })
         } else {
             None
         },
-        FieldType::AllOf(inner) => {
+        PartialType::AllOf(inner) => {
             let mut new = Vec::new();
             for child in inner {
                 new.push(deref(definitions, child)?.unwrap_or(child.clone()));
             }
             // TODO: would love to unpack the error handling into a map here
             // TODO: can we work out if we didn't change anything, then not copy? Irrelevant.
-            Some(FieldType::AllOf(new))
+            Some(PartialType::AllOf(new))
         }
 
         _ => None,
