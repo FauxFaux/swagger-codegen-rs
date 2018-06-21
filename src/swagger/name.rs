@@ -31,38 +31,12 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint<Full
             ops: e
                 .ops
                 .into_iter()
-                .map(|(code, op)| translate_op(op, &definitions).map(|op| (code, op)))
+                .map(|(code, op)| op.map_type(|t| deref(&definitions, t)).map(|op| (code, op)))
                 .collect::<Result<HashMap<HttpMethod, Operation<FullType>>, Error>>()?,
         });
     }
 
     Ok(endpoints)
-}
-
-fn translate_op(
-    op: Operation<PartialType>,
-    definitions: &Defs,
-) -> Result<Operation<FullType>, Error> {
-    Ok(Operation::<FullType> {
-        id: op.id,
-        consumes: op.consumes,
-        produces: op.produces,
-
-        params: op
-            .params
-            .into_iter()
-            .map(|p| p.map_type(|t| deref(definitions, t)))
-            .collect::<Result<Vec<Param<FullType>>, Error>>()?,
-
-        responses: op
-            .responses
-            .into_iter()
-            .map(|(code, resp)| {
-                resp.map_type(|t| deref(definitions, t))
-                    .map(|resp| (code, resp))
-            })
-            .collect::<Result<HashMap<u16, Response<FullType>>, Error>>()?,
-    })
 }
 
 fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {

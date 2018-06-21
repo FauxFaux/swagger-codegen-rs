@@ -171,6 +171,29 @@ impl<T> Field<T> {
     }
 }
 
+impl<T> Operation<T> {
+    fn map_type<F, R>(self, func: F) -> Result<Operation<R>, Error>
+    where
+        F: Fn(T) -> Result<R, Error>,
+    {
+        Ok(Operation::<R> {
+            id: self.id,
+            consumes: self.consumes,
+            produces: self.produces,
+            params: self
+                .params
+                .into_iter()
+                .map(|p| p.map_type(&func))
+                .collect::<Result<Vec<Param<R>>, Error>>()?,
+            responses: self
+                .responses
+                .into_iter()
+                .map(|(code, resp)| resp.map_type(&func).map(|resp| (code, resp)))
+                .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
+        })
+    }
+}
+
 impl<T> Param<T> {
     fn map_type<F, R>(self, func: F) -> Result<Param<R>, Error>
     where
