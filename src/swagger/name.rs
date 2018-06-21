@@ -2,7 +2,6 @@ use std::collections::HashMap;
 
 use failure::Error;
 use failure::ResultExt;
-use result::ResultOptionExt;
 use yaml_rust::yaml::Hash;
 
 use swagger::definitions::properties_to_fields;
@@ -58,23 +57,12 @@ fn translate_op(
         responses: op
             .responses
             .into_iter()
-            .map(|(code, resp)| deref_response(definitions, (code, resp)))
+            .map(|(code, resp)| {
+                resp.map_type(|t| deref(definitions, t))
+                    .map(|resp| (code, resp))
+            })
             .collect::<Result<HashMap<u16, Response<FullType>>, Error>>()?,
     })
-}
-
-fn deref_response(
-    definitions: &Defs,
-    (code, response): (u16, Response<PartialType>),
-) -> Result<(u16, Response<FullType>), Error> {
-    Ok((
-        code,
-        Response::<FullType> {
-            description: response.description,
-            headers: response.headers,
-            resp_type: response.resp_type.map(|r| deref(definitions, r)).invert()?,
-        },
-    ))
 }
 
 fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {

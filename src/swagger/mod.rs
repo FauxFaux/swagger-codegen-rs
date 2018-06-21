@@ -186,6 +186,19 @@ impl<T> Param<T> {
     }
 }
 
+impl<T> Response<T> {
+    fn map_type<F, R>(self, func: F) -> Result<Response<R>, Error>
+    where
+        F: FnOnce(T) -> Result<R, Error>,
+    {
+        Ok(Response::<R> {
+            description: self.description,
+            headers: self.headers,
+            resp_type: self.resp_type.map(func).invert()?,
+        })
+    }
+}
+
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
     hash.keys()
         .map(|k| {

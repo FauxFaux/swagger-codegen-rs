@@ -5,7 +5,6 @@ use swagger::ArrayConstraints;
 use swagger::DataType;
 use swagger::Field;
 use swagger::FullType;
-use swagger::PartialType;
 
 #[derive(Debug, Clone)]
 pub enum Rendered {
