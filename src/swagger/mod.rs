@@ -170,16 +170,16 @@ pub enum ParamLocation {
 }
 
 impl<T> Endpoint<T> {
-    fn map_type<F, R>(self, func: F) -> Result<Endpoint<R>, Error>
+    pub fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
     where
-        F: Fn(T) -> Result<R, Error>,
+        F: FnMut(T) -> Result<R, Error>,
     {
         Ok(Endpoint::<R> {
             path_url: self.path_url,
             ops: self
                 .ops
                 .into_iter()
-                .map(|(code, op)| op.map_type(&func).map(|op| (code, op)))
+                .map(|(code, op)| op.map_type(&mut func).map(|op| (code, op)))
                 .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
         })
     }
@@ -201,9 +201,9 @@ impl<T> Field<T> {
 }
 
 impl<T> Operation<T> {
-    fn map_type<F, R>(self, func: F) -> Result<Operation<R>, Error>
+    fn map_type<F, R>(self, mut func: F) -> Result<Operation<R>, Error>
     where
-        F: Fn(T) -> Result<R, Error>,
+        F: FnMut(T) -> Result<R, Error>,
     {
         Ok(Operation::<R> {
             id: self.id,
@@ -212,12 +212,12 @@ impl<T> Operation<T> {
             params: self
                 .params
                 .into_iter()
-                .map(|p| p.map_type(&func))
+                .map(|p| p.map_type(&mut func))
                 .collect::<Result<Vec<Param<R>>, Error>>()?,
             responses: self
                 .responses
                 .into_iter()
-                .map(|(code, resp)| resp.map_type(&func).map(|resp| (code, resp)))
+                .map(|(code, resp)| resp.map_type(&mut func).map(|resp| (code, resp)))
                 .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
         })
     }
