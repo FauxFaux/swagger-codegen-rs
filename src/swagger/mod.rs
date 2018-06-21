@@ -34,7 +34,7 @@ pub enum NamedType {
     Unknown,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum FullType {
     Simple(DataType),
     Fields(Vec<Field<FullType>>),

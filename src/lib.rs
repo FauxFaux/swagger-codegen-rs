@@ -11,13 +11,15 @@ mod swagger;
 
 use failure::Error;
 use failure::ResultExt;
+use std::collections::HashMap;
 use swagger::Endpoint;
+use swagger::FullType;
 
 pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let mut all_structs = Vec::new();
+    let mut structs = HashMap::new();
 
     let endpoints = swagger::name::definitions(
         doc["definitions"]
@@ -30,30 +32,20 @@ pub fn go() -> Result<(), Error> {
         .into_iter()
         .map(|e| {
             e.map_type(|t| {
-                let id = all_structs.len();
-                all_structs.push(t);
-                Ok(id)
+                if let FullType::Fields(fields) = &t {
+                    structs
+                        .entry(fields.clone())
+                        .or_insert_with(|| Vec::new())
+                        .push(());
+                }
+
+                Ok(t)
             })
         })
-        .collect::<Result<Vec<Endpoint<usize>>, Error>>()?;
+        .collect::<Result<Vec<Endpoint<FullType>>, Error>>()?;
 
-    for endpoint in endpoints {
-        for (method, op) in endpoint.ops {
-            for param in op.params {
-                println!(
-                    "{} {:?} {} {:?} {:?}",
-                    endpoint.path_url,
-                    method,
-                    param.name,
-                    param.loc,
-                    render::render_type(
-                        &param.name,
-                        &all_structs[param.param_type],
-                        &mut Vec::new()
-                    ).with_context(|_| format_err!("rendering param {}", param.name))?
-                );
-            }
-        }
+    for (key, val) in structs {
+        println!("{:3} {:?}", val.len(), key);
     }
 
     Ok(())
