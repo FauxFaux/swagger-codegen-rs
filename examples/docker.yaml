@@ -1989,7 +1989,7 @@ definitions:
       unintentionally overwrite each other.
     type: "object"
     properties:
-      Index:
+      Inde:
         type: "integer"
         format: "uint64"
         example: 373531

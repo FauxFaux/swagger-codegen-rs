@@ -156,6 +156,22 @@ pub enum ParamLocation {
     Header,
 }
 
+impl<T> Endpoint<T> {
+    fn map_type<F, R>(self, func: F) -> Result<Endpoint<R>, Error>
+    where
+        F: Fn(T) -> Result<R, Error>,
+    {
+        Ok(Endpoint::<R> {
+            path_url: self.path_url,
+            ops: self
+                .ops
+                .into_iter()
+                .map(|(code, op)| op.map_type(&func).map(|op| (code, op)))
+                .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
+        })
+    }
+}
+
 impl<T> Field<T> {
     fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
     where

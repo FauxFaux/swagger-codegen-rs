@@ -23,20 +23,10 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint<Full
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    let mut endpoints = Vec::new();
-
-    for e in super::paths::paths(paths)? {
-        endpoints.push(Endpoint {
-            path_url: e.path_url,
-            ops: e
-                .ops
-                .into_iter()
-                .map(|(code, op)| op.map_type(|t| deref(&definitions, t)).map(|op| (code, op)))
-                .collect::<Result<HashMap<HttpMethod, Operation<FullType>>, Error>>()?,
-        });
-    }
-
-    Ok(endpoints)
+    super::paths::paths(paths)?
+        .into_iter()
+        .map(|e| e.map_type(|t| deref(&definitions, t)))
+        .collect()
 }
 
 fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {
