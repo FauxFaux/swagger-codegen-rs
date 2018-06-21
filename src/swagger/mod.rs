@@ -171,6 +171,21 @@ impl<T> Field<T> {
     }
 }
 
+impl<T> Param<T> {
+    fn map_type<F, R>(self, func: F) -> Result<Param<R>, Error>
+    where
+        F: FnOnce(T) -> Result<R, Error>,
+    {
+        Ok(Param::<R> {
+            name: self.name,
+            loc: self.loc,
+            description: self.description,
+            required: self.required,
+            param_type: func(self.param_type)?,
+        })
+    }
+}
+
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
     hash.keys()
         .map(|k| {

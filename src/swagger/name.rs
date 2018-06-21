@@ -52,15 +52,7 @@ fn translate_op(
         params: op
             .params
             .into_iter()
-            .map(|p| {
-                deref(definitions, p.param_type.clone()).map(|new| Param::<FullType> {
-                    name: p.name,
-                    loc: p.loc,
-                    description: p.description,
-                    required: p.required,
-                    param_type: new,
-                })
-            })
+            .map(|p| p.map_type(|t| deref(definitions, t)))
             .collect::<Result<Vec<Param<FullType>>, Error>>()?,
 
         responses: op
