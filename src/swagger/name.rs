@@ -53,7 +53,7 @@ fn translate_op(
             .params
             .into_iter()
             .map(|p| {
-                deref(definitions, &p.param_type).map(|new| Param::<FullType> {
+                deref(definitions, p.param_type.clone()).map(|new| Param::<FullType> {
                     name: p.name,
                     loc: p.loc,
                     description: p.description,
@@ -80,12 +80,12 @@ fn deref_response(
         Response::<FullType> {
             description: response.description,
             headers: response.headers,
-            resp_type: response.resp_type.map(|r| deref(definitions, &r)).invert()?,
+            resp_type: response.resp_type.map(|r| deref(definitions, r)).invert()?,
         },
     ))
 }
 
-fn deref(definitions: &Defs, data_type: &PartialType) -> Result<FullType, Error> {
+fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {
     Ok(match data_type {
         PartialType::Ref(ref id) => {
             ensure!(
@@ -100,16 +100,16 @@ fn deref(definitions: &Defs, data_type: &PartialType) -> Result<FullType, Error>
                 .data_type
                 .clone();
 
-            deref(definitions, &new_block)?
+            deref(definitions, new_block)?
         }
         PartialType::Array { tee, constraints } => FullType::Array {
-            tee: Box::new(deref(definitions, tee)?),
-            constraints: *constraints,
+            tee: Box::new(deref(definitions, *tee)?),
+            constraints,
         },
         PartialType::AllOf(inner) => {
             let mut new = Vec::new();
             for child in inner {
-                match deref(definitions, &child)? {
+                match deref(definitions, child)? {
                     FullType::Fields(fields) => new.extend(fields),
                     FullType::Unknown => (),
                     other => bail!("can't all-of {:?}", other),
@@ -120,15 +120,7 @@ fn deref(definitions: &Defs, data_type: &PartialType) -> Result<FullType, Error>
         PartialType::Fields(fields) => FullType::Fields(
             fields
                 .into_iter()
-                .map(|f| {
-                    deref(definitions, &f.data_type).map(|data_type| Field::<FullType> {
-                        name: f.name.to_string(),
-                        description: f.description.to_string(),
-                        nullable: f.nullable,
-                        required: f.required,
-                        data_type,
-                    })
-                })
+                .map(|f| f.map_type(|t| deref(definitions, t)))
                 .collect::<Result<Vec<Field<FullType>>, Error>>()?,
         ),
         PartialType::Simple(data_type) => FullType::Simple(data_type.clone()),

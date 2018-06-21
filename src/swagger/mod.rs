@@ -12,7 +12,6 @@ pub mod definitions;
 pub mod name;
 pub mod paths;
 
-
 #[derive(Debug, Clone)]
 pub struct Field<T> {
     pub name: String,
@@ -155,6 +154,21 @@ pub enum ParamLocation {
     Body,
     Path,
     Header,
+}
+
+impl<T> Field<T> {
+    fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
+    where
+        F: FnOnce(T) -> Result<R, Error>,
+    {
+        Ok(Field::<R> {
+            name: self.name,
+            data_type: func(self.data_type)?,
+            description: self.description,
+            nullable: self.nullable,
+            required: self.required,
+        })
+    }
 }
 
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
