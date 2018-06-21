@@ -5,6 +5,7 @@ extern crate mime;
 extern crate result;
 extern crate yaml_rust;
 
+mod float;
 mod render;
 mod swagger;
 

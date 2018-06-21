@@ -12,13 +12,26 @@ pub mod definitions;
 pub mod name;
 pub mod paths;
 
-#[derive(Debug, Clone)]
+use float::TextualFloat;
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Field<T> {
     pub name: String,
     pub data_type: T,
     pub description: String,
     pub nullable: Option<bool>,
     pub required: bool,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum NamedType {
+    Simple(DataType),
+    Fields(Vec<Field<NamedType>>),
+    Array {
+        tee: Box<NamedType>,
+        constraints: ArrayConstraints,
+    },
+    Unknown,
 }
 
 #[derive(Debug, Clone)]
@@ -45,14 +58,14 @@ pub enum PartialType {
     Unknown,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub struct ArrayConstraints {
     min_items: Option<usize>,
     max_items: Option<usize>,
     null_default: bool,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum IntegerFormat {
     Unspecified,
     I8,
@@ -65,12 +78,12 @@ pub enum IntegerFormat {
     U64,
 }
 
-#[derive(Debug, Copy, Clone)]
+#[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
 pub enum NumberFormat {
     Unspecified,
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum DataType {
     Integer {
         min: Option<i64>,
@@ -79,9 +92,9 @@ pub enum DataType {
         format: IntegerFormat,
     },
     Number {
-        min: Option<f64>,
-        max: Option<f64>,
-        default: Option<f64>,
+        min: Option<TextualFloat>,
+        max: Option<TextualFloat>,
+        default: Option<TextualFloat>,
         format: NumberFormat,
     },
     Bool {
@@ -280,7 +293,7 @@ fn as_bool(val: &Yaml) -> Result<bool, Error> {
         .ok_or_else(|| format_err!("not bool: {:?}", val))
 }
 
-fn optional_number(hash: &Hash, key: &str) -> Result<Option<f64>, Error> {
+fn optional_number(hash: &Hash, key: &str) -> Result<Option<TextualFloat>, Error> {
     Ok(get(hash, key)
         .ok()
         .map(as_number)
@@ -288,10 +301,13 @@ fn optional_number(hash: &Hash, key: &str) -> Result<Option<f64>, Error> {
         .with_context(|_| format_err!("key: {}", key))?)
 }
 
-fn as_number(val: &Yaml) -> Result<f64, Error> {
-    val.as_f64()
-        .or_else(|| val.as_i64().map(f64))
-        .ok_or_else(|| format_err!("not number: {:?}", val))
+fn as_number(val: &Yaml) -> Result<TextualFloat, Error> {
+    Ok(TextualFloat {
+        val: val
+            .as_f64()
+            .or_else(|| val.as_i64().map(f64))
+            .ok_or_else(|| format_err!("not number: {:?}", val))?,
+    })
 }
 
 fn optional_integer(hash: &Hash, key: &str) -> Result<Option<i64>, Error> {
