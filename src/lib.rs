@@ -6,17 +6,20 @@ extern crate mime;
 extern crate result;
 extern crate yaml_rust;
 
-use std::collections::HashSet;
-
 mod float;
 mod render;
 mod swagger;
 
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use failure::Error;
 use failure::ResultExt;
-use std::collections::HashMap;
+
 use swagger::Endpoint;
+use swagger::Field;
 use swagger::FullType;
+use swagger::NamedType;
 
 pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
@@ -31,7 +34,7 @@ pub fn go() -> Result<(), Error> {
             .ok_or_else(|| format_err!("no paths"))?,
     ).with_context(|_| format_err!("processing definitions"))?;
 
-    endpoints
+    let endpoints = endpoints
         .into_iter()
         .map(|e| {
             e.map_type(|t, name_hints| {
@@ -64,13 +67,31 @@ pub fn go() -> Result<(), Error> {
         break;
     }
 
-    let banned_names = banned_names;
+    let name_lookup = def_names
+        .into_iter()
+        .map(|(field, possible_names)| {
+            first_not_in(&possible_names, &banned_names).map(|new| (field, new.to_string()))
+        })
+        .collect::<Result<HashMap<Vec<Field<FullType>>, String>, Error>>()?;
 
-    for (key, val) in def_names {
-        println!("{}", first_not_in(&val, &banned_names)?);
-    }
+    endpoints
+        .into_iter()
+        .map(|e| e.map_type(|t, _| Ok(name_type(t, &name_lookup))))
+        .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
 
     Ok(())
+}
+
+fn name_type(t: FullType, names: &HashMap<Vec<Field<FullType>>, String>) -> NamedType {
+    match t {
+        FullType::Fields(fields) => NamedType::Name(names[&fields].to_string()),
+        FullType::Array { tee, constraints } => NamedType::Array {
+            tee: Box::new(name_type(*tee, names)),
+            constraints,
+        },
+        FullType::Simple(simple) => NamedType::Simple(simple),
+        FullType::Unknown => NamedType::Unknown,
+    }
 }
 
 fn first_not_in<'s>(

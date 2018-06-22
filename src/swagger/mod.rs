@@ -26,7 +26,7 @@ pub struct Field<T> {
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub enum NamedType {
     Simple(DataType),
-    Fields(Vec<Field<NamedType>>),
+    Name(String),
     Array {
         tee: Box<NamedType>,
         constraints: ArrayConstraints,
