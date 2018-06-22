@@ -172,7 +172,7 @@ pub enum ParamLocation {
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct StructContext {
     method: HttpMethod,
-    id: Option<String>,
+    pub id: Option<String>,
     place: StructContextPlace,
 }
 
