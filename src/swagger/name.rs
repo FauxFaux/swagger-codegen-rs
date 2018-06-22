@@ -40,7 +40,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
 
     let endpoints = super::paths::paths(paths)?
         .into_iter()
-        .map(|e| e.map_type(|t| deref(&definitions, t)))
+        .map(|e| e.map_type(|t, _| deref(&definitions, t)))
         .collect::<Result<Endpoints, Error>>()?;
 
     Ok((reverse, endpoints))

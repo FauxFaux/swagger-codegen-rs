@@ -2,8 +2,6 @@ use std::hash::Hash;
 use std::hash::Hasher;
 use std::num::FpCategory;
 
-use failure::Error;
-
 /// An `f64` that compares/hashes as if it was formatted to a string.
 #[derive(Debug, Copy, Clone)]
 pub struct TextualFloat {

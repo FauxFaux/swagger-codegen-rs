@@ -172,14 +172,17 @@ pub enum ParamLocation {
 impl<T> Endpoint<T> {
     pub fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
     where
-        F: FnMut(T) -> Result<R, Error>,
+        F: FnMut(T, &[String]) -> Result<R, Error>,
     {
         Ok(Endpoint::<R> {
             path_url: self.path_url,
             ops: self
                 .ops
                 .into_iter()
-                .map(|(code, op)| op.map_type(&mut func).map(|op| (code, op)))
+                .map(|(code, op)| {
+                    op.map_type(&mut func, &vec![format!("{:?}", code)])
+                        .map(|op| (code, op))
+                })
                 .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
         })
     }
@@ -201,10 +204,12 @@ impl<T> Field<T> {
 }
 
 impl<T> Operation<T> {
-    fn map_type<F, R>(self, mut func: F) -> Result<Operation<R>, Error>
+    fn map_type<F, R>(self, mut func: F, name_hints: &[String]) -> Result<Operation<R>, Error>
     where
-        F: FnMut(T) -> Result<R, Error>,
+        F: FnMut(T, &[String]) -> Result<R, Error>,
     {
+        let mut name_hints = vec_plus(name_hints, self.id.to_string());
+
         Ok(Operation::<R> {
             id: self.id,
             consumes: self.consumes,
@@ -212,41 +217,47 @@ impl<T> Operation<T> {
             params: self
                 .params
                 .into_iter()
-                .map(|p| p.map_type(&mut func))
+                .map(|p| {
+                    let name = p.name.to_string();
+                    p.map_type(&mut func, &name_hints)
+                })
                 .collect::<Result<Vec<Param<R>>, Error>>()?,
             responses: self
                 .responses
                 .into_iter()
-                .map(|(code, resp)| resp.map_type(&mut func).map(|resp| (code, resp)))
+                .map(|(code, resp)| {
+                    resp.map_type(&mut func, &vec_plus(&name_hints, format!("{}", code)))
+                        .map(|resp| (code, resp))
+                })
                 .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
         })
     }
 }
 
 impl<T> Param<T> {
-    fn map_type<F, R>(self, func: F) -> Result<Param<R>, Error>
+    fn map_type<F, R>(self, func: F, name_hint: &[String]) -> Result<Param<R>, Error>
     where
-        F: FnOnce(T) -> Result<R, Error>,
+        F: FnOnce(T, &[String]) -> Result<R, Error>,
     {
         Ok(Param::<R> {
-            name: self.name,
+            name: self.name.to_string(),
             loc: self.loc,
             description: self.description,
             required: self.required,
-            param_type: func(self.param_type)?,
+            param_type: func(self.param_type, &vec_plus(name_hint, self.name))?,
         })
     }
 }
 
 impl<T> Response<T> {
-    fn map_type<F, R>(self, func: F) -> Result<Response<R>, Error>
+    fn map_type<F, R>(self, func: F, name_hint: &[String]) -> Result<Response<R>, Error>
     where
-        F: FnOnce(T) -> Result<R, Error>,
+        F: FnOnce(T, &[String]) -> Result<R, Error>,
     {
         Ok(Response::<R> {
             description: self.description,
             headers: self.headers,
-            resp_type: self.resp_type.map(func).invert()?,
+            resp_type: self.resp_type.map(|v| func(v, name_hint)).invert()?,
         })
     }
 }
@@ -335,4 +346,10 @@ fn get_hash<'h>(hash: &'h Hash, key: &str) -> Result<&'h Hash, Error> {
         y.as_hash()
             .ok_or_else(|| format_err!("key '{}' not hash: {:?}", key, y))
     })
+}
+
+fn vec_plus(start: &[String], new: String) -> Vec<String> {
+    let mut ret = start.to_vec();
+    ret.push(new);
+    ret
 }

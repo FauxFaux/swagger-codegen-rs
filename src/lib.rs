@@ -33,13 +33,13 @@ pub fn go() -> Result<(), Error> {
     endpoints
         .into_iter()
         .map(|e| {
-            e.map_type(|t| {
+            e.map_type(|t, name_hints| {
                 if let FullType::Fields(fields) = &t {
                     if !def_names.contains_key(fields) {
                         structs
                             .entry(fields.clone())
                             .or_insert_with(|| Vec::new())
-                            .push(());
+                            .push(name_hints.to_vec());
                     }
                 }
 
@@ -49,7 +49,7 @@ pub fn go() -> Result<(), Error> {
         .collect::<Result<Vec<Endpoint<FullType>>, Error>>()?;
 
     for (key, val) in structs {
-        println!("{:3} {:?}", val.len(), key);
+        println!("{:?} {:?}", val, key);
     }
 
     Ok(())
