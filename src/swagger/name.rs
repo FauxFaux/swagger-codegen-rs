@@ -15,7 +15,7 @@ use swagger::Param;
 use swagger::PartialType;
 use swagger::Response;
 
-type Defs = HashMap<String, Field<PartialType>>;
+pub type Defs = HashMap<String, Field<PartialType>>;
 pub type DefNames = HashMap<Vec<Field<FullType>>, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 

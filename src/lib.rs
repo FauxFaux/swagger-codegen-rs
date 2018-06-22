@@ -16,10 +16,12 @@ use std::collections::HashSet;
 use failure::Error;
 use failure::ResultExt;
 
+use swagger::name::Defs;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
 use swagger::NamedType;
+use swagger::StructContext;
 
 pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
@@ -38,12 +40,7 @@ pub fn go() -> Result<(), Error> {
         .into_iter()
         .map(|e| {
             e.map_type(|t, name_hints| {
-                if let FullType::Fields(fields) = &t {
-                    def_names
-                        .entry(fields.clone())
-                        .or_insert_with(|| Vec::new())
-                        .extend(name_hints.recommended_names());
-                }
+                extract_names(&t, &name_hints, &mut def_names);
 
                 Ok(t)
             })
@@ -80,6 +77,23 @@ pub fn go() -> Result<(), Error> {
         .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
 
     Ok(())
+}
+
+fn extract_names(
+    t: &FullType,
+    name_hints: &StructContext,
+    def_names: &mut HashMap<Vec<Field<FullType>>, Vec<String>>,
+) {
+    match t {
+        FullType::Fields(fields) => def_names
+            .entry(fields.clone())
+            .or_insert_with(|| Vec::new())
+            .extend(name_hints.recommended_names()),
+        // TODO: could add extra hints here that we're in an array,
+        // TODO: not really expecting multi-level arrays to be relevant
+        FullType::Array { tee, .. } => extract_names(tee, name_hints, def_names),
+        FullType::Simple(_) | FullType::Unknown => (),
+    }
 }
 
 fn name_type(t: FullType, names: &HashMap<Vec<Field<FullType>>, String>) -> NamedType {
