@@ -286,6 +286,65 @@ impl<T> Response<T> {
     }
 }
 
+impl StructContext {
+    pub fn recommended_names(&self) -> impl Iterator<Item = String> {
+        let mut ret = Vec::new();
+        use heck::CamelCase;
+
+        let id = self
+            .id
+            .as_ref()
+            .expect("should only be uninitialised during construction?");
+
+        ret.push(id.to_string());
+        match &self.place {
+            StructContextPlace::Response(code) => {
+                if let Some(code) = name_http_code(*code) {
+                    ret.push(format!("{}{}", id, code));
+                    ret.push(format!("{}Response{}", id, code));
+                }
+
+                ret.push(format!("{}{}", id, code));
+                ret.push(format!("{}Response{}", id, code));
+            }
+            StructContextPlace::Paramter(name) => {
+                ret.push(format!("{}{}", id, name.to_camel_case()));
+                ret.push(format!("{}Param{}", id, name.to_camel_case()));
+            }
+            StructContextPlace::Unknown => (),
+        }
+
+        ret.into_iter()
+    }
+}
+
+// intentionally not an exhaustive list
+fn name_http_code(code: u16) -> Option<&'static str> {
+    match code {
+        200 => Some("Ok"),
+        201 => Some("Created"),
+        202 => Some("Accepted"),
+        204 => Some("NoContent"),
+        206 => Some("PartialContent"),
+        300 => Some("MultipleChoices"),
+        301 => Some("MovedPermanently"),
+        302 => Some("Found"),
+        303 => Some("SeeOther"),
+        307 => Some("TemporaryRedirect"),
+        400 => Some("BadRequest"),
+        401 => Some("Unauthorised"),
+        403 => Some("Forbidden"),
+        404 => Some("NotFound"),
+        409 => Some("Conflict"),
+        410 => Some("Gone"),
+        412 => Some("PreconditionFailed"),
+        500 => Some("ServerError"),
+        501 => Some("NotImplemented"),
+        503 => Some("ServiceUnavailable"),
+        _ => None,
+    }
+}
+
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
     hash.keys()
         .map(|k| {

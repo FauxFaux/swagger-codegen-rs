@@ -1,6 +1,7 @@
 extern crate cast;
 #[macro_use]
 extern crate failure;
+extern crate heck;
 extern crate mime;
 extern crate result;
 extern crate yaml_rust;
@@ -39,7 +40,7 @@ pub fn go() -> Result<(), Error> {
                         structs
                             .entry(fields.clone())
                             .or_insert_with(|| Vec::new())
-                            .push(name_hints);
+                            .extend(name_hints.recommended_names());
                     }
                 }
 

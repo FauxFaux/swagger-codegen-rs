@@ -16,7 +16,7 @@ use swagger::PartialType;
 use swagger::Response;
 
 type Defs = HashMap<String, Field<PartialType>>;
-pub type DefNames = HashMap<Vec<Field<FullType>>, HashSet<String>>;
+pub type DefNames = HashMap<Vec<Field<FullType>>, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 
 // TODO: this really should be like three methods, or an object or something
@@ -27,7 +27,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    let mut reverse: DefNames = HashMap::with_capacity(definitions.len());
+    let mut reverse = HashMap::with_capacity(definitions.len());
 
     for (name, field) in &definitions {
         if let FullType::Fields(fields) = deref(&definitions, field.data_type.clone())? {
@@ -37,6 +37,15 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
                 .insert(name.to_string());
         }
     }
+
+    let reverse: DefNames = reverse
+        .into_iter()
+        .map(|(k, v)| {
+            let mut v: Vec<String> = v.into_iter().collect();
+            v.sort();
+            (k, v)
+        })
+        .collect();
 
     let endpoints = super::paths::paths(paths)?
         .into_iter()
