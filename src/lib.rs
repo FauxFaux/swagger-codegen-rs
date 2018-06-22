@@ -21,22 +21,26 @@ pub fn go() -> Result<(), Error> {
 
     let mut structs = HashMap::new();
 
-    let endpoints = swagger::name::definitions(
+    let (def_names, endpoints) = swagger::name::definitions(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
         doc["paths"]
             .as_hash()
             .ok_or_else(|| format_err!("no paths"))?,
-    ).with_context(|_| format_err!("processing definitions"))?
+    ).with_context(|_| format_err!("processing definitions"))?;
+
+    endpoints
         .into_iter()
         .map(|e| {
             e.map_type(|t| {
                 if let FullType::Fields(fields) = &t {
-                    structs
-                        .entry(fields.clone())
-                        .or_insert_with(|| Vec::new())
-                        .push(());
+                    if !def_names.contains_key(fields) {
+                        structs
+                            .entry(fields.clone())
+                            .or_insert_with(|| Vec::new())
+                            .push(());
+                    }
                 }
 
                 Ok(t)

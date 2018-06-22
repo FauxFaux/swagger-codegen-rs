@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use failure::Error;
 use failure::ResultExt;
@@ -15,18 +16,34 @@ use swagger::PartialType;
 use swagger::Response;
 
 type Defs = HashMap<String, Field<PartialType>>;
+pub type DefNames = HashMap<Vec<Field<FullType>>, HashSet<String>>;
+pub type Endpoints = Vec<Endpoint<FullType>>;
 
-pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<Vec<Endpoint<FullType>>, Error> {
+// TODO: this really should be like three methods, or an object or something
+pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoints), Error> {
     let definitions: Defs = properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    super::paths::paths(paths)?
+    let mut reverse: DefNames = HashMap::with_capacity(definitions.len());
+
+    for (name, field) in &definitions {
+        if let FullType::Fields(fields) = deref(&definitions, field.data_type.clone())? {
+            reverse
+                .entry(fields)
+                .or_insert_with(|| HashSet::new())
+                .insert(name.to_string());
+        }
+    }
+
+    let endpoints = super::paths::paths(paths)?
         .into_iter()
         .map(|e| e.map_type(|t| deref(&definitions, t)))
-        .collect()
+        .collect::<Result<Endpoints, Error>>()?;
+
+    Ok((reverse, endpoints))
 }
 
 fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {
