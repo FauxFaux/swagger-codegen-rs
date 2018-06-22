@@ -84,12 +84,14 @@ pub fn go() -> Result<(), Error> {
     render_order.sort_by_key(|(k, _)| k.to_string());
 
     for (name, fields) in render_order {
+        use heck::MixedCase;
+
         println!("struct {} {{", name);
         for field in fields {
             println!(
-                "    {}: {:?},",
-                field.name,
-                name_type(field.data_type.clone(), &name_lookup)
+                "    {}: {},",
+                field.name.to_mixed_case(),
+                render::render(&name_type(field.data_type.clone(), &name_lookup))
             );
         }
         println!("}}");
@@ -109,7 +111,7 @@ fn extract_names(
                 .entry(fields.clone())
                 .or_insert_with(|| Vec::new())
                 .extend(name_hints.recommended_names());
-            
+
             for field in fields {
                 let mut name_hints = name_hints.clone();
                 name_hints.id = name_hints.id.map(|id| format!("{}{}", id, field.name));
