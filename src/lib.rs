@@ -39,7 +39,7 @@ pub fn go() -> Result<(), Error> {
                         structs
                             .entry(fields.clone())
                             .or_insert_with(|| Vec::new())
-                            .push(name_hints.to_vec());
+                            .push(name_hints);
                     }
                 }
 

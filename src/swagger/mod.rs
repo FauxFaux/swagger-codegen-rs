@@ -169,19 +169,39 @@ pub enum ParamLocation {
     Header,
 }
 
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub struct StructContext {
+    method: HttpMethod,
+    id: Option<String>,
+    place: StructContextPlace,
+}
+
+#[derive(Debug, Clone, Eq, PartialEq, Hash)]
+pub enum StructContextPlace {
+    Response(u16),
+    Paramter(String),
+    Unknown,
+}
+
 impl<T> Endpoint<T> {
     pub fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
     where
-        F: FnMut(T, &[String]) -> Result<R, Error>,
+        F: FnMut(T, StructContext) -> Result<R, Error>,
     {
         Ok(Endpoint::<R> {
             path_url: self.path_url,
             ops: self
                 .ops
                 .into_iter()
-                .map(|(code, op)| {
-                    op.map_type(&mut func, &vec![format!("{:?}", code)])
-                        .map(|op| (code, op))
+                .map(|(method, op)| {
+                    op.map_type(
+                        &mut func,
+                        StructContext {
+                            method,
+                            id: None,
+                            place: StructContextPlace::Unknown,
+                        },
+                    ).map(|op| (method, op))
                 })
                 .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
         })
@@ -204,11 +224,15 @@ impl<T> Field<T> {
 }
 
 impl<T> Operation<T> {
-    fn map_type<F, R>(self, mut func: F, name_hints: &[String]) -> Result<Operation<R>, Error>
+    fn map_type<F, R>(
+        self,
+        mut func: F,
+        mut name_hints: StructContext,
+    ) -> Result<Operation<R>, Error>
     where
-        F: FnMut(T, &[String]) -> Result<R, Error>,
+        F: FnMut(T, StructContext) -> Result<R, Error>,
     {
-        let mut name_hints = vec_plus(name_hints, self.id.to_string());
+        name_hints.id = Some(self.id.to_string());
 
         Ok(Operation::<R> {
             id: self.id,
@@ -217,16 +241,14 @@ impl<T> Operation<T> {
             params: self
                 .params
                 .into_iter()
-                .map(|p| {
-                    let name = p.name.to_string();
-                    p.map_type(&mut func, &name_hints)
-                })
+                .map(|p| p.map_type(&mut func, name_hints.clone()))
                 .collect::<Result<Vec<Param<R>>, Error>>()?,
             responses: self
                 .responses
                 .into_iter()
                 .map(|(code, resp)| {
-                    resp.map_type(&mut func, &vec_plus(&name_hints, format!("{}", code)))
+                    name_hints.place = StructContextPlace::Response(code);
+                    resp.map_type(&mut func, name_hints.clone())
                         .map(|resp| (code, resp))
                 })
                 .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
@@ -235,24 +257,26 @@ impl<T> Operation<T> {
 }
 
 impl<T> Param<T> {
-    fn map_type<F, R>(self, func: F, name_hint: &[String]) -> Result<Param<R>, Error>
+    fn map_type<F, R>(self, func: F, mut name_hint: StructContext) -> Result<Param<R>, Error>
     where
-        F: FnOnce(T, &[String]) -> Result<R, Error>,
+        F: FnOnce(T, StructContext) -> Result<R, Error>,
     {
+        name_hint.place = StructContextPlace::Paramter(self.name.to_string());
+
         Ok(Param::<R> {
-            name: self.name.to_string(),
+            name: self.name,
             loc: self.loc,
             description: self.description,
             required: self.required,
-            param_type: func(self.param_type, &vec_plus(name_hint, self.name))?,
+            param_type: func(self.param_type, name_hint)?,
         })
     }
 }
 
 impl<T> Response<T> {
-    fn map_type<F, R>(self, func: F, name_hint: &[String]) -> Result<Response<R>, Error>
+    fn map_type<F, R>(self, func: F, name_hint: StructContext) -> Result<Response<R>, Error>
     where
-        F: FnOnce(T, &[String]) -> Result<R, Error>,
+        F: FnOnce(T, StructContext) -> Result<R, Error>,
     {
         Ok(Response::<R> {
             description: self.description,
@@ -346,10 +370,4 @@ fn get_hash<'h>(hash: &'h Hash, key: &str) -> Result<&'h Hash, Error> {
         y.as_hash()
             .ok_or_else(|| format_err!("key '{}' not hash: {:?}", key, y))
     })
-}
-
-fn vec_plus(start: &[String], new: String) -> Vec<String> {
-    let mut ret = start.to_vec();
-    ret.push(new);
-    ret
 }
