@@ -19,7 +19,10 @@ pub type Defs = HashMap<String, Field<PartialType>>;
 pub type DefNames = HashMap<NamingType, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 
-pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoints), Error> {
+pub fn load_endpoints_and_names(
+    definitions: &Hash,
+    paths: &Hash,
+) -> Result<(Endpoints, DefNames), Error> {
     let definitions: Defs = super::partial_definitions::properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
@@ -31,7 +34,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
         .map(|e| e.map_type(|t, _| deref(&definitions, t)))
         .collect::<Result<Endpoints, Error>>()?;
 
-    Ok((reverse_definitions(&definitions)?, endpoints))
+    Ok((endpoints, reverse_definitions(&definitions)?))
 }
 
 fn reverse_definitions(

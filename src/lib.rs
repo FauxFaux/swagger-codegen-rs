@@ -33,7 +33,7 @@ pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let (mut def_names, endpoints) = swagger::full::definitions(
+    let (endpoints, mut def_names) = swagger::full::load_endpoints_and_names(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
