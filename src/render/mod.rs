@@ -1,13 +1,13 @@
+use cast::i64;
 use failure::Error;
 use failure::ResultExt;
-use cast::i64;
 
 use swagger::ArrayConstraints;
 use swagger::DataType;
 use swagger::Field;
 use swagger::FullType;
-use swagger::NamedType;
 use swagger::IntegerFormat;
+use swagger::NamedType;
 
 pub fn render(t: &NamedType) -> String {
     match t {
@@ -23,12 +23,22 @@ fn render_simple(simple: &DataType) -> String {
     use self::IntegerFormat::*;
 
     match simple {
-        String {..} => "String".to_string(),
-        Integer { min, max, format, .. } => {
+        Bool { .. } => "bool".to_string(),
+        String { .. } | MatchString { .. } => "String".to_string(),
+        Number { .. } => "f64".to_string(),
+        IpAddr => "::std::net::IpAddr".to_string(),
+        DateTime => "::chrono::DateTime".to_string(),
+        Json => "::serde_json::Json".to_string(),
+        Binary => "(/* binary */)".to_string(),
+        Enum { values, default } => format!("(/* enum values: {:?} {:?})", values, default),
+        Integer {
+            min, max, format, ..
+        } => {
             let unsigned = min.unwrap_or(-1) >= 0 || match format {
                 U8 | U16 | U32 | U64 => true,
                 _ => false,
             };
+
             let format_bits = match format {
                 U8 | I8 => 8,
                 U16 | I16 => 16,
@@ -37,6 +47,7 @@ fn render_simple(simple: &DataType) -> String {
                 Unspecified => 64,
             };
 
+            // TODO: should really cope with signs here
             let max_bits = if let Some(max) = *max {
                 if max > i64(::std::i32::MAX) {
                     64
@@ -51,9 +62,11 @@ fn render_simple(simple: &DataType) -> String {
                 0
             };
 
-            format!("{}{}", if unsigned { "u" } else { "i" }, format_bits.max(max_bits))
-        },
-
-        other => format!("(/* unsupported type: {:?} */)", other),
+            format!(
+                "{}{}",
+                if unsigned { "u" } else { "i" },
+                format_bits.max(max_bits)
+            )
+        }
     }
 }
