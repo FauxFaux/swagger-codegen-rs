@@ -2,6 +2,7 @@ use cast::f64;
 use failure::Error;
 use failure::ResultExt;
 use mime::Mime;
+use ordered_float::OrderedFloat;
 use result::ResultOptionExt;
 use std::collections::HashMap;
 use std::collections::HashSet;
@@ -11,8 +12,6 @@ use yaml_rust::Yaml;
 pub mod full;
 pub mod partial_definitions;
 pub mod partial_paths;
-
-use float::TextualFloat;
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Field<T> {
@@ -100,9 +99,9 @@ pub enum DataType {
         format: IntegerFormat,
     },
     Number {
-        min: Option<TextualFloat>,
-        max: Option<TextualFloat>,
-        default: Option<TextualFloat>,
+        min: Option<OrderedFloat<f64>>,
+        max: Option<OrderedFloat<f64>>,
+        default: Option<OrderedFloat<f64>>,
         format: NumberFormat,
     },
     Bool {
@@ -391,7 +390,7 @@ fn as_bool(val: &Yaml) -> Result<bool, Error> {
         .ok_or_else(|| format_err!("not bool: {:?}", val))
 }
 
-fn optional_number(hash: &Hash, key: &str) -> Result<Option<TextualFloat>, Error> {
+fn optional_number(hash: &Hash, key: &str) -> Result<Option<OrderedFloat<f64>>, Error> {
     Ok(get(hash, key)
         .ok()
         .map(as_number)
@@ -399,13 +398,12 @@ fn optional_number(hash: &Hash, key: &str) -> Result<Option<TextualFloat>, Error
         .with_context(|_| format_err!("key: {}", key))?)
 }
 
-fn as_number(val: &Yaml) -> Result<TextualFloat, Error> {
-    Ok(TextualFloat {
-        val: val
-            .as_f64()
+fn as_number(val: &Yaml) -> Result<OrderedFloat<f64>, Error> {
+    Ok(OrderedFloat(
+        val.as_f64()
             .or_else(|| val.as_i64().map(f64))
             .ok_or_else(|| format_err!("not number: {:?}", val))?,
-    })
+    ))
 }
 
 fn optional_integer(hash: &Hash, key: &str) -> Result<Option<i64>, Error> {

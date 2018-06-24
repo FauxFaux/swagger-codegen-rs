@@ -3,10 +3,10 @@ extern crate cast;
 extern crate failure;
 extern crate heck;
 extern crate mime;
+extern crate ordered_float;
 extern crate result;
 extern crate yaml_rust;
 
-mod float;
 mod render;
 mod swagger;
 
