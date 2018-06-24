@@ -8,9 +8,9 @@ use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
-pub mod definitions;
-pub mod name;
-pub mod paths;
+pub mod full;
+pub mod partial_definitions;
+pub mod partial_paths;
 
 use float::TextualFloat;
 

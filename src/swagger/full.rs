@@ -5,7 +5,7 @@ use failure::Error;
 use failure::ResultExt;
 use yaml_rust::yaml::Hash;
 
-use swagger::definitions::properties_to_fields;
+use swagger::partial_definitions::properties_to_fields;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
@@ -53,7 +53,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
         })
         .collect();
 
-    let endpoints = super::paths::paths(paths)?
+    let endpoints = super::partial_paths::paths(paths)?
         .into_iter()
         .map(|e| e.map_type(|t, _| deref(&definitions, t)))
         .collect::<Result<Endpoints, Error>>()?;

@@ -16,7 +16,7 @@ use std::collections::HashSet;
 use failure::Error;
 use failure::ResultExt;
 
-use swagger::name::Defs;
+use swagger::full::Defs;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
@@ -33,7 +33,7 @@ pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let (mut def_names, endpoints) = swagger::name::definitions(
+    let (mut def_names, endpoints) = swagger::full::definitions(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,

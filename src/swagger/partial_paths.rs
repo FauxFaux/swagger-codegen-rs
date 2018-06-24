@@ -155,7 +155,7 @@ fn process_param(param: &Hash) -> Result<Param<PartialType>, Error> {
         let mut schema_keys = keys(schema)?;
         schema_keys.remove("example");
 
-        let field_result = definitions::field_type(schema, &mut schema_keys);
+        let field_result = partial_definitions::field_type(schema, &mut schema_keys);
 
         ensure!(
             schema_keys.is_empty(),
@@ -165,7 +165,7 @@ fn process_param(param: &Hash) -> Result<Param<PartialType>, Error> {
 
         field_result
     } else {
-        definitions::field_type(param, &mut current_keys)
+        partial_definitions::field_type(param, &mut current_keys)
     }.with_context(|_| format_err!("finding type of {:?}", name))?;
 
     ensure!(
@@ -203,7 +203,7 @@ fn process_response(resp: &Hash) -> Result<Response<PartialType>, Error> {
                 .ok_or_else(|| format_err!("non-hash header: {:?}", header))?;
             let mut header_keys = keys(header)?;
             header_keys.remove("description");
-            let header_type = definitions::field_type(header, &mut header_keys)?;
+            let header_type = partial_definitions::field_type(header, &mut header_keys)?;
             ensure!(
                 header_keys.is_empty(),
                 "unsupported header keys: {:?}",
@@ -221,7 +221,7 @@ fn process_response(resp: &Hash) -> Result<Response<PartialType>, Error> {
     let resp_type = if current_keys.remove("schema") {
         let schema = get_hash(resp, "schema")?;
         let mut schema_keys = keys(schema)?;
-        Some(definitions::field_type(schema, &mut schema_keys)?)
+        Some(partial_definitions::field_type(schema, &mut schema_keys)?)
     } else {
         None
     };
