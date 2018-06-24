@@ -5,7 +5,6 @@ use failure::Error;
 use failure::ResultExt;
 use yaml_rust::yaml::Hash;
 
-use swagger::partial_definitions::properties_to_fields;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
@@ -20,18 +19,28 @@ pub type Defs = HashMap<String, Field<PartialType>>;
 pub type DefNames = HashMap<NamingType, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 
-// TODO: this really should be like three methods, or an object or something
 pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoints), Error> {
-    let definitions: Defs = properties_to_fields(&[], definitions)
+    let definitions: Defs = super::partial_definitions::properties_to_fields(&[], definitions)
         .with_context(|_| format_err!("processing definitions"))?
         .into_iter()
         .map(|field| (field.name.to_string(), field))
         .collect();
 
+    let endpoints = super::partial_paths::paths(paths)?
+        .into_iter()
+        .map(|e| e.map_type(|t, _| deref(&definitions, t)))
+        .collect::<Result<Endpoints, Error>>()?;
+
+    Ok((reverse_definitions(&definitions)?, endpoints))
+}
+
+fn reverse_definitions(
+    definitions: &HashMap<String, Field<PartialType>>,
+) -> Result<HashMap<NamingType, Vec<String>>, Error> {
     let mut reverse = HashMap::with_capacity(definitions.len());
 
-    for (name, field) in &definitions {
-        match deref(&definitions, field.data_type.clone())? {
+    for (name, field) in definitions {
+        match deref(definitions, field.data_type.clone())? {
             FullType::Fields(fields) => reverse
                 .entry(NamingType::Field(fields))
                 .or_insert_with(|| HashSet::new())
@@ -53,12 +62,7 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
         })
         .collect();
 
-    let endpoints = super::partial_paths::paths(paths)?
-        .into_iter()
-        .map(|e| e.map_type(|t, _| deref(&definitions, t)))
-        .collect::<Result<Endpoints, Error>>()?;
-
-    Ok((reverse, endpoints))
+    Ok(reverse)
 }
 
 fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> {
