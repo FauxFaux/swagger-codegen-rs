@@ -136,10 +136,14 @@ fn extract_names(
                 extract_names(&field.data_type, &name_hints, def_names);
             }
         }
+        FullType::Enum { values, default } => def_names
+            .entry(NamingType::Enum(values.clone(), default.clone()))
+            .or_insert_with(|| Vec::new())
+            .extend(name_hints.recommended_names()),
         // TODO: could add extra hints here that we're in an array,
         // TODO: not really expecting multi-level arrays to be relevant
         FullType::Array { tee, .. } => extract_names(tee, name_hints, def_names),
-        FullType::Enum { .. } | FullType::Simple(_) | FullType::Unknown => (),
+        FullType::Simple(_) | FullType::Unknown => (),
     }
 }
 
