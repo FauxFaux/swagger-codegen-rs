@@ -23,6 +23,12 @@ use swagger::FullType;
 use swagger::NamedType;
 use swagger::StructContext;
 
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
+enum NamingType {
+    Field(Vec<Field<FullType>>),
+    Enum(Vec<String>, Option<String>),
+}
+
 pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
@@ -69,7 +75,7 @@ pub fn go() -> Result<(), Error> {
         .map(|(field, possible_names)| {
             first_not_in(&possible_names, &banned_names).map(|new| (field, new.to_string()))
         })
-        .collect::<Result<HashMap<Vec<Field<FullType>>, String>, Error>>()?;
+        .collect::<Result<HashMap<NamingType, String>, Error>>()?;
 
     let endpoints = endpoints
         .into_iter()
@@ -79,22 +85,34 @@ pub fn go() -> Result<(), Error> {
     let mut render_order = name_lookup
         .iter()
         .map(|(k, v)| (v, k))
-        .collect::<Vec<(&String, &Vec<Field<FullType>>)>>();
+        .collect::<Vec<(&String, &NamingType)>>();
 
     render_order.sort_by_key(|(k, _)| k.to_string());
 
-    for (name, fields) in render_order {
+    for (name, naming) in render_order {
         use heck::MixedCase;
 
-        println!("struct {} {{", name);
-        for field in fields {
-            println!(
-                "    {}: {},",
-                field.name.to_mixed_case(),
-                render::render(&name_type(field.data_type.clone(), &name_lookup))
-            );
+        match naming {
+            NamingType::Field(fields) => {
+                println!("struct {} {{", name);
+                for field in fields {
+                    println!(
+                        "    {}: {},",
+                        field.name.to_mixed_case(),
+                        render::render(&name_type(field.data_type.clone(), &name_lookup))
+                    );
+                }
+                println!("}}");
+            }
+
+            NamingType::Enum(values, _default) => {
+                println!("enum {} {{", name);
+                for value in values {
+                    println!("    {},", value);
+                }
+                println!("}}");
+            }
         }
-        println!("}}");
     }
 
     Ok(())
@@ -103,12 +121,12 @@ pub fn go() -> Result<(), Error> {
 fn extract_names(
     t: &FullType,
     name_hints: &StructContext,
-    def_names: &mut HashMap<Vec<Field<FullType>>, Vec<String>>,
+    def_names: &mut HashMap<NamingType, Vec<String>>,
 ) {
     match t {
         FullType::Fields(fields) => {
             def_names
-                .entry(fields.clone())
+                .entry(NamingType::Field(fields.clone()))
                 .or_insert_with(|| Vec::new())
                 .extend(name_hints.recommended_names());
 
@@ -121,13 +139,16 @@ fn extract_names(
         // TODO: could add extra hints here that we're in an array,
         // TODO: not really expecting multi-level arrays to be relevant
         FullType::Array { tee, .. } => extract_names(tee, name_hints, def_names),
-        FullType::Simple(_) | FullType::Unknown => (),
+        FullType::Enum { .. } | FullType::Simple(_) | FullType::Unknown => (),
     }
 }
 
-fn name_type(t: FullType, names: &HashMap<Vec<Field<FullType>>, String>) -> NamedType {
+fn name_type(t: FullType, names: &HashMap<NamingType, String>) -> NamedType {
     match t {
-        FullType::Fields(fields) => NamedType::Name(names[&fields].to_string()),
+        FullType::Fields(fields) => NamedType::Name(names[&NamingType::Field(fields)].to_string()),
+        FullType::Enum { values, default } => {
+            NamedType::Name(names[&NamingType::Enum(values, default)].to_string())
+        }
         FullType::Array { tee, constraints } => NamedType::Array {
             tee: Box::new(name_type(*tee, names)),
             constraints,

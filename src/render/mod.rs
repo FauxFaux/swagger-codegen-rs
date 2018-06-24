@@ -30,7 +30,6 @@ fn render_simple(simple: &DataType) -> String {
         DateTime => "::chrono::DateTime".to_string(),
         Json => "::serde_json::Json".to_string(),
         Binary => "(/* binary */)".to_string(),
-        Enum { values, default } => format!("(/* enum values: {:?} {:?})", values, default),
         Integer {
             min, max, format, ..
         } => {

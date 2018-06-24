@@ -14,9 +14,10 @@ use swagger::Operation;
 use swagger::Param;
 use swagger::PartialType;
 use swagger::Response;
+use NamingType;
 
 pub type Defs = HashMap<String, Field<PartialType>>;
-pub type DefNames = HashMap<Vec<Field<FullType>>, Vec<String>>;
+pub type DefNames = HashMap<NamingType, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 
 // TODO: this really should be like three methods, or an object or something
@@ -30,12 +31,17 @@ pub fn definitions(definitions: &Hash, paths: &Hash) -> Result<(DefNames, Endpoi
     let mut reverse = HashMap::with_capacity(definitions.len());
 
     for (name, field) in &definitions {
-        if let FullType::Fields(fields) = deref(&definitions, field.data_type.clone())? {
-            reverse
-                .entry(fields)
+        match deref(&definitions, field.data_type.clone())? {
+            FullType::Fields(fields) => reverse
+                .entry(NamingType::Field(fields))
                 .or_insert_with(|| HashSet::new())
-                .insert(name.to_string());
-        }
+                .insert(name.to_string()),
+            FullType::Enum { values, default } => reverse
+                .entry(NamingType::Enum(values, default))
+                .or_insert_with(|| HashSet::new())
+                .insert(name.to_string()),
+            _ => false, // sigh
+        };
     }
 
     let reverse: DefNames = reverse
@@ -93,6 +99,7 @@ fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> 
                 .map(|f| f.map_type(|t| deref(definitions, t)))
                 .collect::<Result<Vec<Field<FullType>>, Error>>()?,
         ),
+        PartialType::Enum { values, default } => FullType::Enum { values, default },
         PartialType::Simple(data_type) => FullType::Simple(data_type.clone()),
         PartialType::Unknown => FullType::Unknown,
     })

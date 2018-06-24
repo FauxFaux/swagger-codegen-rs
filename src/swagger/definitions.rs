@@ -220,14 +220,14 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Part
                     default: optional_bool(field, "default")?,
                 })
             }
-            "string" => PartialType::Simple(if current_keys.remove("format") {
-                match get_string(field, "format")? {
+            "string" => if current_keys.remove("format") {
+                PartialType::Simple(match get_string(field, "format")? {
                     "ip-address" => DataType::IpAddr,
                     "dateTime" => DataType::DateTime,
                     "json" => DataType::Json,
                     "binary" => DataType::Binary,
                     other => bail!("unsupported string format: {}", other),
-                }
+                })
             } else if current_keys.remove("enum") {
                 let default = if current_keys.remove("default") {
                     Some(get_string(field, "default")?.to_string())
@@ -235,7 +235,7 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Part
                     None
                 };
 
-                DataType::Enum {
+                PartialType::Enum {
                     values: get_vec(field, "enum")?
                         .into_iter()
                         .map(as_str)
@@ -244,9 +244,9 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Part
                     default,
                 }
             } else if current_keys.remove("pattern") {
-                DataType::MatchString {
+                PartialType::Simple(DataType::MatchString {
                     pattern: get_string(field, "pattern")?.to_string(),
-                }
+                })
             } else {
                 let default = if current_keys.remove("default") {
                     Some(get_string(field, "default")?.to_string())
@@ -254,8 +254,8 @@ pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<Part
                     None
                 };
 
-                DataType::String { default }
-            }),
+                PartialType::Simple(DataType::String { default })
+            },
             other => bail!("unimplemented def type: {}", other),
         }
     } else if 1 == current_keys.len() && current_keys.remove("$ref") {

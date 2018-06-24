@@ -42,6 +42,10 @@ pub enum FullType {
         tee: Box<FullType>,
         constraints: ArrayConstraints,
     },
+    Enum {
+        values: Vec<String>,
+        default: Option<String>,
+    },
     Unknown,
 }
 
@@ -52,6 +56,10 @@ pub enum PartialType {
     Array {
         tee: Box<PartialType>,
         constraints: ArrayConstraints,
+    },
+    Enum {
+        values: Vec<String>,
+        default: Option<String>,
     },
     AllOf(Vec<PartialType>),
     Ref(String),
@@ -104,10 +112,6 @@ pub enum DataType {
     DateTime,
     Json,
     Binary,
-    Enum {
-        values: Vec<String>,
-        default: Option<String>,
-    },
     MatchString {
         pattern: String,
     },
