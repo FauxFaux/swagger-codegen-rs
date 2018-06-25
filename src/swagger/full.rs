@@ -16,7 +16,7 @@ use swagger::Response;
 use NamingType;
 
 pub type Defs = HashMap<String, Field<PartialType>>;
-pub type DefNames = HashMap<NamingType, Vec<String>>;
+pub type DefNames = HashMap<NamingType<FullType>, Vec<String>>;
 pub type Endpoints = Vec<Endpoint<FullType>>;
 
 pub fn load_endpoints_and_names(
@@ -40,7 +40,7 @@ pub fn load_endpoints_and_names(
 
 fn reverse_definitions(
     definitions: &HashMap<String, Field<PartialType>>,
-) -> Result<HashMap<NamingType, Vec<String>>, Error> {
+) -> Result<HashMap<NamingType<FullType>, Vec<String>>, Error> {
     let mut reverse = HashMap::with_capacity(definitions.len());
 
     for (name, field) in definitions {

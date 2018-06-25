@@ -14,8 +14,14 @@ use NamingType;
 
 pub fn to_named_types(
     endpoints: Vec<Endpoint<FullType>>,
-    mut def_names: HashMap<NamingType, Vec<String>>,
-) -> Result<(Vec<Endpoint<NamedType>>, HashMap<NamingType, String>), Error> {
+    mut def_names: HashMap<NamingType<FullType>, Vec<String>>,
+) -> Result<
+    (
+        Vec<Endpoint<NamedType>>,
+        HashMap<NamingType<FullType>, String>,
+    ),
+    Error,
+> {
     for endpoint in &endpoints {
         endpoint.visit_type(|t, name_hints| extract_names(&t, &name_hints, &mut def_names));
     }
@@ -42,7 +48,7 @@ pub fn to_named_types(
         .map(|(field, possible_names)| {
             first_not_in(&possible_names, &banned_names).map(|new| (field, new.to_string()))
         })
-        .collect::<Result<HashMap<NamingType, String>, Error>>()?;
+        .collect::<Result<HashMap<NamingType<FullType>, String>, Error>>()?;
 
     let endpoints = endpoints
         .into_iter()
@@ -55,7 +61,7 @@ pub fn to_named_types(
 fn extract_names(
     t: &FullType,
     name_hints: &StructContext,
-    def_names: &mut HashMap<NamingType, Vec<String>>,
+    def_names: &mut HashMap<NamingType<FullType>, Vec<String>>,
 ) {
     match t {
         FullType::Fields(fields) => {
@@ -81,7 +87,7 @@ fn extract_names(
     }
 }
 
-pub fn name_type(t: FullType, names: &HashMap<NamingType, String>) -> NamedType {
+pub fn name_type(t: FullType, names: &HashMap<NamingType<FullType>, String>) -> NamedType {
     match t {
         FullType::Fields(fields) => NamedType::Name(names[&NamingType::Field(fields)].to_string()),
         FullType::Enum { values, default } => {

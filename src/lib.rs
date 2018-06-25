@@ -24,8 +24,8 @@ use swagger::NamedType;
 use swagger::StructContext;
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
-pub enum NamingType {
-    Field(Vec<Field<FullType>>),
+pub enum NamingType<T> {
+    Field(Vec<Field<T>>),
     Enum(Vec<String>, Option<String>),
 }
 
@@ -47,7 +47,7 @@ pub fn go() -> Result<(), Error> {
     let mut render_order = name_lookup
         .iter()
         .map(|(k, v)| (v, k))
-        .collect::<Vec<(&String, &NamingType)>>();
+        .collect::<Vec<(&String, &NamingType<FullType>)>>();
 
     render_order.sort_by_key(|(k, _)| k.to_string());
 
