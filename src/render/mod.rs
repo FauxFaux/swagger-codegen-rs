@@ -1,6 +1,4 @@
 use cast::i64;
-use failure::Error;
-use failure::ResultExt;
 
 use swagger::ArrayConstraints;
 use swagger::DataType;

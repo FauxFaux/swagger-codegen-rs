@@ -10,6 +10,7 @@ use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
 pub mod full;
+pub mod name;
 pub mod partial_definitions;
 pub mod partial_paths;
 
