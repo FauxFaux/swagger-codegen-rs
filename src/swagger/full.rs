@@ -8,11 +8,7 @@ use yaml_rust::yaml::Hash;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
-use swagger::HttpMethod;
-use swagger::Operation;
-use swagger::Param;
 use swagger::PartialType;
-use swagger::Response;
 use NamingType;
 
 pub type Defs = HashMap<String, Field<PartialType>>;
@@ -47,11 +43,11 @@ fn reverse_definitions(
         match deref(definitions, field.data_type.clone())? {
             FullType::Fields(fields) => reverse
                 .entry(NamingType::Field(fields))
-                .or_insert_with(|| HashSet::new())
+                .or_insert_with(HashSet::new)
                 .insert(name.to_string()),
             FullType::Enum { values, default } => reverse
                 .entry(NamingType::Enum(values, default))
-                .or_insert_with(|| HashSet::new())
+                .or_insert_with(HashSet::new)
                 .insert(name.to_string()),
             _ => false, // sigh
         };

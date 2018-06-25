@@ -1,9 +1,6 @@
 use cast::i64;
 
-use swagger::ArrayConstraints;
 use swagger::DataType;
-use swagger::Field;
-use swagger::FullType;
 use swagger::IntegerFormat;
 use swagger::NamedType;
 

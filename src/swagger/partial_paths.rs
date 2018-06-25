@@ -7,7 +7,7 @@ use super::*;
 
 pub fn paths(paths: &Hash) -> Result<Vec<Endpoint<PartialType>>, Error> {
     let mut ret = Vec::new();
-    for (path_url, path) in paths.into_iter() {
+    for (path_url, path) in paths {
         let path_url: &str = path_url
             .as_str()
             .ok_or_else(|| format_err!("non-string path url: {:?}", path_url))?;
@@ -27,7 +27,7 @@ pub fn paths(paths: &Hash) -> Result<Vec<Endpoint<PartialType>>, Error> {
 fn process_methods(path: &Hash) -> Result<HashMap<HttpMethod, Operation<PartialType>>, Error> {
     let mut ret = HashMap::new();
 
-    for (http_method, op) in path.into_iter() {
+    for (http_method, op) in path {
         let http_method = match http_method
             .as_str()
             .ok_or_else(|| format_err!("non-string http method: {:?}", http_method))?

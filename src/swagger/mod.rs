@@ -305,7 +305,7 @@ impl<T> Response<T> {
         Ok(Response::<R> {
             description: self.description,
             headers: self.headers,
-            resp_type: self.resp_type.map(|v| func(v)).invert()?,
+            resp_type: self.resp_type.map(func).invert()?,
         })
     }
 

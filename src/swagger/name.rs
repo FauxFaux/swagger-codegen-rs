@@ -2,11 +2,8 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use failure::Error;
-use failure::ResultExt;
 
-use swagger::full::Defs;
 use swagger::Endpoint;
-use swagger::Field;
 use swagger::FullType;
 use swagger::NamedType;
 use swagger::StructContext;
@@ -67,7 +64,7 @@ fn extract_names(
         FullType::Fields(fields) => {
             def_names
                 .entry(NamingType::Field(fields.clone()))
-                .or_insert_with(|| Vec::new())
+                .or_insert_with(Vec::new)
                 .extend(name_hints.recommended_names());
 
             for field in fields {
@@ -78,7 +75,7 @@ fn extract_names(
         }
         FullType::Enum { values, default } => def_names
             .entry(NamingType::Enum(values.clone(), default.clone()))
-            .or_insert_with(|| Vec::new())
+            .or_insert_with(Vec::new)
             .extend(name_hints.recommended_names()),
         // TODO: could add extra hints here that we're in an array,
         // TODO: not really expecting multi-level arrays to be relevant
@@ -108,7 +105,6 @@ fn first_not_in<'s>(
 ) -> Result<&'s String, Error> {
     container
         .iter()
-        .filter(|n| !blacklist.contains(*n))
-        .next()
+        .find(|n| !blacklist.contains(*n))
         .ok_or_else(|| format_err!("No remaining names: {:?}", container))
 }
