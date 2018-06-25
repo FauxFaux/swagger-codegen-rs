@@ -33,7 +33,7 @@ pub fn go() -> Result<(), Error> {
     let doc = yaml_rust::YamlLoader::load_from_str(include_str!("../examples/docker.yaml"))?;
     let doc = &doc[0];
 
-    let (endpoints, mut def_names) = swagger::full::load_endpoints_and_names(
+    let (endpoints, def_names) = swagger::full::load_endpoints_and_names(
         doc["definitions"]
             .as_hash()
             .ok_or_else(|| format_err!("no definitions"))?,
@@ -42,38 +42,7 @@ pub fn go() -> Result<(), Error> {
             .ok_or_else(|| format_err!("no paths"))?,
     ).with_context(|_| format_err!("loading full types from yaml"))?;
 
-    for endpoint in &endpoints {
-        endpoint.visit_type(|t, name_hints| extract_names(&t, &name_hints, &mut def_names));
-    }
-
-    let mut banned_names = HashSet::new();
-    'trying: loop {
-        let mut used = HashSet::new();
-        for possible_names in def_names.values() {
-            let chosen = first_not_in(possible_names, &banned_names)?;
-
-            if used.contains(chosen) {
-                banned_names.insert(chosen.to_string());
-                continue 'trying;
-            }
-
-            used.insert(chosen);
-        }
-
-        break;
-    }
-
-    let name_lookup = def_names
-        .into_iter()
-        .map(|(field, possible_names)| {
-            first_not_in(&possible_names, &banned_names).map(|new| (field, new.to_string()))
-        })
-        .collect::<Result<HashMap<NamingType, String>, Error>>()?;
-
-    let endpoints = endpoints
-        .into_iter()
-        .map(|e| e.map_type(|t| Ok(name_type(t, &name_lookup))))
-        .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
+    let (endpoints, name_lookup) = to_named_types(endpoints, def_names)?;
 
     let mut render_order = name_lookup
         .iter()
@@ -109,6 +78,43 @@ pub fn go() -> Result<(), Error> {
     }
 
     Ok(())
+}
+
+fn to_named_types(endpoints: Vec<Endpoint<FullType>>, mut def_names: HashMap<NamingType, Vec<String>>) -> Result<(Vec<Endpoint<NamedType>>, HashMap<NamingType, String>), Error> {
+    for endpoint in &endpoints {
+        endpoint.visit_type(|t, name_hints| extract_names(&t, &name_hints, &mut def_names));
+    }
+
+    let mut banned_names = HashSet::new();
+    'trying: loop {
+        let mut used = HashSet::new();
+        for possible_names in def_names.values() {
+            let chosen = first_not_in(possible_names, &banned_names)?;
+
+            if used.contains(chosen) {
+                banned_names.insert(chosen.to_string());
+                continue 'trying;
+            }
+
+            used.insert(chosen);
+        }
+
+        break;
+    }
+
+    let name_lookup = def_names
+        .into_iter()
+        .map(|(field, possible_names)| {
+            first_not_in(&possible_names, &banned_names).map(|new| (field, new.to_string()))
+        })
+        .collect::<Result<HashMap<NamingType, String>, Error>>()?;
+
+    let endpoints = endpoints
+        .into_iter()
+        .map(|e| e.map_type(|t| Ok(name_type(t, &name_lookup))))
+        .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
+
+    Ok((endpoints, name_lookup))
 }
 
 fn extract_names(
