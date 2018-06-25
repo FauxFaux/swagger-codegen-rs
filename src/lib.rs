@@ -40,7 +40,7 @@ pub fn go() -> Result<(), Error> {
         doc["paths"]
             .as_hash()
             .ok_or_else(|| format_err!("no paths"))?,
-    ).with_context(|_| format_err!("processing definitions"))?;
+    ).with_context(|_| format_err!("loading full types from yaml"))?;
 
     for endpoint in &endpoints {
         endpoint.visit_type(|t, name_hints| extract_names(&t, &name_hints, &mut def_names));

@@ -29,7 +29,8 @@ pub fn load_endpoints_and_names(
         .map(|field| (field.name.to_string(), field))
         .collect();
 
-    let endpoints = super::partial_paths::paths(paths)?
+    let endpoints = super::partial_paths::paths(paths)
+        .with_context(|_| format_err!("processing paths"))?
         .into_iter()
         .map(|e| e.map_type(|t| deref(&definitions, t)))
         .collect::<Result<Endpoints, Error>>()?;
