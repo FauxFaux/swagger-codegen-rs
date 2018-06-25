@@ -31,7 +31,7 @@ pub fn load_endpoints_and_names(
 
     let endpoints = super::partial_paths::paths(paths)?
         .into_iter()
-        .map(|e| e.map_type(|t, _| deref(&definitions, t)))
+        .map(|e| e.map_type(|t| deref(&definitions, t)))
         .collect::<Result<Endpoints, Error>>()?;
 
     Ok((endpoints, reverse_definitions(&definitions)?))

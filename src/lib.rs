@@ -42,16 +42,9 @@ pub fn go() -> Result<(), Error> {
             .ok_or_else(|| format_err!("no paths"))?,
     ).with_context(|_| format_err!("processing definitions"))?;
 
-    let endpoints = endpoints
-        .into_iter()
-        .map(|e| {
-            e.map_type(|t, name_hints| {
-                extract_names(&t, &name_hints, &mut def_names);
-
-                Ok(t)
-            })
-        })
-        .collect::<Result<Vec<Endpoint<FullType>>, Error>>()?;
+    for endpoint in &endpoints {
+        endpoint.visit_type(|t, name_hints| extract_names(&t, &name_hints, &mut def_names));
+    }
 
     let mut banned_names = HashSet::new();
     'trying: loop {
@@ -79,7 +72,7 @@ pub fn go() -> Result<(), Error> {
 
     let endpoints = endpoints
         .into_iter()
-        .map(|e| e.map_type(|t, _| Ok(name_type(t, &name_lookup))))
+        .map(|e| e.map_type(|t| Ok(name_type(t, &name_lookup))))
         .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
 
     let mut render_order = name_lookup

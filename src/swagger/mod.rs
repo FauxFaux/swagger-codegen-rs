@@ -189,25 +189,32 @@ pub enum StructContextPlace {
 impl<T> Endpoint<T> {
     pub fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
     where
-        F: FnMut(T, StructContext) -> Result<R, Error>,
+        F: FnMut(T) -> Result<R, Error>,
     {
         Ok(Endpoint::<R> {
             path_url: self.path_url,
             ops: self
                 .ops
                 .into_iter()
-                .map(|(method, op)| {
-                    op.map_type(
-                        &mut func,
-                        StructContext {
-                            method,
-                            id: None,
-                            place: StructContextPlace::Unknown,
-                        },
-                    ).map(|op| (method, op))
-                })
+                .map(|(method, op)| op.map_type(&mut func).map(|op| (method, op)))
                 .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
         })
+    }
+
+    pub fn visit_type<F>(&self, mut func: F)
+    where
+        F: FnMut(&T, StructContext),
+    {
+        for (method, op) in &self.ops {
+            op.visit_type(
+                &mut func,
+                StructContext {
+                    method: *method,
+                    id: None,
+                    place: StructContextPlace::Unknown,
+                },
+            );
+        }
     }
 }
 
@@ -227,16 +234,10 @@ impl<T> Field<T> {
 }
 
 impl<T> Operation<T> {
-    fn map_type<F, R>(
-        self,
-        mut func: F,
-        mut name_hints: StructContext,
-    ) -> Result<Operation<R>, Error>
+    fn map_type<F, R>(self, mut func: F) -> Result<Operation<R>, Error>
     where
-        F: FnMut(T, StructContext) -> Result<R, Error>,
+        F: FnMut(T) -> Result<R, Error>,
     {
-        name_hints.id = Some(self.id.to_string());
-
         Ok(Operation::<R> {
             id: self.id,
             consumes: self.consumes,
@@ -244,48 +245,76 @@ impl<T> Operation<T> {
             params: self
                 .params
                 .into_iter()
-                .map(|p| p.map_type(&mut func, name_hints.clone()))
+                .map(|p| p.map_type(&mut func))
                 .collect::<Result<Vec<Param<R>>, Error>>()?,
             responses: self
                 .responses
                 .into_iter()
-                .map(|(code, resp)| {
-                    name_hints.place = StructContextPlace::Response(code);
-                    resp.map_type(&mut func, name_hints.clone())
-                        .map(|resp| (code, resp))
-                })
+                .map(|(code, resp)| resp.map_type(&mut func).map(|resp| (code, resp)))
                 .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
         })
+    }
+
+    pub fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
+    where
+        F: FnMut(&T, StructContext),
+    {
+        name_hint.id = Some(self.id.to_string());
+
+        for param in &self.params {
+            param.visit_type(&mut func, name_hint.clone());
+        }
+
+        for (code, response) in &self.responses {
+            name_hint.place = StructContextPlace::Response(*code);
+            response.visit_type(&mut func, name_hint.clone());
+        }
     }
 }
 
 impl<T> Param<T> {
-    fn map_type<F, R>(self, func: F, mut name_hint: StructContext) -> Result<Param<R>, Error>
+    fn map_type<F, R>(self, func: F) -> Result<Param<R>, Error>
     where
-        F: FnOnce(T, StructContext) -> Result<R, Error>,
+        F: FnOnce(T) -> Result<R, Error>,
     {
-        name_hint.place = StructContextPlace::Paramter(self.name.to_string());
-
         Ok(Param::<R> {
             name: self.name,
             loc: self.loc,
             description: self.description,
             required: self.required,
-            param_type: func(self.param_type, name_hint)?,
+            param_type: func(self.param_type)?,
         })
+    }
+
+    pub fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
+    where
+        F: FnMut(&T, StructContext),
+    {
+        name_hint.place = StructContextPlace::Paramter(self.name.to_string());
+
+        func(&self.param_type, name_hint)
     }
 }
 
 impl<T> Response<T> {
-    fn map_type<F, R>(self, func: F, name_hint: StructContext) -> Result<Response<R>, Error>
+    fn map_type<F, R>(self, func: F) -> Result<Response<R>, Error>
     where
-        F: FnOnce(T, StructContext) -> Result<R, Error>,
+        F: FnOnce(T) -> Result<R, Error>,
     {
         Ok(Response::<R> {
             description: self.description,
             headers: self.headers,
-            resp_type: self.resp_type.map(|v| func(v, name_hint)).invert()?,
+            resp_type: self.resp_type.map(|v| func(v)).invert()?,
         })
+    }
+
+    pub fn visit_type<F>(&self, mut func: F, name_hint: StructContext)
+    where
+        F: FnMut(&T, StructContext),
+    {
+        if let Some(resp_type) = self.resp_type.as_ref() {
+            func(resp_type, name_hint);
+        }
     }
 }
 
