@@ -16,7 +16,7 @@ pub fn to_named_types(
 ) -> Result<
     (
         Vec<Endpoint<NamedType>>,
-        HashMap<String, NamingType<NamedType>>,
+        Vec<(String, NamingType<NamedType>)>,
     ),
     Error,
 > {
@@ -112,13 +112,7 @@ fn first_not_in<'s>(
 
 fn to_render_order(
     name_lookup: HashMap<NamingType<FullType>, String>,
-) -> Result<HashMap<String, NamingType<NamedType>>, Error> {
-    let mut render_order = name_lookup
-        .iter()
-        .map(|(k, v)| (v, k))
-        .collect::<Vec<(&String, &NamingType<FullType>)>>();
-    render_order.sort_by_key(|(k, _)| k.to_string());
-
+) -> Result<Vec<(String, NamingType<NamedType>)>, Error> {
     //let render_order = render_order.into_iter().map(|(name, naming)|
     //    (name, match naming {
     //        NamingType::Field(fields) => NamingType::Field(fields.into_iter().map(|f| f.map_type(|t| {
@@ -126,10 +120,10 @@ fn to_render_order(
     //        })).collect::<Result<Vec<Field<NamedType>>, Error>>()?)
     //    })).collect::<Result<Vec<(&String, &NamingType<NamedType>)>, Error>>()?;
 
-    let mut nicer_order = HashMap::new();
+    let mut render_order = Vec::new();
 
-    for (name, naming) in render_order {
-        nicer_order.insert(
+    for (naming, name) in &name_lookup {
+        render_order.push((
             name.to_string(),
             match naming {
                 NamingType::Field(fields) => NamingType::Field(
@@ -142,8 +136,10 @@ fn to_render_order(
                     NamingType::Enum(values.to_vec(), default.clone())
                 }
             },
-        );
+        ));
     }
 
-    Ok(nicer_order)
+    render_order.sort_by_key(|(k, _)| k.to_string());
+
+    Ok(render_order)
 }

@@ -10,14 +10,10 @@ extern crate yaml_rust;
 mod render;
 mod swagger;
 
-use std::collections::HashMap;
-
 use failure::Error;
 use failure::ResultExt;
 
 use swagger::Field;
-use swagger::FullType;
-use swagger::NamedType;
 
 #[derive(Clone, Hash, Eq, PartialEq, Debug)]
 pub enum NamingType<T> {
