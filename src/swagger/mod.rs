@@ -204,7 +204,7 @@ struct StructContext {
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 enum StructContextPlace {
     Response(u16),
-    Paramter(String),
+    Parameter(String),
     Unknown,
 }
 
@@ -312,7 +312,7 @@ impl<T> Param<T> {
     where
         F: FnMut(&T, StructContext),
     {
-        name_hint.place = StructContextPlace::Paramter(self.name.to_string());
+        name_hint.place = StructContextPlace::Parameter(self.name.to_string());
 
         func(&self.param_type, name_hint)
     }
@@ -361,7 +361,7 @@ impl StructContext {
                 ret.push(format!("{}{}", id, code));
                 ret.push(format!("{}Response{}", id, code));
             }
-            StructContextPlace::Paramter(name) => {
+            StructContextPlace::Parameter(name) => {
                 ret.push(format!("{}{}", id, name.to_camel_case()));
                 ret.push(format!("{}Param{}", id, name.to_camel_case()));
             }
