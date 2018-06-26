@@ -220,7 +220,7 @@ impl<T> Endpoint<T> {
 }
 
 impl<T> Field<T> {
-    fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
+    pub fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
     where
         F: FnOnce(T) -> Result<R, Error>,
     {
