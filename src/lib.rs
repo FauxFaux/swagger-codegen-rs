@@ -57,6 +57,8 @@ pub fn go() -> Result<(), Error> {
         }
     }
 
+    render::render_endpoints(&mut stdout, &endpoints)?;
+
     Ok(())
 }
 

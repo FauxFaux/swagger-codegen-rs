@@ -1,10 +1,12 @@
+use std::collections::HashSet;
 use std::io::Write;
 
 use cast::i64;
 use failure::Error;
+use mime;
 
-use std::collections::HashSet;
 use swagger::DataType;
+use swagger::Endpoint;
 use swagger::IntegerFormat;
 use swagger::NamedType;
 
@@ -135,4 +137,37 @@ mod tests {
         use super::rustify_enum_constant;
         assert_eq!("Foobar", rustify_enum_constant("foo.bar")); // not ideal
     }
+}
+
+pub fn render_endpoints<W: Write>(
+    mut into: W,
+    endpoints: &[Endpoint<NamedType>],
+) -> Result<(), Error> {
+    for endpoint in endpoints {
+        render_endpoint(&mut into, endpoint)?;
+    }
+
+    Ok(())
+}
+
+fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Result<(), Error> {
+    for (method, op) in &endpoint.ops {
+        match op.produces.len() {
+            0 => (),
+            1 => match (op.produces[0].type_(), op.produces[0].subtype()) {
+                (mime::APPLICATION, mime::JSON) => (),
+                (mime::APPLICATION, mime::OCTET_STREAM) => (),
+                (mime::TEXT, mime::PLAIN) => (),
+                //(mime::APPLICATION, mime::Name::new)
+                other => bail!("unimplemented production type: {:?}", other),
+            },
+            _ => bail!("wrong number of productions: {:?}", op.produces),
+        }
+
+        writeln!(into, "/// {:?} {}", method, endpoint.path_url)?;
+        for param in &op.params {
+            writeln!(into, "///   {:?} {}", method, endpoint.path_url)?;
+        }
+    }
+    Ok(())
 }
