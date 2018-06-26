@@ -113,31 +113,21 @@ fn first_not_in<'s>(
 fn to_render_order(
     name_lookup: HashMap<NamingType<FullType>, String>,
 ) -> Result<Vec<(String, NamingType<NamedType>)>, Error> {
-    //let render_order = render_order.into_iter().map(|(name, naming)|
-    //    (name, match naming {
-    //        NamingType::Field(fields) => NamingType::Field(fields.into_iter().map(|f| f.map_type(|t| {
-    //            Ok(swagger::name::name_type(t, &name_lookup))
-    //        })).collect::<Result<Vec<Field<NamedType>>, Error>>()?)
-    //    })).collect::<Result<Vec<(&String, &NamingType<NamedType>)>, Error>>()?;
-
-    let mut render_order = Vec::new();
-
-    for (naming, name) in &name_lookup {
-        render_order.push((
-            name.to_string(),
+    let mut render_order = name_lookup
+        .iter()
+        .map(|(naming, name)| {
             match naming {
-                NamingType::Field(fields) => NamingType::Field(
-                    fields
-                        .into_iter()
-                        .map(|f| f.clone().map_type(|t| Ok(name_type(t, &name_lookup))))
-                        .collect::<Result<Vec<Field<NamedType>>, Error>>()?,
-                ),
+                NamingType::Field(fields) => fields
+                    .into_iter()
+                    .map(|f| f.clone().map_type(|t| Ok(name_type(t, &name_lookup))))
+                    .collect::<Result<Vec<Field<NamedType>>, Error>>()
+                    .map(|vec| NamingType::Field(vec)),
                 NamingType::Enum(values, default) => {
-                    NamingType::Enum(values.to_vec(), default.clone())
+                    Ok(NamingType::Enum(values.to_vec(), default.clone()))
                 }
-            },
-        ));
-    }
+            }.map(|naming| (name.to_string(), naming))
+        })
+        .collect::<Result<Vec<(String, NamingType<NamedType>)>, Error>>()?;
 
     render_order.sort_by_key(|(k, _)| k.to_string());
 
