@@ -4,6 +4,7 @@ use std::collections::HashSet;
 use failure::Error;
 
 use swagger::Endpoint;
+use swagger::Field;
 use swagger::FullType;
 use swagger::NamedType;
 use swagger::StructContext;
@@ -15,7 +16,7 @@ pub fn to_named_types(
 ) -> Result<
     (
         Vec<Endpoint<NamedType>>,
-        HashMap<NamingType<FullType>, String>,
+        HashMap<String, NamingType<NamedType>>,
     ),
     Error,
 > {
@@ -52,7 +53,7 @@ pub fn to_named_types(
         .map(|e| e.map_type(|t| Ok(name_type(t, &name_lookup))))
         .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
 
-    Ok((endpoints, name_lookup))
+    Ok((endpoints, to_render_order(name_lookup)?))
 }
 
 fn extract_names(
@@ -107,4 +108,42 @@ fn first_not_in<'s>(
         .iter()
         .find(|n| !blacklist.contains(*n))
         .ok_or_else(|| format_err!("No remaining names: {:?}", container))
+}
+
+fn to_render_order(
+    name_lookup: HashMap<NamingType<FullType>, String>,
+) -> Result<HashMap<String, NamingType<NamedType>>, Error> {
+    let mut render_order = name_lookup
+        .iter()
+        .map(|(k, v)| (v, k))
+        .collect::<Vec<(&String, &NamingType<FullType>)>>();
+    render_order.sort_by_key(|(k, _)| k.to_string());
+
+    //let render_order = render_order.into_iter().map(|(name, naming)|
+    //    (name, match naming {
+    //        NamingType::Field(fields) => NamingType::Field(fields.into_iter().map(|f| f.map_type(|t| {
+    //            Ok(swagger::name::name_type(t, &name_lookup))
+    //        })).collect::<Result<Vec<Field<NamedType>>, Error>>()?)
+    //    })).collect::<Result<Vec<(&String, &NamingType<NamedType>)>, Error>>()?;
+
+    let mut nicer_order = HashMap::new();
+
+    for (name, naming) in render_order {
+        nicer_order.insert(
+            name.to_string(),
+            match naming {
+                NamingType::Field(fields) => NamingType::Field(
+                    fields
+                        .into_iter()
+                        .map(|f| f.clone().map_type(|t| Ok(name_type(t, &name_lookup))))
+                        .collect::<Result<Vec<Field<NamedType>>, Error>>()?,
+                ),
+                NamingType::Enum(values, default) => {
+                    NamingType::Enum(values.to_vec(), default.clone())
+                }
+            },
+        );
+    }
+
+    Ok(nicer_order)
 }
