@@ -10,10 +10,10 @@ use result::ResultOptionExt;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
-pub mod full;
-pub mod name;
-pub mod partial_definitions;
-pub mod partial_paths;
+mod full;
+mod name;
+mod partial_definitions;
+mod partial_paths;
 
 pub fn load(
     definitions: &Hash,
@@ -56,7 +56,7 @@ pub enum NamedType {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum FullType {
+pub(self) enum FullType {
     Simple(DataType),
     Fields(Vec<Field<FullType>>),
     Array {
@@ -71,7 +71,7 @@ pub enum FullType {
 }
 
 #[derive(Debug, Clone)]
-pub enum PartialType {
+pub(self) enum PartialType {
     Simple(DataType),
     Fields(Vec<Field<PartialType>>),
     Array {
@@ -143,42 +143,42 @@ pub enum DataType {
 
 #[derive(Debug, Clone)]
 pub struct Endpoint<T> {
-    pub path_url: String,
-    pub ops: HashMap<HttpMethod, Operation<T>>,
+    path_url: String,
+    ops: HashMap<HttpMethod, Operation<T>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Operation<T> {
-    pub id: String,
-    pub params: Vec<Param<T>>,
-    pub consumes: Vec<Mime>,
-    pub produces: Vec<Mime>,
-    pub responses: HashMap<u16, Response<T>>,
+struct Operation<T> {
+    id: String,
+    params: Vec<Param<T>>,
+    consumes: Vec<Mime>,
+    produces: Vec<Mime>,
+    responses: HashMap<u16, Response<T>>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Param<T> {
-    pub name: String,
-    pub loc: ParamLocation,
-    pub description: String,
-    pub required: Option<bool>,
-    pub param_type: T,
+struct Param<T> {
+    name: String,
+    loc: ParamLocation,
+    description: String,
+    required: Option<bool>,
+    param_type: T,
 }
 
 #[derive(Debug, Clone)]
-pub struct Response<T> {
+struct Response<T> {
     description: String,
     headers: HashMap<String, Header>,
     resp_type: Option<T>,
 }
 
 #[derive(Debug, Clone)]
-pub struct Header {
+struct Header {
     header_type: DataType,
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq, Hash)]
-pub enum HttpMethod {
+enum HttpMethod {
     GET,
     POST,
     HEAD,
@@ -187,7 +187,7 @@ pub enum HttpMethod {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-pub enum ParamLocation {
+enum ParamLocation {
     Query,
     Body,
     Path,
@@ -195,21 +195,21 @@ pub enum ParamLocation {
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub struct StructContext {
+struct StructContext {
     method: HttpMethod,
-    pub id: Option<String>,
+    id: Option<String>,
     place: StructContextPlace,
 }
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
-pub enum StructContextPlace {
+enum StructContextPlace {
     Response(u16),
     Paramter(String),
     Unknown,
 }
 
 impl<T> Endpoint<T> {
-    pub fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
+    fn map_type<F, R>(self, mut func: F) -> Result<Endpoint<R>, Error>
     where
         F: FnMut(T) -> Result<R, Error>,
     {
@@ -223,7 +223,7 @@ impl<T> Endpoint<T> {
         })
     }
 
-    pub fn visit_type<F>(&self, mut func: F)
+    fn visit_type<F>(&self, mut func: F)
     where
         F: FnMut(&T, StructContext),
     {
@@ -241,7 +241,7 @@ impl<T> Endpoint<T> {
 }
 
 impl<T> Field<T> {
-    pub fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
+    fn map_type<F, R>(self, func: F) -> Result<Field<R>, Error>
     where
         F: FnOnce(T) -> Result<R, Error>,
     {
@@ -277,7 +277,7 @@ impl<T> Operation<T> {
         })
     }
 
-    pub fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
+    fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
     where
         F: FnMut(&T, StructContext),
     {
@@ -308,7 +308,7 @@ impl<T> Param<T> {
         })
     }
 
-    pub fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
+    fn visit_type<F>(&self, mut func: F, mut name_hint: StructContext)
     where
         F: FnMut(&T, StructContext),
     {
@@ -330,7 +330,7 @@ impl<T> Response<T> {
         })
     }
 
-    pub fn visit_type<F>(&self, mut func: F, name_hint: StructContext)
+    fn visit_type<F>(&self, mut func: F, name_hint: StructContext)
     where
         F: FnMut(&T, StructContext),
     {
@@ -341,7 +341,7 @@ impl<T> Response<T> {
 }
 
 impl StructContext {
-    pub fn recommended_names(&self) -> impl Iterator<Item = String> {
+    fn recommended_names(&self) -> impl Iterator<Item = String> {
         let mut ret = Vec::new();
         use heck::CamelCase;
 

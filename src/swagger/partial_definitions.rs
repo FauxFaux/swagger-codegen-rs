@@ -6,7 +6,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn properties_to_fields(
+pub(super) fn properties_to_fields(
     required: &[&str],
     hash: &Hash,
 ) -> Result<Vec<Field<PartialType>>, Error> {
@@ -70,7 +70,10 @@ pub fn properties_to_fields(
     Ok(ret)
 }
 
-pub fn field_type(field: &Hash, current_keys: &mut HashSet<&str>) -> Result<PartialType, Error> {
+pub(super) fn field_type(
+    field: &Hash,
+    current_keys: &mut HashSet<&str>,
+) -> Result<PartialType, Error> {
     Ok(if current_keys.remove("properties") {
         if current_keys.remove("type") {
             let object = get_string(field, "type")?;

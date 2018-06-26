@@ -11,11 +11,11 @@ use swagger::FullType;
 use swagger::NamingType;
 use swagger::PartialType;
 
-pub type Defs = HashMap<String, Field<PartialType>>;
-pub type DefNames = HashMap<NamingType<FullType>, Vec<String>>;
-pub type Endpoints = Vec<Endpoint<FullType>>;
+type Defs = HashMap<String, Field<PartialType>>;
+type DefNames = HashMap<NamingType<FullType>, Vec<String>>;
+type Endpoints = Vec<Endpoint<FullType>>;
 
-pub fn load_endpoints_and_names(
+pub(super) fn load_endpoints_and_names(
     definitions: &Hash,
     paths: &Hash,
 ) -> Result<(Endpoints, DefNames), Error> {

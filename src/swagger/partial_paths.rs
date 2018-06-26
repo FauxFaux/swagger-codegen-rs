@@ -5,7 +5,7 @@ use yaml_rust::yaml::Hash;
 
 use super::*;
 
-pub fn paths(paths: &Hash) -> Result<Vec<Endpoint<PartialType>>, Error> {
+pub(super) fn paths(paths: &Hash) -> Result<Vec<Endpoint<PartialType>>, Error> {
     let mut ret = Vec::new();
     for (path_url, path) in paths {
         let path_url: &str = path_url

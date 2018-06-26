@@ -10,7 +10,7 @@ use swagger::NamedType;
 use swagger::StructContext;
 use NamingType;
 
-pub fn to_named_types(
+pub(super) fn to_named_types(
     endpoints: Vec<Endpoint<FullType>>,
     mut def_names: HashMap<NamingType<FullType>, Vec<String>>,
 ) -> Result<
@@ -85,7 +85,7 @@ fn extract_names(
     }
 }
 
-pub fn name_type(t: FullType, names: &HashMap<NamingType<FullType>, String>) -> NamedType {
+fn name_type(t: FullType, names: &HashMap<NamingType<FullType>, String>) -> NamedType {
     match t {
         FullType::Fields(fields) => NamedType::Name(names[&NamingType::Field(fields)].to_string()),
         FullType::Enum { values, default } => {
