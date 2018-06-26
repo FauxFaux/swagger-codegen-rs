@@ -4,7 +4,6 @@ use std::collections::HashSet;
 use cast::f64;
 use failure::Error;
 use failure::ResultExt;
-use mime::Mime;
 use ordered_float::OrderedFloat;
 use result::ResultOptionExt;
 use yaml_rust::yaml::Hash;
@@ -14,6 +13,8 @@ mod full;
 mod name;
 mod partial_definitions;
 mod partial_paths;
+
+pub type Mime = String;
 
 pub fn load(
     definitions: &Hash,

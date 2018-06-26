@@ -3,7 +3,7 @@ use std::io::Write;
 
 use cast::i64;
 use failure::Error;
-use mime;
+use failure::ResultExt;
 
 use swagger::DataType;
 use swagger::Endpoint;
@@ -144,7 +144,8 @@ pub fn render_endpoints<W: Write>(
     endpoints: &[Endpoint<NamedType>],
 ) -> Result<(), Error> {
     for endpoint in endpoints {
-        render_endpoint(&mut into, endpoint)?;
+        render_endpoint(&mut into, endpoint)
+            .with_context(|_| format_err!("rendering endpoint: {:?}", endpoint.path_url))?;
     }
 
     Ok(())
@@ -154,11 +155,12 @@ fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Res
     for (method, op) in &endpoint.ops {
         match op.produces.len() {
             0 => (),
-            1 => match (op.produces[0].type_(), op.produces[0].subtype()) {
-                (mime::APPLICATION, mime::JSON) => (),
-                (mime::APPLICATION, mime::OCTET_STREAM) => (),
-                (mime::TEXT, mime::PLAIN) => (),
-                //(mime::APPLICATION, mime::Name::new)
+            1 => match op.produces[0].as_ref() {
+                "application/json" => (),
+                "application/octet-stream" => (),
+                "text/plain" => (),
+                "application/vnd.docker.raw-stream" => (),
+                "application/x-tar" => (),
                 other => bail!("unimplemented production type: {:?}", other),
             },
             _ => bail!("wrong number of productions: {:?}", op.produces),

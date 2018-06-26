@@ -1,6 +1,5 @@
 use cast::u16;
 use failure::Error;
-use mime::Mime;
 use yaml_rust::yaml::Hash;
 
 use super::*;
