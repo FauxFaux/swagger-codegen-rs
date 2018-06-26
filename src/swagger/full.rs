@@ -8,8 +8,8 @@ use yaml_rust::yaml::Hash;
 use swagger::Endpoint;
 use swagger::Field;
 use swagger::FullType;
+use swagger::NamingType;
 use swagger::PartialType;
-use NamingType;
 
 pub type Defs = HashMap<String, Field<PartialType>>;
 pub type DefNames = HashMap<NamingType<FullType>, Vec<String>>;

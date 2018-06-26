@@ -1,11 +1,12 @@
+use std::collections::HashMap;
+use std::collections::HashSet;
+
 use cast::f64;
 use failure::Error;
 use failure::ResultExt;
 use mime::Mime;
 use ordered_float::OrderedFloat;
 use result::ResultOptionExt;
-use std::collections::HashMap;
-use std::collections::HashSet;
 use yaml_rust::yaml::Hash;
 use yaml_rust::Yaml;
 
@@ -13,6 +14,26 @@ pub mod full;
 pub mod name;
 pub mod partial_definitions;
 pub mod partial_paths;
+
+pub fn load(
+    definitions: &Hash,
+    paths: &Hash,
+) -> Result<
+    (
+        Vec<Endpoint<NamedType>>,
+        Vec<(String, NamingType<NamedType>)>,
+    ),
+    Error,
+> {
+    let (endpoints, def_names) = full::load_endpoints_and_names(definitions, paths)?;
+    name::to_named_types(endpoints, def_names)
+}
+
+#[derive(Clone, Hash, Eq, PartialEq, Debug)]
+pub enum NamingType<T> {
+    Field(Vec<Field<T>>),
+    Enum(Vec<String>, Option<String>),
+}
 
 #[derive(Debug, Clone, Eq, PartialEq, Hash)]
 pub struct Field<T> {
