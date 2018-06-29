@@ -153,6 +153,8 @@ pub fn render_endpoints<W: Write>(
 
 fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Result<(), Error> {
     for (method, op) in &endpoint.ops {
+        #[cfg(never)]
+        // looking at this is kinda useless as it can list two types, with no association with where they go
         match op.produces.len() {
             0 => (),
             1 => match op.produces[0].as_ref() {
@@ -164,6 +166,12 @@ fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Res
                 other => bail!("unimplemented production type: {:?}", other),
             },
             _ => bail!("wrong number of productions: {:?}", op.produces),
+        }
+
+        #[cfg(never)] // sigh, this either
+        match op.consumes.len() {
+            0 | 1 => (),
+            _ => bail!("wrong number of consumptions: {:?}", op.consumes),
         }
 
         writeln!(into, "/// {:?} {}", method, endpoint.path_url)?;
