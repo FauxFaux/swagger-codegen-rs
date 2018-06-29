@@ -7,8 +7,26 @@ use failure::ResultExt;
 
 use swagger::DataType;
 use swagger::Endpoint;
+use swagger::Field;
 use swagger::IntegerFormat;
 use swagger::NamedType;
+use swagger::NamingType;
+
+pub fn render_definitions<W: Write>(
+    mut into: W,
+    definitions: &[(String, NamingType<NamedType>)],
+) -> Result<(), Error> {
+    for (name, naming) in definitions {
+        match naming {
+            NamingType::Field(fields) => render_struct(&mut into, &name, &fields)?,
+            NamingType::Enum(values, default) => {
+                render_enum(&mut into, &name, &values, default.as_ref())?
+            }
+        }
+    }
+
+    Ok(())
+}
 
 pub fn render(t: &NamedType) -> String {
     match t {
@@ -69,6 +87,27 @@ fn render_simple(simple: &DataType) -> String {
             )
         }
     }
+}
+
+pub fn render_struct<W: Write>(
+    mut into: W,
+    name: &str,
+    fields: &[Field<NamedType>],
+) -> Result<(), Error> {
+    use heck::SnakeCase;
+
+    writeln!(into, "struct {} {{", name)?;
+    for field in fields {
+        writeln!(
+            into,
+            "    {}: {},",
+            field.name.to_snake_case(),
+            render(&field.data_type)
+        )?;
+    }
+    writeln!(into, "}}")?;
+
+    Ok(())
 }
 
 pub fn render_enum<W: Write>(

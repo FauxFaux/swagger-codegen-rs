@@ -9,8 +9,6 @@ extern crate yaml_rust;
 mod render;
 mod swagger;
 
-use std::io::Write;
-
 use failure::Error;
 use failure::ResultExt;
 
@@ -33,28 +31,7 @@ pub fn go() -> Result<(), Error> {
                 .ok_or_else(|| format_err!("no paths"))?,
         ).with_context(|_| format_err!("loading full types from yaml"))?;
 
-    for (name, naming) in definitions {
-        use heck::SnakeCase;
-
-        match naming {
-            NamingType::Field(fields) => {
-                writeln!(stdout, "struct {} {{", name)?;
-                for field in fields {
-                    writeln!(
-                        stdout,
-                        "    {}: {},",
-                        field.name.to_snake_case(),
-                        render::render(&field.data_type,)
-                    )?;
-                }
-                writeln!(stdout, "}}")?;
-            }
-
-            NamingType::Enum(values, default) => {
-                render::render_enum(&mut stdout, &name, &values, default.as_ref())?
-            }
-        }
-    }
+    render::render_definitions(&mut stdout, &definitions)?;
 
     render::render_endpoints(&mut stdout, &endpoints)?;
 
