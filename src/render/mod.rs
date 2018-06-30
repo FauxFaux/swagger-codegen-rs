@@ -94,14 +94,12 @@ pub fn render_struct<W: Write>(
     name: &str,
     fields: &[Field<NamedType>],
 ) -> Result<(), Error> {
-    use heck::SnakeCase;
-
     writeln!(into, "struct {} {{", name)?;
     for field in fields {
         writeln!(
             into,
             "    {}: {},",
-            field.name.to_snake_case(),
+            rustify_field_name(&field.name),
             render(&field.data_type)
         )?;
     }
@@ -143,6 +141,15 @@ pub fn render_enum<W: Write>(
         writeln!(into, "}}")?;
     }
     Ok(())
+}
+
+fn rustify_field_name(name: &str) -> String {
+    use heck::SnakeCase;
+    let mut name = name.to_snake_case();
+    if ["type"].contains(&name.as_ref()) {
+        name.push('_');
+    }
+    name
 }
 
 fn rustify_enum_constant(name: &str) -> String {
@@ -213,9 +220,9 @@ fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Res
             _ => bail!("wrong number of consumptions: {:?}", op.consumes),
         }
 
-        writeln!(into, "/// {:?} {}", method, endpoint.path_url)?;
+        writeln!(into, "// {:?} {}", method, endpoint.path_url)?;
         for param in &op.params {
-            writeln!(into, "///   {:?} {}", method, endpoint.path_url)?;
+            writeln!(into, "//   {:?} {}", method, endpoint.path_url)?;
         }
     }
     Ok(())
