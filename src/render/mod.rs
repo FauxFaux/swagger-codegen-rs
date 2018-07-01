@@ -318,7 +318,24 @@ fn render_op<W: Write>(
         url = "url".to_string();
     }
 
+    if !headers.is_empty() {
+        writeln!(into, "    let mut headers = Headers::new();")?;
+        for header in &headers {
+            writeln!(
+                into,
+                "    headers.set_raw(\"{}\", {});",
+                header.name,
+                rustify_field_name(&header.name)
+            )?;
+        }
+    }
+
     writeln!(into, "    client.{}({})", method.reqwest_method_name(), url,)?;
+
+    if !headers.is_empty() {
+        writeln!(into, "        .headers(headers)")?;
+    }
+
     if let Some(body) = body {
         match body.param_type {
             NamedType::Unknown | NamedType::Simple(DataType::Binary) => {
