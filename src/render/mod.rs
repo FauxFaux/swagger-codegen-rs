@@ -100,6 +100,7 @@ pub fn render_struct<W: Write>(
     writeln!(into, "#[derive(Clone, PartialEq, Serialize, Deserialize)]")?;
     writeln!(into, "struct {} {{", name)?;
     for field in fields {
+        writeln!(into, "    #[serde(rename = \"{}\")]", field.name)?;
         writeln!(
             into,
             "    {}: {},",
