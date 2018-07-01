@@ -297,11 +297,20 @@ fn render_op<W: Write>(
     if !queries.is_empty() {
         writeln!(into, "    let url = Url::parse_with_params({}, &[", url)?;
         for query in queries {
+            let input = rustify_field_name(&query.name);
             writeln!(
                 into,
-                "        (\"{}\", format!(\"{{}}\", {})),",
+                "        (\"{}\", {}),",
                 query.name,
-                rustify_field_name(&query.name)
+                match query.param_type {
+                    NamedType::Simple(DataType::String { .. })
+                    | NamedType::Simple(DataType::MatchString { .. }) => {
+                        format!("{}.to_string()", input)
+                    }
+                    // TODO: this is what DOCKER wants, surely other people want different things?
+                    NamedType::Array { .. } => format!("{}.to_vec().join(\",\")", input),
+                    _ => format!("format!(\"{{}}\", {})", input),
+                }
             )?;
         }
         writeln!(into, "    ])?;")?;
