@@ -42,6 +42,6 @@ mod tests {
 
     #[test]
     fn test() {
-        ::go(fs::File::create("a.rs").unwrap()).unwrap()
+        ::go(fs::File::create("demo/src/docker_gen.rs").unwrap()).unwrap()
     }
 }
