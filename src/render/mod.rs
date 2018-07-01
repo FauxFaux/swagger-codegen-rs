@@ -143,7 +143,7 @@ pub fn render_enum<W: Write>(
         writeln!(into)?;
         writeln!(into, "impl Default for {} {{", name)?;
         writeln!(into, "    fn default() -> Self {{")?;
-        writeln!(into, "        Self::{}", rustify_enum_constant(default))?;
+        writeln!(into, "        {}::{}", name, rustify_enum_constant(default))?;
         writeln!(into, "    }}")?;
         writeln!(into, "}}")?;
     }

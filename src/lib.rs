@@ -40,8 +40,6 @@ pub fn go<W: Write>(mut into: W) -> Result<(), Error> {
 mod tests {
     extern crate tempfile_fast;
 
-    use std::fs;
-
     #[test]
     fn test() {
         let mut temp = self::tempfile_fast::PersistableTempFile::new_in("demo/src").unwrap();

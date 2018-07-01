@@ -99,11 +99,12 @@ fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> 
             let mut seen = HashSet::new();
             let mut dedup = Vec::new();
             for field in new {
-                if !seen.insert(field.name.to_string()) {
+                if seen.insert(field.name.to_string()) {
+                    dedup.push(field);
+                } else {
                     // TODO: validation, merge attributes, etc.
                     // TODO: No, really, this needs doing.
                 }
-                dedup.push(field);
             }
 
             FullType::Fields(dedup)

@@ -64,12 +64,6 @@ struct ConfigSpec {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-struct ContainerArchive {
-    message: String,
-    message: String,
-}
-
-#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerChanges {
     path: String,
     kind: u8,
@@ -697,7 +691,7 @@ enum ImageBuild {
 
 impl Default for ImageBuild {
     fn default() -> Self {
-        Self::Applicationxtar
+        ImageBuild::Applicationxtar
     }
 }
 
@@ -795,7 +789,7 @@ enum LocalNodeState {
 
 impl Default for LocalNodeState {
     fn default() -> Self {
-        Self::Empty
+        LocalNodeState::Empty
     }
 }
 
@@ -1299,7 +1293,7 @@ enum ServiceListSpecEndpointSpecMode {
 
 impl Default for ServiceListSpecEndpointSpecMode {
     fn default() -> Self {
-        Self::Vip
+        ServiceListSpecEndpointSpecMode::Vip
     }
 }
 
@@ -1313,7 +1307,7 @@ enum ServiceListSpecEndpointSpecPortsPublishMode {
 
 impl Default for ServiceListSpecEndpointSpecPortsPublishMode {
     fn default() -> Self {
-        Self::Ingress
+        ServiceListSpecEndpointSpecPortsPublishMode::Ingress
     }
 }
 
@@ -1635,7 +1629,7 @@ enum SystemDataUsageVolumesScope {
 
 impl Default for SystemDataUsageVolumesScope {
     fn default() -> Self {
-        Self::Local
+        SystemDataUsageVolumesScope::Local
     }
 }
 
@@ -1731,7 +1725,7 @@ enum SystemInfoCgroupDriver {
 
 impl Default for SystemInfoCgroupDriver {
     fn default() -> Self {
-        Self::Cgroupfs
+        SystemInfoCgroupDriver::Cgroupfs
     }
 }
 
@@ -1765,7 +1759,7 @@ enum SystemInfoIsolation {
 
 impl Default for SystemInfoIsolation {
     fn default() -> Self {
-        Self::Default
+        SystemInfoIsolation::Default
     }
 }
 
@@ -1794,7 +1788,7 @@ enum SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
 
 impl Default for SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
     fn default() -> Self {
-        Self::Cfssl
+        SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol::Cfssl
     }
 }
 

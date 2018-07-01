@@ -50,7 +50,7 @@ pub(super) fn to_named_types(
 
     let endpoints = endpoints
         .into_iter()
-        .map(|e| e.map_type(|t| Ok(name_type(t, &name_lookup))))
+        .map(|e| e.map_type(|t| name_type(t, &name_lookup)))
         .collect::<Result<Vec<Endpoint<NamedType>>, Error>>()?;
 
     Ok((endpoints, to_render_order(name_lookup)?))
@@ -85,19 +85,22 @@ fn extract_names(
     }
 }
 
-fn name_type(t: FullType, names: &HashMap<NamingType<FullType>, String>) -> NamedType {
-    match t {
+fn name_type(
+    t: FullType,
+    names: &HashMap<NamingType<FullType>, String>,
+) -> Result<NamedType, Error> {
+    Ok(match t {
         FullType::Fields(fields) => NamedType::Name(names[&NamingType::Field(fields)].to_string()),
         FullType::Enum { values, default } => {
             NamedType::Name(names[&NamingType::Enum(values, default)].to_string())
         }
         FullType::Array { tee, constraints } => NamedType::Array {
-            tee: Box::new(name_type(*tee, names)),
+            tee: Box::new(name_type(*tee, names)?),
             constraints,
         },
         FullType::Simple(simple) => NamedType::Simple(simple),
         FullType::Unknown => NamedType::Unknown,
-    }
+    })
 }
 
 fn first_not_in<'s>(
@@ -119,7 +122,7 @@ fn to_render_order(
             match naming {
                 NamingType::Field(fields) => fields
                     .into_iter()
-                    .map(|f| f.clone().map_type(|t| Ok(name_type(t, &name_lookup))))
+                    .map(|f| f.clone().map_type(|t| name_type(t, &name_lookup)))
                     .collect::<Result<Vec<Field<NamedType>>, Error>>()
                     .map(|vec| NamingType::Field(vec)),
                 NamingType::Enum(values, default) => {
