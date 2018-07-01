@@ -247,6 +247,16 @@ enum ContainerCreateHostConfigIsolation {
     Hyperv,
 }
 
+impl ToString for ContainerCreateHostConfigIsolation {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerCreateHostConfigIsolation::Default => "default",
+            ContainerCreateHostConfigIsolation::Process => "process",
+            ContainerCreateHostConfigIsolation::Hyperv => "hyperv",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ContainerCreateHostConfigLogConfig {
     #[serde(rename = "Type")]
@@ -277,6 +287,22 @@ enum ContainerCreateHostConfigLogConfigType {
     None,
 }
 
+impl ToString for ContainerCreateHostConfigLogConfigType {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerCreateHostConfigLogConfigType::Jsonfile => "json-file",
+            ContainerCreateHostConfigLogConfigType::Syslog => "syslog",
+            ContainerCreateHostConfigLogConfigType::Journald => "journald",
+            ContainerCreateHostConfigLogConfigType::Gelf => "gelf",
+            ContainerCreateHostConfigLogConfigType::Fluentd => "fluentd",
+            ContainerCreateHostConfigLogConfigType::Awslogs => "awslogs",
+            ContainerCreateHostConfigLogConfigType::Splunk => "splunk",
+            ContainerCreateHostConfigLogConfigType::Etwlogs => "etwlogs",
+            ContainerCreateHostConfigLogConfigType::None => "none",
+        }.to_string()
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerCreateHostConfigRestartPolicyName {
     #[serde(rename = "")]
@@ -287,6 +313,17 @@ enum ContainerCreateHostConfigRestartPolicyName {
     Unlessstopped,
     #[serde(rename = "on-failure")]
     Onfailure,
+}
+
+impl ToString for ContainerCreateHostConfigRestartPolicyName {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerCreateHostConfigRestartPolicyName::Empty => "",
+            ContainerCreateHostConfigRestartPolicyName::Always => "always",
+            ContainerCreateHostConfigRestartPolicyName::Unlessstopped => "unless-stopped",
+            ContainerCreateHostConfigRestartPolicyName::Onfailure => "on-failure",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -427,6 +464,20 @@ enum ContainerInspectStateStatus {
     Dead,
 }
 
+impl ToString for ContainerInspectStateStatus {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerInspectStateStatus::Created => "created",
+            ContainerInspectStateStatus::Running => "running",
+            ContainerInspectStateStatus::Paused => "paused",
+            ContainerInspectStateStatus::Restarting => "restarting",
+            ContainerInspectStateStatus::Removing => "removing",
+            ContainerInspectStateStatus::Exited => "exited",
+            ContainerInspectStateStatus::Dead => "dead",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ContainerList {
     #[serde(rename = "Id")]
@@ -489,6 +540,19 @@ enum ContainerListMountsBindOptionsPropagation {
     Rslave,
 }
 
+impl ToString for ContainerListMountsBindOptionsPropagation {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerListMountsBindOptionsPropagation::Private => "private",
+            ContainerListMountsBindOptionsPropagation::Rprivate => "rprivate",
+            ContainerListMountsBindOptionsPropagation::Shared => "shared",
+            ContainerListMountsBindOptionsPropagation::Rshared => "rshared",
+            ContainerListMountsBindOptionsPropagation::Slave => "slave",
+            ContainerListMountsBindOptionsPropagation::Rslave => "rslave",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ContainerListMountsTmpfsOptions {
     #[serde(rename = "SizeBytes")]
@@ -505,6 +569,16 @@ enum ContainerListMountsType {
     Volume,
     #[serde(rename = "tmpfs")]
     Tmpfs,
+}
+
+impl ToString for ContainerListMountsType {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerListMountsType::Bind => "bind",
+            ContainerListMountsType::Volume => "volume",
+            ContainerListMountsType::Tmpfs => "tmpfs",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -539,6 +613,16 @@ enum ContainerListPortsType {
     Udp,
     #[serde(rename = "sctp")]
     Sctp,
+}
+
+impl ToString for ContainerListPortsType {
+    fn to_string(&self) -> String {
+        match self {
+            ContainerListPortsType::Tcp => "tcp",
+            ContainerListPortsType::Udp => "udp",
+            ContainerListPortsType::Sctp => "sctp",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1071,6 +1155,14 @@ impl Default for ImageBuild {
     }
 }
 
+impl ToString for ImageBuild {
+    fn to_string(&self) -> String {
+        match self {
+            ImageBuild::Applicationxtar => "application/x-tar",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ImageDeleteResponseItem {
     #[serde(rename = "Untagged")]
@@ -1202,6 +1294,19 @@ enum LocalNodeState {
 impl Default for LocalNodeState {
     fn default() -> Self {
         LocalNodeState::Empty
+    }
+}
+
+impl ToString for LocalNodeState {
+    fn to_string(&self) -> String {
+        match self {
+            LocalNodeState::Empty => "",
+            LocalNodeState::Inactive => "inactive",
+            LocalNodeState::Pending => "pending",
+            LocalNodeState::Active => "active",
+            LocalNodeState::Error => "error",
+            LocalNodeState::Locked => "locked",
+        }.to_string()
     }
 }
 
@@ -1445,12 +1550,31 @@ enum NodeListSpecAvailability {
     Drain,
 }
 
+impl ToString for NodeListSpecAvailability {
+    fn to_string(&self) -> String {
+        match self {
+            NodeListSpecAvailability::Active => "active",
+            NodeListSpecAvailability::Pause => "pause",
+            NodeListSpecAvailability::Drain => "drain",
+        }.to_string()
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum NodeListSpecRole {
     #[serde(rename = "worker")]
     Worker,
     #[serde(rename = "manager")]
     Manager,
+}
+
+impl ToString for NodeListSpecRole {
+    fn to_string(&self) -> String {
+        match self {
+            NodeListSpecRole::Worker => "worker",
+            NodeListSpecRole::Manager => "manager",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1475,6 +1599,17 @@ enum NodeState {
     Ready,
     #[serde(rename = "disconnected")]
     Disconnected,
+}
+
+impl ToString for NodeState {
+    fn to_string(&self) -> String {
+        match self {
+            NodeState::Unknown => "unknown",
+            NodeState::Down => "down",
+            NodeState::Ready => "ready",
+            NodeState::Disconnected => "disconnected",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1625,6 +1760,15 @@ enum PluginListConfigInterfaceProtocolScheme {
     Mobypluginshttpv1,
 }
 
+impl ToString for PluginListConfigInterfaceProtocolScheme {
+    fn to_string(&self) -> String {
+        match self {
+            PluginListConfigInterfaceProtocolScheme::Empty => "",
+            PluginListConfigInterfaceProtocolScheme::Mobypluginshttpv1 => "moby.plugins.http/v1",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct PluginListConfigLinux {
     #[serde(rename = "Capabilities")]
@@ -1761,6 +1905,16 @@ enum Reachability {
     Unreachable,
     #[serde(rename = "reachable")]
     Reachable,
+}
+
+impl ToString for Reachability {
+    fn to_string(&self) -> String {
+        match self {
+            Reachability::Unknown => "unknown",
+            Reachability::Unreachable => "unreachable",
+            Reachability::Reachable => "reachable",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1955,6 +2109,15 @@ impl Default for ServiceListSpecEndpointSpecMode {
     }
 }
 
+impl ToString for ServiceListSpecEndpointSpecMode {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecEndpointSpecMode::Vip => "vip",
+            ServiceListSpecEndpointSpecMode::Dnsrr => "dnsrr",
+        }.to_string()
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecEndpointSpecPortsPublishMode {
     #[serde(rename = "ingress")]
@@ -1966,6 +2129,15 @@ enum ServiceListSpecEndpointSpecPortsPublishMode {
 impl Default for ServiceListSpecEndpointSpecPortsPublishMode {
     fn default() -> Self {
         ServiceListSpecEndpointSpecPortsPublishMode::Ingress
+    }
+}
+
+impl ToString for ServiceListSpecEndpointSpecPortsPublishMode {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecEndpointSpecPortsPublishMode::Ingress => "ingress",
+            ServiceListSpecEndpointSpecPortsPublishMode::Host => "host",
+        }.to_string()
     }
 }
 
@@ -2005,6 +2177,15 @@ enum ServiceListSpecRollbackConfigFailureAction {
     Continue,
     #[serde(rename = "pause")]
     Pause,
+}
+
+impl ToString for ServiceListSpecRollbackConfigFailureAction {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecRollbackConfigFailureAction::Continue => "continue",
+            ServiceListSpecRollbackConfigFailureAction::Pause => "pause",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2213,6 +2394,16 @@ enum ServiceListSpecTaskTemplateRestartPolicyCondition {
     Any,
 }
 
+impl ToString for ServiceListSpecTaskTemplateRestartPolicyCondition {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecTaskTemplateRestartPolicyCondition::None => "none",
+            ServiceListSpecTaskTemplateRestartPolicyCondition::Onfailure => "on-failure",
+            ServiceListSpecTaskTemplateRestartPolicyCondition::Any => "any",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ServiceListSpecUpdateConfig {
     #[serde(rename = "Parallelism")]
@@ -2239,12 +2430,31 @@ enum ServiceListSpecUpdateConfigFailureAction {
     Rollback,
 }
 
+impl ToString for ServiceListSpecUpdateConfigFailureAction {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecUpdateConfigFailureAction::Continue => "continue",
+            ServiceListSpecUpdateConfigFailureAction::Pause => "pause",
+            ServiceListSpecUpdateConfigFailureAction::Rollback => "rollback",
+        }.to_string()
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecUpdateConfigOrder {
     #[serde(rename = "stop-first")]
     Stopfirst,
     #[serde(rename = "start-first")]
     Startfirst,
+}
+
+impl ToString for ServiceListSpecUpdateConfigOrder {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListSpecUpdateConfigOrder::Stopfirst => "stop-first",
+            ServiceListSpecUpdateConfigOrder::Startfirst => "start-first",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2267,6 +2477,16 @@ enum ServiceListUpdateStatusState {
     Paused,
     #[serde(rename = "completed")]
     Completed,
+}
+
+impl ToString for ServiceListUpdateStatusState {
+    fn to_string(&self) -> String {
+        match self {
+            ServiceListUpdateStatusState::Updating => "updating",
+            ServiceListUpdateStatusState::Paused => "paused",
+            ServiceListUpdateStatusState::Completed => "completed",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2422,6 +2642,15 @@ enum SystemDataUsageVolumesScope {
 impl Default for SystemDataUsageVolumesScope {
     fn default() -> Self {
         SystemDataUsageVolumesScope::Local
+    }
+}
+
+impl ToString for SystemDataUsageVolumesScope {
+    fn to_string(&self) -> String {
+        match self {
+            SystemDataUsageVolumesScope::Local => "local",
+            SystemDataUsageVolumesScope::Global => "global",
+        }.to_string()
     }
 }
 
@@ -2587,6 +2816,15 @@ impl Default for SystemInfoCgroupDriver {
     }
 }
 
+impl ToString for SystemInfoCgroupDriver {
+    fn to_string(&self) -> String {
+        match self {
+            SystemInfoCgroupDriver::Cgroupfs => "cgroupfs",
+            SystemInfoCgroupDriver::Systemd => "systemd",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct SystemInfoGenericResources {
     #[serde(rename = "NamedResourceSpec")]
@@ -2627,6 +2865,16 @@ impl Default for SystemInfoIsolation {
     }
 }
 
+impl ToString for SystemInfoIsolation {
+    fn to_string(&self) -> String {
+        match self {
+            SystemInfoIsolation::Default => "default",
+            SystemInfoIsolation::Hyperv => "hyperv",
+            SystemInfoIsolation::Process => "process",
+        }.to_string()
+    }
+}
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecCAConfig {
     #[serde(rename = "NodeCertExpiry")]
@@ -2662,6 +2910,14 @@ enum SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
 impl Default for SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
     fn default() -> Self {
         SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol::Cfssl
+    }
+}
+
+impl ToString for SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
+    fn to_string(&self) -> String {
+        match self {
+            SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol::Cfssl => "cfssl",
+        }.to_string()
     }
 }
 
@@ -2875,6 +3131,28 @@ enum TaskState {
     Remove,
     #[serde(rename = "orphaned")]
     Orphaned,
+}
+
+impl ToString for TaskState {
+    fn to_string(&self) -> String {
+        match self {
+            TaskState::New => "new",
+            TaskState::Allocated => "allocated",
+            TaskState::Pending => "pending",
+            TaskState::Assigned => "assigned",
+            TaskState::Accepted => "accepted",
+            TaskState::Preparing => "preparing",
+            TaskState::Ready => "ready",
+            TaskState::Starting => "starting",
+            TaskState::Running => "running",
+            TaskState::Complete => "complete",
+            TaskState::Shutdown => "shutdown",
+            TaskState::Failed => "failed",
+            TaskState::Rejected => "rejected",
+            TaskState::Remove => "remove",
+            TaskState::Orphaned => "orphaned",
+        }.to_string()
+    }
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -3426,8 +3704,8 @@ fn image_build(
         ("target", target.to_string()),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("Content-type", content_type);
-    headers.set_raw("X-Registry-Config", x_registry_config);
+    headers.set_raw("Content-type", content_type.to_string());
+    headers.set_raw("X-Registry-Config", x_registry_config.to_string());
     client.post(url)
         .headers(headers)
         // TODO: unknown body type
@@ -3461,7 +3739,7 @@ fn image_create(
         ("tag", tag.to_string()),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post(url)
         .headers(headers)
         .json(input_image)
@@ -3506,7 +3784,7 @@ fn image_push(
         ("tag", tag.to_string()),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post(url)
         .headers(headers)
         .send()?;
@@ -3947,7 +4225,7 @@ fn plugin_pull(
         ("remote", remote.to_string()),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post(url)
         .headers(headers)
         .json(body)
@@ -4025,7 +4303,7 @@ fn plugin_upgrade(
         ("remote", remote.to_string()),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post(url)
         .headers(headers)
         .json(body)
@@ -4227,7 +4505,7 @@ fn service_create(
     x_registry_auth: &str,
 ) -> Result<(), Error> {
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post("/services/create")
         .headers(headers)
         .json(body)
@@ -4281,7 +4559,7 @@ fn service_update(
         ("version", format!("{}", version)),
     ])?;
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth);
+    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     client.post(url)
         .headers(headers)
         .json(body)

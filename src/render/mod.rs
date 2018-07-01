@@ -135,6 +135,8 @@ pub fn render_enum<W: Write>(
 ) -> Result<(), Error> {
     let mut used = HashSet::with_capacity(values.len());
 
+    let mut unmap = Vec::new();
+
     writeln!(
         into,
         "#[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]"
@@ -145,6 +147,7 @@ pub fn render_enum<W: Write>(
 
         writeln!(into, "    #[serde(rename = \"{}\")]", value)?;
         writeln!(into, "    {},", rusty_name)?;
+        unmap.push((rusty_name.to_string(), value));
         if !used.insert(rusty_name) {
             bail!("generated duplicate rusty name for {:?}", values);
         }
@@ -159,6 +162,18 @@ pub fn render_enum<W: Write>(
         writeln!(into, "    }}")?;
         writeln!(into, "}}")?;
     }
+
+    writeln!(into)?;
+    writeln!(into, "impl ToString for {} {{", name)?;
+    writeln!(into, "    fn to_string(&self) -> String {{")?;
+    writeln!(into, "        match self {{")?;
+    for (k, v) in unmap {
+        writeln!(into, "            {}::{} => \"{}\",", name, k, v)?;
+    }
+    writeln!(into, "        }}.to_string()")?;
+    writeln!(into, "    }}")?;
+    writeln!(into, "}}")?;
+
     Ok(())
 }
 
@@ -323,7 +338,7 @@ fn render_op<W: Write>(
         for header in &headers {
             writeln!(
                 into,
-                "    headers.set_raw(\"{}\", {});",
+                "    headers.set_raw(\"{}\", {}.to_string());",
                 header.name,
                 rustify_field_name(&header.name)
             )?;
