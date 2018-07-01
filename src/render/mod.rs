@@ -97,10 +97,7 @@ pub fn render_struct<W: Write>(
     name: &str,
     fields: &[Field<NamedType>],
 ) -> Result<(), Error> {
-    writeln!(
-        into,
-        "#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]"
-    )?;
+    writeln!(into, "#[derive(Clone, PartialEq, Serialize, Deserialize)]")?;
     writeln!(into, "struct {} {{", name)?;
     for field in fields {
         writeln!(
