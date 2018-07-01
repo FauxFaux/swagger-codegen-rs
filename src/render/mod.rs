@@ -13,6 +13,7 @@ use swagger::IntegerFormat;
 use swagger::NamedType;
 use swagger::NamingType;
 use swagger::Operation;
+use swagger::ParamLocation;
 
 pub fn render_definitions<W: Write>(
     mut into: W,
@@ -253,6 +254,12 @@ fn render_op<W: Write>(
 
     writeln!(into, "fn {}(", rustify_field_name(&op.id))?;
     writeln!(into, "    client: &Client,")?;
+
+    let mut queries = Vec::new();
+    let mut body = None;
+    let mut headers = Vec::new();
+    let mut paths = Vec::new();
+
     for param in &op.params {
         writeln!(
             into,
@@ -260,10 +267,53 @@ fn render_op<W: Write>(
             rustify_field_name(&param.name),
             render_ref(&param.param_type)
         )?;
+
+        match param.loc {
+            ParamLocation::Body => {
+                ensure!(body.is_none(), "can't have multiple bodies");
+                body = Some(param);
+            }
+            ParamLocation::Query => queries.push(param),
+            ParamLocation::Header => headers.push(param),
+            ParamLocation::Path => paths.push(param),
+        }
     }
 
+    queries.sort_by_key(|p| &p.name);
+    headers.sort_by_key(|p| &p.name);
+
     writeln!(into, ") -> Result<(), Error> {{")?;
-    writeln!(into, "    bail!(\"unimplemented\")")?;
+    if paths.is_empty() {
+        writeln!(into, "    let url = \"{}\".to_string();", path_url)?;
+    } else {
+        writeln!(into, "    let url = format!(\"{}\",", path_url)?;
+        for path in paths {
+            writeln!(into, "        {0}={0},", path.name)?;
+        }
+        writeln!(into, "    );",)?;
+    }
+
+    if queries.is_empty() {
+        writeln!(into, "    let url = Url::parse(&url)?;")?;
+    } else {
+        writeln!(into, "    let url = Url::parse_with_params(&url, &[")?;
+        for query in queries {
+            writeln!(
+                into,
+                "        (\"{}\", format!(\"{{}}\", {})),",
+                query.name,
+                rustify_field_name(&query.name)
+            )?;
+        }
+        writeln!(into, "    ])?;")?;
+    }
+
+    writeln!(
+        into,
+        "    client.{}(url).send()?;",
+        method.reqwest_method_name()
+    )?;
+    writeln!(into, "    Ok(())")?;
     writeln!(into, "}}")?;
     writeln!(into)?;
 

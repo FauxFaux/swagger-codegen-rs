@@ -407,6 +407,18 @@ fn name_http_code(code: u16) -> Option<&'static str> {
     }
 }
 
+impl HttpMethod {
+    pub fn reqwest_method_name(&self) -> &'static str {
+        match self {
+            HttpMethod::GET => "get",
+            HttpMethod::POST => "post",
+            HttpMethod::HEAD => "head",
+            HttpMethod::PUT => "put",
+            HttpMethod::DELETE => "delete",
+        }
+    }
+}
+
 fn keys(hash: &Hash) -> Result<HashSet<&str>, Error> {
     hash.keys()
         .map(|k| {
