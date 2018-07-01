@@ -64,7 +64,7 @@ struct ConfigSpec {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-struct ContainerArchiveInfo {
+struct ContainerArchive {
     message: String,
     message: String,
 }
