@@ -23,6 +23,7 @@ pub fn render_definitions<W: Write>(
                 render_enum(&mut into, &name, &values, default.as_ref())?
             }
         }
+        writeln!(into)?;
     }
 
     Ok(())
@@ -46,7 +47,7 @@ fn render_simple(simple: &DataType) -> String {
         String { .. } | MatchString { .. } => "String".to_string(),
         Number { .. } => "f64".to_string(),
         IpAddr => "::std::net::IpAddr".to_string(),
-        DateTime => "::chrono::DateTime".to_string(),
+        DateTime => "::chrono::DateTime<::chrono::Utc>".to_string(),
         Json => "::serde_json::Json".to_string(),
         Binary => "(/* binary */)".to_string(),
         Integer {
@@ -94,6 +95,10 @@ pub fn render_struct<W: Write>(
     name: &str,
     fields: &[Field<NamedType>],
 ) -> Result<(), Error> {
+    writeln!(
+        into,
+        "#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]"
+    )?;
     writeln!(into, "struct {} {{", name)?;
     for field in fields {
         writeln!(

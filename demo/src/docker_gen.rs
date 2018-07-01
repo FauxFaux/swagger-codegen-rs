@@ -1,13 +1,18 @@
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Address {
     addr: String,
     prefix_len: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct AuthConfig {
     username: String,
     password: String,
     email: String,
     serveraddress: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct BuildInfo {
     id: String,
     stream: String,
@@ -18,43 +23,59 @@ struct BuildInfo {
     progress_detail: ProgressDetail,
     aux: ImageID,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct BuildPrune {
     space_reclaimed: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ClusterInfo {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: SwarmSpec,
     tls_info: TLSInfo,
     root_rotation_in_progress: bool,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Commit {
     id: String,
     expected: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Config {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: ConfigSpec,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ConfigSpec {
     name: String,
     labels: (),
     data: String,
     templating: Driver,
 }
-struct ContainerArchiveInfo {
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
+struct ContainerArchive {
     message: String,
     message: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerChanges {
     path: String,
     kind: u8,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerConfig {
     hostname: String,
     domainname: String,
@@ -82,6 +103,8 @@ struct ContainerConfig {
     stop_timeout: i64,
     shell: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateBody {
     hostname: String,
     domainname: String,
@@ -111,14 +134,19 @@ struct ContainerCreateBody {
     host_config: HostConfig,
     networking_config: ContainerCreateNetworkingConfig,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateCreated {
     id: String,
     warnings: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateHostConfigBlkioWeightDevice {
     path: String,
     weight: u64,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerCreateHostConfigIsolation {
     #[serde(rename = "default")]
@@ -128,10 +156,13 @@ enum ContainerCreateHostConfigIsolation {
     #[serde(rename = "hyperv")]
     Hyperv,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateHostConfigLogConfig {
     type_: ContainerCreateHostConfigLogConfigType,
     config: (),
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerCreateHostConfigLogConfigType {
     #[serde(rename = "json-file")]
@@ -153,6 +184,7 @@ enum ContainerCreateHostConfigLogConfigType {
     #[serde(rename = "none")]
     None,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerCreateHostConfigRestartPolicyName {
     #[serde(rename = "")]
@@ -164,14 +196,20 @@ enum ContainerCreateHostConfigRestartPolicyName {
     #[serde(rename = "on-failure")]
     Onfailure,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateHostConfigUlimits {
     name: String,
     soft: i64,
     hard: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerCreateNetworkingConfig {
     endpoints_config: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerExec {
     attach_stdin: bool,
     attach_stdout: bool,
@@ -184,6 +222,8 @@ struct ContainerExec {
     user: String,
     working_dir: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerInspect {
     id: String,
     created: String,
@@ -211,6 +251,8 @@ struct ContainerInspect {
     config: ContainerConfig,
     network_settings: NetworkSettings,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerInspectState {
     status: ContainerInspectStateStatus,
     running: bool,
@@ -224,6 +266,7 @@ struct ContainerInspectState {
     started_at: String,
     finished_at: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerInspectStateStatus {
     #[serde(rename = "created")]
@@ -241,6 +284,8 @@ enum ContainerInspectStateStatus {
     #[serde(rename = "dead")]
     Dead,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerList {
     id: String,
     names: Vec<String>,
@@ -258,12 +303,17 @@ struct ContainerList {
     network_settings: ContainerListNetworkSettings,
     mounts: Vec<Mount>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListHostConfig {
     network_mode: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListMountsBindOptions {
     propagation: ContainerListMountsBindOptionsPropagation,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerListMountsBindOptionsPropagation {
     #[serde(rename = "private")]
@@ -279,10 +329,13 @@ enum ContainerListMountsBindOptionsPropagation {
     #[serde(rename = "rslave")]
     Rslave,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListMountsTmpfsOptions {
     size_bytes: i64,
     mode: i64,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerListMountsType {
     #[serde(rename = "bind")]
@@ -292,18 +345,25 @@ enum ContainerListMountsType {
     #[serde(rename = "tmpfs")]
     Tmpfs,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListMountsVolumeOptions {
     no_copy: bool,
     labels: (),
     driver_config: ContainerListMountsVolumeOptionsDriverConfig,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListMountsVolumeOptionsDriverConfig {
     name: String,
     options: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerListNetworkSettings {
     networks: (),
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ContainerListPortsType {
     #[serde(rename = "tcp")]
@@ -313,17 +373,25 @@ enum ContainerListPortsType {
     #[serde(rename = "sctp")]
     Sctp,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerPrune {
     containers_deleted: Vec<String>,
     space_reclaimed: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerTop {
     titles: Vec<String>,
     processes: Vec<Vec<String>>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerUpdateOk {
     warnings: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerUpdateUpdate {
     cpu_shares: i64,
     memory: i64,
@@ -358,13 +426,19 @@ struct ContainerUpdateUpdate {
     io_maximum_bandwidth: i64,
     restart_policy: RestartPolicy,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerWait {
     status_code: i64,
     error: ContainerWaitError,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ContainerWaitError {
     message: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct CreateImageInfo {
     id: String,
     error: String,
@@ -372,21 +446,29 @@ struct CreateImageInfo {
     progress: String,
     progress_detail: ProgressDetail,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct DeviceMapping {
     path_on_host: String,
     path_in_container: String,
     cgroup_permissions: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct DistributionInspect {
     descriptor: DistributionInspectDescriptor,
     platforms: Vec<DistributionInspectPlatforms>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct DistributionInspectDescriptor {
     media_type: String,
     size: i64,
     digest: String,
     ur_ls: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct DistributionInspectPlatforms {
     architecture: String,
     os: String,
@@ -395,15 +477,21 @@ struct DistributionInspectPlatforms {
     variant: String,
     features: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Driver {
     name: String,
     options: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct EndpointIPAMConfig {
     i_pv4_address: String,
     i_pv6_address: String,
     link_local_i_ps: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct EndpointPortConfig {
     name: String,
     protocol: ContainerListPortsType,
@@ -411,6 +499,8 @@ struct EndpointPortConfig {
     published_port: i64,
     publish_mode: ServiceListSpecEndpointSpecPortsPublishMode,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct EndpointSettings {
     ipam_config: EndpointIPAMConfig,
     links: Vec<String>,
@@ -426,22 +516,32 @@ struct EndpointSettings {
     mac_address: String,
     driver_opts: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct EndpointSpec {
     mode: ServiceListSpecEndpointSpecMode,
     ports: Vec<EndpointPortConfig>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct EngineDescription {
     engine_version: String,
     labels: (),
     plugins: Vec<NodeListDescriptionEnginePlugins>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ErrorDetail {
     code: i64,
     message: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ErrorResponse {
     message: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ExecInspect {
     can_remove: bool,
     detach_keys: String,
@@ -455,19 +555,27 @@ struct ExecInspect {
     container_id: String,
     pid: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ExecStart {
     detach: bool,
     tty: bool,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct GetPluginPrivileges {
     name: String,
     description: String,
     value: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct GraphDriverData {
     name: String,
     data: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct HealthConfig {
     test: Vec<String>,
     interval: i64,
@@ -475,6 +583,8 @@ struct HealthConfig {
     retries: i64,
     start_period: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct HostConfig {
     cpu_shares: i64,
     memory: i64,
@@ -543,14 +653,20 @@ struct HostConfig {
     console_size: Vec<u64>,
     isolation: ContainerCreateHostConfigIsolation,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct IPAM {
     driver: String,
     config: Vec<()>,
     options: Vec<()>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct IdResponse {
     id: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Image {
     id: String,
     repo_tags: Vec<String>,
@@ -572,6 +688,7 @@ struct Image {
     root_fs: ImageInspectRootFS,
     metadata: ImageInspectMetadata,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ImageBuild {
     #[serde(rename = "application/x-tar")]
@@ -583,10 +700,14 @@ impl Default for ImageBuild {
         Self::Applicationxtar
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageDeleteResponseItem {
     untagged: String,
     deleted: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageHistory {
     id: String,
     created: i64,
@@ -595,21 +716,31 @@ struct ImageHistory {
     size: i64,
     comment: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageID {
     id: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageInspectMetadata {
-    last_tag_time: ::chrono::DateTime,
+    last_tag_time: ::chrono::DateTime<::chrono::Utc>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageInspectRootFS {
     type_: String,
     layers: Vec<String>,
     base_layer: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImagePrune {
     images_deleted: Vec<ImageDeleteResponseItem>,
     space_reclaimed: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageSearch {
     description: String,
     is_official: bool,
@@ -617,6 +748,8 @@ struct ImageSearch {
     name: String,
     star_count: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ImageSummary {
     id: String,
     parent_id: String,
@@ -629,16 +762,21 @@ struct ImageSummary {
     labels: (),
     containers: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct IndexInfo {
     name: String,
     mirrors: Vec<String>,
     secure: bool,
     official: bool,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct JoinTokens {
     worker: String,
     manager: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum LocalNodeState {
     #[serde(rename = "")]
@@ -660,11 +798,15 @@ impl Default for LocalNodeState {
         Self::Empty
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ManagerStatus {
     leader: bool,
     reachability: Reachability,
     addr: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Mount {
     target: String,
     source: String,
@@ -675,6 +817,8 @@ struct Mount {
     volume_options: ContainerListMountsVolumeOptions,
     tmpfs_options: ContainerListMountsTmpfsOptions,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct MountPoint {
     type_: String,
     name: String,
@@ -685,10 +829,12 @@ struct MountPoint {
     rw: bool,
     propagation: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Network {
     name: String,
     id: String,
-    created: ::chrono::DateTime,
+    created: ::chrono::DateTime<::chrono::Utc>,
     scope: String,
     driver: String,
     enable_i_pv6: bool,
@@ -700,10 +846,14 @@ struct Network {
     options: (),
     labels: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkConnect {
     container: String,
     endpoint_config: EndpointSettings,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkContainer {
     name: String,
     endpoint_id: String,
@@ -711,10 +861,14 @@ struct NetworkContainer {
     i_pv4_address: String,
     i_pv6_address: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkCreateCreated {
     id: String,
     warning: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkCreateNetworkConfig {
     name: String,
     check_duplicate: bool,
@@ -727,13 +881,19 @@ struct NetworkCreateNetworkConfig {
     options: (),
     labels: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkDisconnect {
     container: String,
     force: bool,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkPrune {
     networks_deleted: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NetworkSettings {
     bridge: String,
     sandbox_id: String,
@@ -754,16 +914,20 @@ struct NetworkSettings {
     mac_address: String,
     networks: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Node {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: NodeSpec,
     description: NodeDescription,
     status: NodeStatus,
     manager_status: ManagerStatus,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NodeDescription {
     hostname: String,
     platform: Platform,
@@ -771,10 +935,13 @@ struct NodeDescription {
     engine: EngineDescription,
     tls_info: TLSInfo,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NodeListDescriptionEnginePlugins {
     type_: String,
     name: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum NodeListSpecAvailability {
     #[serde(rename = "active")]
@@ -784,6 +951,7 @@ enum NodeListSpecAvailability {
     #[serde(rename = "drain")]
     Drain,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum NodeListSpecRole {
     #[serde(rename = "worker")]
@@ -791,12 +959,15 @@ enum NodeListSpecRole {
     #[serde(rename = "manager")]
     Manager,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NodeSpec {
     name: String,
     labels: (),
     role: NodeListSpecRole,
     availability: NodeListSpecAvailability,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum NodeState {
     #[serde(rename = "unknown")]
@@ -808,22 +979,32 @@ enum NodeState {
     #[serde(rename = "disconnected")]
     Disconnected,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct NodeStatus {
     state: NodeState,
     message: String,
     addr: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ObjectVersion {
     inde: u64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PeerNode {
     node_id: String,
     addr: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Platform {
     architecture: String,
     os: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Plugin {
     id: String,
     name: String,
@@ -832,23 +1013,31 @@ struct Plugin {
     plugin_reference: String,
     config: PluginListConfig,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginDevice {
     name: String,
     description: String,
     settable: Vec<String>,
     path: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginEnv {
     name: String,
     description: String,
     settable: Vec<String>,
     value: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginInterfaceType {
     prefix: String,
     capability: String,
     version: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfig {
     docker_version: String,
     description: String,
@@ -867,17 +1056,22 @@ struct PluginListConfig {
     args: PluginListConfigArgs,
     rootfs: PluginListConfigrootfs,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigArgs {
     name: String,
     description: String,
     settable: Vec<String>,
     value: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigInterface {
     types: Vec<PluginInterfaceType>,
     socket: String,
     protocol_scheme: PluginListConfigInterfaceProtocolScheme,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum PluginListConfigInterfaceProtocolScheme {
     #[serde(rename = "")]
@@ -885,28 +1079,40 @@ enum PluginListConfigInterfaceProtocolScheme {
     #[serde(rename = "moby.plugins.http/v1")]
     Mobypluginshttpv1,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigLinux {
     capabilities: Vec<String>,
     allow_all_devices: bool,
     devices: Vec<PluginDevice>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigNetwork {
     type_: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigUser {
     uid: u32,
     gid: u32,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListConfigrootfs {
     type_: String,
     diff_ids: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginListSettings {
     mounts: Vec<PluginMount>,
     env: Vec<String>,
     args: Vec<String>,
     devices: Vec<PluginDevice>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginMount {
     name: String,
     description: String,
@@ -916,22 +1122,30 @@ struct PluginMount {
     type_: String,
     options: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PluginsInfo {
     volume: Vec<String>,
     network: Vec<String>,
     authorization: Vec<String>,
     log: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Port {
     ip: ::std::net::IpAddr,
     private_port: u16,
     public_port: u16,
     type_: ContainerListPortsType,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PortBinding {
     host_ip: String,
     host_port: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ProcessConfig {
     privileged: bool,
     user: String,
@@ -939,16 +1153,21 @@ struct ProcessConfig {
     entrypoint: String,
     arguments: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ProgressDetail {
     current: i64,
     total: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct PushImageInfo {
     error: String,
     status: String,
     progress: String,
     progress_detail: ProgressDetail,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum Reachability {
     #[serde(rename = "unknown")]
@@ -958,6 +1177,8 @@ enum Reachability {
     #[serde(rename = "reachable")]
     Reachable,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct RegistryServiceConfig {
     allow_nondistributable_artifacts_cid_rs: Vec<String>,
     allow_nondistributable_artifacts_hostnames: Vec<String>,
@@ -965,11 +1186,15 @@ struct RegistryServiceConfig {
     index_configs: (),
     mirrors: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ResourceObject {
     nano_cp_us: i64,
     memory_bytes: i64,
     generic_resources: Vec<SystemInfoGenericResources>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Resources {
     cpu_shares: i64,
     memory: i64,
@@ -1003,21 +1228,29 @@ struct Resources {
     io_maximum_i_ops: i64,
     io_maximum_bandwidth: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct RestartPolicy {
     name: ContainerCreateHostConfigRestartPolicyName,
     maximum_retry_count: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Runtime {
     path: String,
     runtime_args: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Secret {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: SecretSpec,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SecretSpec {
     name: String,
     labels: (),
@@ -1025,28 +1258,37 @@ struct SecretSpec {
     driver: Driver,
     templating: Driver,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Service {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: ServiceSpec,
     endpoint: ServiceListEndpoint,
     update_status: ServiceListUpdateStatus,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceCreate {
     id: String,
     warning: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListEndpoint {
     spec: EndpointSpec,
     ports: Vec<EndpointPortConfig>,
     virtual_i_ps: Vec<ServiceListEndpointVirtualIPs>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListEndpointVirtualIPs {
     network_id: String,
     addr: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecEndpointSpecMode {
     #[serde(rename = "vip")]
@@ -1060,6 +1302,7 @@ impl Default for ServiceListSpecEndpointSpecMode {
         Self::Vip
     }
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecEndpointSpecPortsPublishMode {
     #[serde(rename = "ingress")]
@@ -1073,13 +1316,19 @@ impl Default for ServiceListSpecEndpointSpecPortsPublishMode {
         Self::Ingress
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecMode {
     replicated: ServiceListSpecModeReplicated,
     global: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecModeReplicated {
     replicas: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecRollbackConfig {
     parallelism: i64,
     delay: i64,
@@ -1088,6 +1337,7 @@ struct ServiceListSpecRollbackConfig {
     max_failure_ratio: f64,
     order: ServiceListSpecUpdateConfigOrder,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecRollbackConfigFailureAction {
     #[serde(rename = "continue")]
@@ -1095,6 +1345,8 @@ enum ServiceListSpecRollbackConfigFailureAction {
     #[serde(rename = "pause")]
     Pause,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpec {
     image: String,
     labels: (),
@@ -1119,24 +1371,34 @@ struct ServiceListSpecTaskTemplateContainerSpec {
     configs: Vec<ServiceListSpecTaskTemplateContainerSpecConfigs>,
     isolation: ContainerCreateHostConfigIsolation,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecConfigs {
     file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
     config_id: String,
     config_name: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecDNSConfig {
     nameservers: Vec<String>,
     search: Vec<String>,
     options: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecPrivileges {
     credential_spec: ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec,
     se_linux_context: ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec {
     file: String,
     registry: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext {
     disable: bool,
     user: String,
@@ -1144,55 +1406,78 @@ struct ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext {
     type_: String,
     level: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecSecrets {
     file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
     secret_id: String,
     secret_name: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateContainerSpecSecretsFile {
     name: String,
     uid: String,
     gid: String,
     mode: u32,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateLogDriver {
     name: String,
     options: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateNetworkAttachmentSpec {
     container_id: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateNetworks {
     target: String,
     aliases: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplatePlacement {
     constraints: Vec<String>,
     preferences: Vec<ServiceListSpecTaskTemplatePlacementPreferences>,
     platforms: Vec<Platform>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplatePlacementPreferences {
     spread: ServiceListSpecTaskTemplatePlacementPreferencesSpread,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplatePlacementPreferencesSpread {
     spread_descriptor: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplatePluginSpec {
     name: String,
     remote: String,
     disabled: bool,
     plugin_privilege: Vec<GetPluginPrivileges>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateResources {
     limits: ResourceObject,
     reservation: ResourceObject,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecTaskTemplateRestartPolicy {
     condition: ServiceListSpecTaskTemplateRestartPolicyCondition,
     delay: i64,
     max_attempts: i64,
     window: i64,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecTaskTemplateRestartPolicyCondition {
     #[serde(rename = "none")]
@@ -1202,6 +1487,8 @@ enum ServiceListSpecTaskTemplateRestartPolicyCondition {
     #[serde(rename = "any")]
     Any,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListSpecUpdateConfig {
     parallelism: i64,
     delay: i64,
@@ -1210,6 +1497,7 @@ struct ServiceListSpecUpdateConfig {
     max_failure_ratio: f64,
     order: ServiceListSpecUpdateConfigOrder,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecUpdateConfigFailureAction {
     #[serde(rename = "continue")]
@@ -1219,6 +1507,7 @@ enum ServiceListSpecUpdateConfigFailureAction {
     #[serde(rename = "rollback")]
     Rollback,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListSpecUpdateConfigOrder {
     #[serde(rename = "stop-first")]
@@ -1226,12 +1515,15 @@ enum ServiceListSpecUpdateConfigOrder {
     #[serde(rename = "start-first")]
     Startfirst,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceListUpdateStatus {
     state: ServiceListUpdateStatusState,
-    started_at: ::chrono::DateTime,
-    completed_at: ::chrono::DateTime,
+    started_at: ::chrono::DateTime<::chrono::Utc>,
+    completed_at: ::chrono::DateTime<::chrono::Utc>,
     message: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum ServiceListUpdateStatusState {
     #[serde(rename = "updating")]
@@ -1241,6 +1533,8 @@ enum ServiceListUpdateStatusState {
     #[serde(rename = "completed")]
     Completed,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceSpec {
     name: String,
     labels: (),
@@ -1251,19 +1545,25 @@ struct ServiceSpec {
     networks: Vec<ServiceListSpecTaskTemplateNetworks>,
     endpoint_spec: EndpointSpec,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ServiceUpdateResponse {
     warnings: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Swarm {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     spec: SwarmSpec,
     tls_info: TLSInfo,
     root_rotation_in_progress: bool,
     join_tokens: JoinTokens,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SwarmInfo {
     node_id: String,
     node_addr: String,
@@ -1275,6 +1575,8 @@ struct SwarmInfo {
     managers: i64,
     cluster: ClusterInfo,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SwarmInit {
     listen_addr: String,
     advertise_addr: String,
@@ -1282,6 +1584,8 @@ struct SwarmInit {
     force_new_cluster: bool,
     spec: SwarmSpec,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SwarmJoin {
     listen_addr: String,
     advertise_addr: String,
@@ -1289,6 +1593,8 @@ struct SwarmJoin {
     remote_addrs: String,
     join_token: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SwarmSpec {
     name: String,
     labels: (),
@@ -1299,19 +1605,26 @@ struct SwarmSpec {
     encryption_config: SystemInfoSwarmClusterSpecEncryptionConfig,
     task_defaults: SystemInfoSwarmClusterSpecTaskDefaults,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SwarmUnlockkey {
     unlock_key: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemAuth {
     status: String,
     identity_token: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemDataUsage {
     layers_size: i64,
     images: Vec<ImageSummary>,
     containers: Vec<Vec<ContainerList>>,
     volumes: Vec<Volume>,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum SystemDataUsageVolumesScope {
     #[serde(rename = "local")]
@@ -1325,10 +1638,14 @@ impl Default for SystemDataUsageVolumesScope {
         Self::Local
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemDataUsageVolumesUsageData {
     size: i64,
     ref_count: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemEvents {
     type_: String,
     action: String,
@@ -1336,10 +1653,14 @@ struct SystemEvents {
     time: i64,
     time_nano: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemEventsActor {
     id: String,
     attributes: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfo {
     id: String,
     containers: i64,
@@ -1399,6 +1720,7 @@ struct SystemInfo {
     init_commit: Commit,
     security_options: Vec<String>,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum SystemInfoCgroupDriver {
     #[serde(rename = "cgroupfs")]
@@ -1412,18 +1734,25 @@ impl Default for SystemInfoCgroupDriver {
         Self::Cgroupfs
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoGenericResources {
     named_resource_spec: SystemInfoGenericResourcesNamedResourceSpec,
     discrete_resource_spec: SystemInfoGenericResourcesDiscreteResourceSpec,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoGenericResourcesDiscreteResourceSpec {
     kind: String,
     value: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoGenericResourcesNamedResourceSpec {
     kind: String,
     value: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum SystemInfoIsolation {
     #[serde(rename = "default")]
@@ -1439,6 +1768,8 @@ impl Default for SystemInfoIsolation {
         Self::Default
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecCAConfig {
     node_cert_expiry: i64,
     external_c_as: Vec<SystemInfoSwarmClusterSpecCAConfigExternalCAs>,
@@ -1446,12 +1777,15 @@ struct SystemInfoSwarmClusterSpecCAConfig {
     signing_ca_key: String,
     force_rotate: u64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecCAConfigExternalCAs {
     protocol: SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol,
     url: String,
     options: (),
     ca_cert: String,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
     #[serde(rename = "cfssl")]
@@ -1463,15 +1797,23 @@ impl Default for SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
         Self::Cfssl
     }
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecDispatcher {
     heartbeat_period: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecEncryptionConfig {
     auto_lock_managers: bool,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecOrchestration {
     task_history_retention_limit: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecRaft {
     snapshot_interval: u64,
     keep_old_snapshots: u64,
@@ -1479,13 +1821,19 @@ struct SystemInfoSwarmClusterSpecRaft {
     election_tick: i64,
     heartbeat_tick: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecTaskDefaults {
     log_driver: SystemInfoSwarmClusterSpecTaskDefaultsLogDriver,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemInfoSwarmClusterSpecTaskDefaultsLogDriver {
     name: String,
     options: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemVersion {
     platform: SystemVersionPlatform,
     components: Vec<SystemVersionComponents>,
@@ -1500,24 +1848,32 @@ struct SystemVersion {
     experimental: bool,
     build_time: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemVersionComponents {
     name: String,
     version: String,
     details: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct SystemVersionPlatform {
     name: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct TLSInfo {
     trust_root: String,
     cert_issuer_subject: String,
     cert_issuer_public_key: String,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Task {
     id: String,
     version: ObjectVersion,
-    created_at: ::chrono::DateTime,
-    updated_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
+    updated_at: ::chrono::DateTime<::chrono::Utc>,
     name: String,
     labels: (),
     spec: TaskSpec,
@@ -1528,18 +1884,24 @@ struct Task {
     status: TaskListStatus,
     desired_state: TaskState,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct TaskListStatus {
-    timestamp: ::chrono::DateTime,
+    timestamp: ::chrono::DateTime<::chrono::Utc>,
     state: TaskState,
     message: String,
     err: String,
     container_status: TaskListStatusContainerStatus,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct TaskListStatusContainerStatus {
     container_id: String,
     pid: i64,
     exit_code: i64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct TaskSpec {
     plugin_spec: ServiceListSpecTaskTemplatePluginSpec,
     container_spec: ServiceListSpecTaskTemplateContainerSpec,
@@ -1552,6 +1914,7 @@ struct TaskSpec {
     networks: Vec<ServiceListSpecTaskTemplateNetworks>,
     log_driver: ServiceListSpecTaskTemplateLogDriver,
 }
+
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 enum TaskState {
     #[serde(rename = "new")]
@@ -1585,35 +1948,46 @@ enum TaskState {
     #[serde(rename = "orphaned")]
     Orphaned,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct ThrottleDevice {
     path: String,
     rate: u64,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct Volume {
     name: String,
     driver: String,
     mountpoint: String,
-    created_at: ::chrono::DateTime,
+    created_at: ::chrono::DateTime<::chrono::Utc>,
     status: (),
     labels: (),
     scope: SystemDataUsageVolumesScope,
     options: (),
     usage_data: SystemDataUsageVolumesUsageData,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct VolumeCreate {
     name: String,
     driver: String,
     driver_opts: (),
     labels: (),
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct VolumeList {
     volumes: Vec<Volume>,
     warnings: Vec<String>,
 }
+
+#[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
 struct VolumePrune {
     volumes_deleted: Vec<String>,
     space_reclaimed: i64,
 }
+
 // GET /containers/json
 //   GET /containers/json
 //   GET /containers/json
@@ -1820,12 +2194,12 @@ struct VolumePrune {
 //   POST /volumes/prune
 // GET /networks
 //   GET /networks
-// DELETE /networks/{id}
-//   DELETE /networks/{id}
 // GET /networks/{id}
 //   GET /networks/{id}
 //   GET /networks/{id}
 //   GET /networks/{id}
+// DELETE /networks/{id}
+//   DELETE /networks/{id}
 // POST /networks/create
 //   POST /networks/create
 // POST /networks/{id}/connect
@@ -1900,11 +2274,11 @@ struct VolumePrune {
 // POST /services/create
 //   POST /services/create
 //   POST /services/create
-// DELETE /services/{id}
-//   DELETE /services/{id}
 // GET /services/{id}
 //   GET /services/{id}
 //   GET /services/{id}
+// DELETE /services/{id}
+//   DELETE /services/{id}
 // POST /services/{id}/update
 //   POST /services/{id}/update
 //   POST /services/{id}/update
@@ -1938,10 +2312,10 @@ struct VolumePrune {
 //   GET /secrets
 // POST /secrets/create
 //   POST /secrets/create
-// GET /secrets/{id}
-//   GET /secrets/{id}
 // DELETE /secrets/{id}
 //   DELETE /secrets/{id}
+// GET /secrets/{id}
+//   GET /secrets/{id}
 // POST /secrets/{id}/update
 //   POST /secrets/{id}/update
 //   POST /secrets/{id}/update
