@@ -8,9 +8,11 @@ use failure::ResultExt;
 use swagger::DataType;
 use swagger::Endpoint;
 use swagger::Field;
+use swagger::HttpMethod;
 use swagger::IntegerFormat;
 use swagger::NamedType;
 use swagger::NamingType;
+use swagger::Operation;
 
 pub fn render_definitions<W: Write>(
     mut into: W,
@@ -203,7 +205,9 @@ pub fn render_endpoints<W: Write>(
 }
 
 fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Result<(), Error> {
-    for (method, op) in &endpoint.ops {
+    let mut endpoint_ops: Vec<(&HttpMethod, &Operation<NamedType>)> = endpoint.ops.iter().collect();
+    endpoint_ops.sort_by_key(|(&method, _)| method);
+    for (method, op) in endpoint_ops {
         #[cfg(never)]
         // looking at this is kinda useless as it can list two types, with no association with where they go
         match op.produces.len() {

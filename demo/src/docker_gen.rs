@@ -64,7 +64,7 @@ struct ConfigSpec {
 }
 
 #[derive(Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-struct ContainerArchive {
+struct ContainerArchiveInfo {
     message: String,
     message: String,
 }
@@ -2068,17 +2068,17 @@ struct VolumePrune {
 //   DELETE /containers/{id}
 //   DELETE /containers/{id}
 //   DELETE /containers/{id}
+// GET /containers/{id}/archive
+//   GET /containers/{id}/archive
+//   GET /containers/{id}/archive
+// HEAD /containers/{id}/archive
+//   HEAD /containers/{id}/archive
+//   HEAD /containers/{id}/archive
 // PUT /containers/{id}/archive
 //   PUT /containers/{id}/archive
 //   PUT /containers/{id}/archive
 //   PUT /containers/{id}/archive
 //   PUT /containers/{id}/archive
-// HEAD /containers/{id}/archive
-//   HEAD /containers/{id}/archive
-//   HEAD /containers/{id}/archive
-// GET /containers/{id}/archive
-//   GET /containers/{id}/archive
-//   GET /containers/{id}/archive
 // POST /containers/prune
 //   POST /containers/prune
 // GET /images/json
@@ -2194,12 +2194,12 @@ struct VolumePrune {
 //   POST /volumes/prune
 // GET /networks
 //   GET /networks
-// DELETE /networks/{id}
-//   DELETE /networks/{id}
 // GET /networks/{id}
 //   GET /networks/{id}
 //   GET /networks/{id}
 //   GET /networks/{id}
+// DELETE /networks/{id}
+//   DELETE /networks/{id}
 // POST /networks/create
 //   POST /networks/create
 // POST /networks/{id}/connect
@@ -2244,11 +2244,11 @@ struct VolumePrune {
 //   POST /plugins/{name}/set
 // GET /nodes
 //   GET /nodes
+// GET /nodes/{id}
+//   GET /nodes/{id}
 // DELETE /nodes/{id}
 //   DELETE /nodes/{id}
 //   DELETE /nodes/{id}
-// GET /nodes/{id}
-//   GET /nodes/{id}
 // POST /nodes/{id}/update
 //   POST /nodes/{id}/update
 //   POST /nodes/{id}/update
@@ -2274,11 +2274,11 @@ struct VolumePrune {
 // POST /services/create
 //   POST /services/create
 //   POST /services/create
-// DELETE /services/{id}
-//   DELETE /services/{id}
 // GET /services/{id}
 //   GET /services/{id}
 //   GET /services/{id}
+// DELETE /services/{id}
+//   DELETE /services/{id}
 // POST /services/{id}/update
 //   POST /services/{id}/update
 //   POST /services/{id}/update
