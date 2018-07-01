@@ -2941,8 +2941,7 @@ fn container_list(
     size: bool,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/containers/json".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/containers/json", &[
         ("all", format!("{}", all)),
         ("filters", format!("{}", filters)),
         ("limit", format!("{}", limit)),
@@ -2957,8 +2956,7 @@ fn container_create(
     name: &str,
     body: &ContainerCreateBody,
 ) -> Result<(), Error> {
-    let url = "/containers/create".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/containers/create", &[
         ("name", format!("{}", name)),
     ])?;
     client.post(url).send()?;
@@ -3029,8 +3027,7 @@ fn container_changes(
     let url = format!("/containers/{id}/changes",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3041,8 +3038,7 @@ fn container_export(
     let url = format!("/containers/{id}/export",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3146,8 +3142,7 @@ fn container_update(
     let url = format!("/containers/{id}/update",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3173,8 +3168,7 @@ fn container_pause(
     let url = format!("/containers/{id}/pause",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3185,8 +3179,7 @@ fn container_unpause(
     let url = format!("/containers/{id}/unpause",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3326,8 +3319,7 @@ fn container_prune(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/containers/prune".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/containers/prune", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.post(url).send()?;
@@ -3340,8 +3332,7 @@ fn image_list(
     filters: &str,
     digests: bool,
 ) -> Result<(), Error> {
-    let url = "/images/json".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/json", &[
         ("all", format!("{}", all)),
         ("digests", format!("{}", digests)),
         ("filters", format!("{}", filters)),
@@ -3379,8 +3370,7 @@ fn image_build(
     platform: &str,
     target: &str,
 ) -> Result<(), Error> {
-    let url = "/build".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/build", &[
         ("buildargs", format!("{}", buildargs)),
         ("cachefrom", format!("{}", cachefrom)),
         ("cpuperiod", format!("{}", cpuperiod)),
@@ -3412,9 +3402,7 @@ fn image_build(
 fn build_prune(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/build/prune".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/build/prune").send()?;
     Ok(())
 }
 
@@ -3428,8 +3416,7 @@ fn image_create(
     x_registry_auth: &str,
     platform: &str,
 ) -> Result<(), Error> {
-    let url = "/images/create".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/create", &[
         ("fromImage", format!("{}", from_image)),
         ("fromSrc", format!("{}", from_src)),
         ("platform", format!("{}", platform)),
@@ -3447,8 +3434,7 @@ fn image_inspect(
     let url = format!("/images/{name}/json",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3459,8 +3445,7 @@ fn image_history(
     let url = format!("/images/{name}/history",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3520,8 +3505,7 @@ fn image_search(
     limit: i64,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/images/search".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/search", &[
         ("filters", format!("{}", filters)),
         ("limit", format!("{}", limit)),
         ("term", format!("{}", term)),
@@ -3534,8 +3518,7 @@ fn image_prune(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/images/prune".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/prune", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.post(url).send()?;
@@ -3546,36 +3529,28 @@ fn system_auth(
     client: &Client,
     auth_config: &AuthConfig,
 ) -> Result<(), Error> {
-    let url = "/auth".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/auth").send()?;
     Ok(())
 }
 
 fn system_info(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/info".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/info").send()?;
     Ok(())
 }
 
 fn system_version(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/version".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/version").send()?;
     Ok(())
 }
 
 fn system_ping(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/_ping".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/_ping").send()?;
     Ok(())
 }
 
@@ -3590,8 +3565,7 @@ fn image_commit(
     pause: bool,
     changes: &str,
 ) -> Result<(), Error> {
-    let url = "/commit".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/commit", &[
         ("author", format!("{}", author)),
         ("changes", format!("{}", changes)),
         ("comment", format!("{}", comment)),
@@ -3610,8 +3584,7 @@ fn system_events(
     until: &str,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/events".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/events", &[
         ("filters", format!("{}", filters)),
         ("since", format!("{}", since)),
         ("until", format!("{}", until)),
@@ -3623,9 +3596,7 @@ fn system_events(
 fn system_data_usage(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/system/df".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/system/df").send()?;
     Ok(())
 }
 
@@ -3636,8 +3607,7 @@ fn image_get(
     let url = format!("/images/{name}/get",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3645,8 +3615,7 @@ fn image_get_all(
     client: &Client,
     names: &[String],
 ) -> Result<(), Error> {
-    let url = "/images/get".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/get", &[
         ("names", format!("{}", names)),
     ])?;
     client.get(url).send()?;
@@ -3658,8 +3627,7 @@ fn image_load(
     images_tarball: (/* binary */),
     quiet: bool,
 ) -> Result<(), Error> {
-    let url = "/images/load".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/images/load", &[
         ("quiet", format!("{}", quiet)),
     ])?;
     client.post(url).send()?;
@@ -3674,8 +3642,7 @@ fn container_exec(
     let url = format!("/containers/{id}/exec",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3687,8 +3654,7 @@ fn exec_start(
     let url = format!("/exec/{id}/start",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3716,8 +3682,7 @@ fn exec_inspect(
     let url = format!("/exec/{id}/json",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3725,8 +3690,7 @@ fn volume_list(
     client: &Client,
     filters: ::serde_json::Value,
 ) -> Result<(), Error> {
-    let url = "/volumes".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/volumes", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -3737,9 +3701,7 @@ fn volume_create(
     client: &Client,
     volume_config: &VolumeCreate,
 ) -> Result<(), Error> {
-    let url = "/volumes/create".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/volumes/create").send()?;
     Ok(())
 }
 
@@ -3750,8 +3712,7 @@ fn volume_inspect(
     let url = format!("/volumes/{name}",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3774,8 +3735,7 @@ fn volume_prune(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/volumes/prune".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/volumes/prune", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.post(url).send()?;
@@ -3786,8 +3746,7 @@ fn network_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/networks".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/networks", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -3818,8 +3777,7 @@ fn network_delete(
     let url = format!("/networks/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.delete(url).send()?;
+    client.delete(&url).send()?;
     Ok(())
 }
 
@@ -3827,9 +3785,7 @@ fn network_create(
     client: &Client,
     network_config: &NetworkCreateNetworkConfig,
 ) -> Result<(), Error> {
-    let url = "/networks/create".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/networks/create").send()?;
     Ok(())
 }
 
@@ -3841,8 +3797,7 @@ fn network_connect(
     let url = format!("/networks/{id}/connect",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3854,8 +3809,7 @@ fn network_disconnect(
     let url = format!("/networks/{id}/disconnect",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3863,8 +3817,7 @@ fn network_prune(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/networks/prune".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/networks/prune", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.post(url).send()?;
@@ -3875,8 +3828,7 @@ fn plugin_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/plugins".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/plugins", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -3887,8 +3839,7 @@ fn get_plugin_privileges(
     client: &Client,
     remote: &str,
 ) -> Result<(), Error> {
-    let url = "/plugins/privileges".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/plugins/privileges", &[
         ("remote", format!("{}", remote)),
     ])?;
     client.get(url).send()?;
@@ -3902,8 +3853,7 @@ fn plugin_pull(
     x_registry_auth: &str,
     body: &[GetPluginPrivileges],
 ) -> Result<(), Error> {
-    let url = "/plugins/pull".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/plugins/pull", &[
         ("name", format!("{}", name)),
         ("remote", format!("{}", remote)),
     ])?;
@@ -3918,8 +3868,7 @@ fn plugin_inspect(
     let url = format!("/plugins/{name}/json",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -3960,8 +3909,7 @@ fn plugin_disable(
     let url = format!("/plugins/{name}/disable",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -3987,8 +3935,7 @@ fn plugin_create(
     name: &str,
     tar_context: (/* binary */),
 ) -> Result<(), Error> {
-    let url = "/plugins/create".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/plugins/create", &[
         ("name", format!("{}", name)),
     ])?;
     client.post(url).send()?;
@@ -4002,8 +3949,7 @@ fn plugin_push(
     let url = format!("/plugins/{name}/push",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -4015,8 +3961,7 @@ fn plugin_set(
     let url = format!("/plugins/{name}/set",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post(&url).send()?;
     Ok(())
 }
 
@@ -4024,8 +3969,7 @@ fn node_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/nodes".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/nodes", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -4039,8 +3983,7 @@ fn node_inspect(
     let url = format!("/nodes/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -4078,9 +4021,7 @@ fn node_update(
 fn swarm_inspect(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/swarm".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/swarm").send()?;
     Ok(())
 }
 
@@ -4088,9 +4029,7 @@ fn swarm_init(
     client: &Client,
     body: &SwarmInit,
 ) -> Result<(), Error> {
-    let url = "/swarm/init".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/swarm/init").send()?;
     Ok(())
 }
 
@@ -4098,9 +4037,7 @@ fn swarm_join(
     client: &Client,
     body: &SwarmJoin,
 ) -> Result<(), Error> {
-    let url = "/swarm/join".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/swarm/join").send()?;
     Ok(())
 }
 
@@ -4108,8 +4045,7 @@ fn swarm_leave(
     client: &Client,
     force: bool,
 ) -> Result<(), Error> {
-    let url = "/swarm/leave".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/swarm/leave", &[
         ("force", format!("{}", force)),
     ])?;
     client.post(url).send()?;
@@ -4124,8 +4060,7 @@ fn swarm_update(
     rotate_manager_token: bool,
     rotate_manager_unlock_key: bool,
 ) -> Result<(), Error> {
-    let url = "/swarm/update".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/swarm/update", &[
         ("rotateManagerToken", format!("{}", rotate_manager_token)),
         ("rotateManagerUnlockKey", format!("{}", rotate_manager_unlock_key)),
         ("rotateWorkerToken", format!("{}", rotate_worker_token)),
@@ -4138,9 +4073,7 @@ fn swarm_update(
 fn swarm_unlockkey(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/swarm/unlockkey".to_string();
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get("/swarm/unlockkey").send()?;
     Ok(())
 }
 
@@ -4148,9 +4081,7 @@ fn swarm_unlock(
     client: &Client,
     body: &SwarmUnlockkey,
 ) -> Result<(), Error> {
-    let url = "/swarm/unlock".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/swarm/unlock").send()?;
     Ok(())
 }
 
@@ -4158,8 +4089,7 @@ fn service_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/services".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/services", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -4171,9 +4101,7 @@ fn service_create(
     body: &ServiceSpec,
     x_registry_auth: &str,
 ) -> Result<(), Error> {
-    let url = "/services/create".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/services/create").send()?;
     Ok(())
 }
 
@@ -4199,8 +4127,7 @@ fn service_delete(
     let url = format!("/services/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.delete(url).send()?;
+    client.delete(&url).send()?;
     Ok(())
 }
 
@@ -4256,8 +4183,7 @@ fn task_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/tasks".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/tasks", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -4271,8 +4197,7 @@ fn task_inspect(
     let url = format!("/tasks/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -4307,8 +4232,7 @@ fn secret_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/secrets".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/secrets", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -4319,9 +4243,7 @@ fn secret_create(
     client: &Client,
     body: &SecretSpec,
 ) -> Result<(), Error> {
-    let url = "/secrets/create".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/secrets/create").send()?;
     Ok(())
 }
 
@@ -4332,8 +4254,7 @@ fn secret_inspect(
     let url = format!("/secrets/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -4344,8 +4265,7 @@ fn secret_delete(
     let url = format!("/secrets/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.delete(url).send()?;
+    client.delete(&url).send()?;
     Ok(())
 }
 
@@ -4369,8 +4289,7 @@ fn config_list(
     client: &Client,
     filters: &str,
 ) -> Result<(), Error> {
-    let url = "/configs".to_string();
-    let url = Url::parse_with_params(&url, &[
+    let url = Url::parse_with_params("/configs", &[
         ("filters", format!("{}", filters)),
     ])?;
     client.get(url).send()?;
@@ -4381,9 +4300,7 @@ fn config_create(
     client: &Client,
     body: &ConfigSpec,
 ) -> Result<(), Error> {
-    let url = "/configs/create".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/configs/create").send()?;
     Ok(())
 }
 
@@ -4394,8 +4311,7 @@ fn config_inspect(
     let url = format!("/configs/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
@@ -4406,8 +4322,7 @@ fn config_delete(
     let url = format!("/configs/{id}",
         id=id,
     );
-    let url = Url::parse(&url)?;
-    client.delete(url).send()?;
+    client.delete(&url).send()?;
     Ok(())
 }
 
@@ -4434,17 +4349,14 @@ fn distribution_inspect(
     let url = format!("/distribution/{name}/json",
         name=name,
     );
-    let url = Url::parse(&url)?;
-    client.get(url).send()?;
+    client.get(&url).send()?;
     Ok(())
 }
 
 fn session(
     client: &Client,
 ) -> Result<(), Error> {
-    let url = "/session".to_string();
-    let url = Url::parse(&url)?;
-    client.post(url).send()?;
+    client.post("/session").send()?;
     Ok(())
 }
 

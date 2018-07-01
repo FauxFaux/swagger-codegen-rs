@@ -283,20 +283,19 @@ fn render_op<W: Write>(
     headers.sort_by_key(|p| &p.name);
 
     writeln!(into, ") -> Result<(), Error> {{")?;
-    if paths.is_empty() {
-        writeln!(into, "    let url = \"{}\".to_string();", path_url)?;
+    let mut url = if paths.is_empty() {
+        format!("\"{}\"", path_url)
     } else {
         writeln!(into, "    let url = format!(\"{}\",", path_url)?;
         for path in paths {
             writeln!(into, "        {0}={0},", path.name)?;
         }
         writeln!(into, "    );",)?;
-    }
+        "&url".to_string()
+    };
 
-    if queries.is_empty() {
-        writeln!(into, "    let url = Url::parse(&url)?;")?;
-    } else {
-        writeln!(into, "    let url = Url::parse_with_params(&url, &[")?;
+    if !queries.is_empty() {
+        writeln!(into, "    let url = Url::parse_with_params({}, &[", url)?;
         for query in queries {
             writeln!(
                 into,
@@ -306,12 +305,15 @@ fn render_op<W: Write>(
             )?;
         }
         writeln!(into, "    ])?;")?;
+
+        url = "url".to_string();
     }
 
     writeln!(
         into,
-        "    client.{}(url).send()?;",
-        method.reqwest_method_name()
+        "    client.{}({}).send()?;",
+        method.reqwest_method_name(),
+        url,
     )?;
     writeln!(into, "    Ok(())")?;
     writeln!(into, "}}")?;
