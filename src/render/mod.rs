@@ -50,7 +50,7 @@ fn render_simple(simple: &DataType) -> String {
         Number { .. } => "f64".to_string(),
         IpAddr => "::std::net::IpAddr".to_string(),
         DateTime => "::chrono::DateTime<::chrono::Utc>".to_string(),
-        Json => "::serde_json::Json".to_string(),
+        Json => "::serde_json::Value".to_string(),
         Binary => "(/* binary */)".to_string(),
         Integer {
             min, max, format, ..
@@ -206,31 +206,53 @@ fn render_endpoint<W: Write>(mut into: W, endpoint: &Endpoint<NamedType>) -> Res
     let mut endpoint_ops: Vec<(&HttpMethod, &Operation<NamedType>)> = endpoint.ops.iter().collect();
     endpoint_ops.sort_by_key(|(&method, _)| method);
     for (method, op) in endpoint_ops {
-        #[cfg(never)]
-        // looking at this is kinda useless as it can list two types, with no association with where they go
-        match op.produces.len() {
-            0 => (),
-            1 => match op.produces[0].as_ref() {
-                "application/json" => (),
-                "application/octet-stream" => (),
-                "text/plain" => (),
-                "application/vnd.docker.raw-stream" => (),
-                "application/x-tar" => (),
-                other => bail!("unimplemented production type: {:?}", other),
-            },
-            _ => bail!("wrong number of productions: {:?}", op.produces),
-        }
-
-        #[cfg(never)] // sigh, this either
-        match op.consumes.len() {
-            0 | 1 => (),
-            _ => bail!("wrong number of consumptions: {:?}", op.consumes),
-        }
-
-        writeln!(into, "// {:?} {}", method, endpoint.path_url)?;
-        for param in &op.params {
-            writeln!(into, "//   {:?} {}", method, endpoint.path_url)?;
-        }
+        render_op(&mut into, &endpoint.path_url, *method, op)?;
     }
+    Ok(())
+}
+
+fn render_op<W: Write>(
+    mut into: W,
+    path_url: &str,
+    method: HttpMethod,
+    op: &Operation<NamedType>,
+) -> Result<(), Error> {
+    #[cfg(never)]
+    // looking at this is kinda useless as it can list two types, with no association with where they go
+    match op.produces.len() {
+        0 => (),
+        1 => match op.produces[0].as_ref() {
+            "application/json" => (),
+            "application/octet-stream" => (),
+            "text/plain" => (),
+            "application/vnd.docker.raw-stream" => (),
+            "application/x-tar" => (),
+            other => bail!("unimplemented production type: {:?}", other),
+        },
+        _ => bail!("wrong number of productions: {:?}", op.produces),
+    }
+
+    #[cfg(never)] // sigh, this either
+    match op.consumes.len() {
+        0 | 1 => (),
+        _ => bail!("wrong number of consumptions: {:?}", op.consumes),
+    }
+
+    writeln!(into, "fn {}(", rustify_field_name(&op.id))?;
+    writeln!(into, "    client: &Client,")?;
+    for param in &op.params {
+        writeln!(
+            into,
+            "    {}: {},",
+            rustify_field_name(&param.name),
+            render(&param.param_type)
+        )?;
+    }
+
+    writeln!(into, ") -> Result<(), Error> {{")?;
+    writeln!(into, "    bail!(\"unimplemented\")")?;
+    writeln!(into, "}}")?;
+    writeln!(into)?;
+
     Ok(())
 }

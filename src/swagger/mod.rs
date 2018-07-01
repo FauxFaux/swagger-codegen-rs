@@ -159,11 +159,11 @@ pub struct Operation<T> {
 
 #[derive(Debug, Clone)]
 pub struct Param<T> {
-    name: String,
-    loc: ParamLocation,
-    description: String,
-    required: Option<bool>,
-    param_type: T,
+    pub name: String,
+    pub loc: ParamLocation,
+    pub description: String,
+    pub required: Option<bool>,
+    pub param_type: T,
 }
 
 #[derive(Debug, Clone)]
@@ -188,7 +188,7 @@ pub enum HttpMethod {
 }
 
 #[derive(Debug, Copy, Clone, Eq, PartialEq)]
-enum ParamLocation {
+pub enum ParamLocation {
     Query,
     Body,
     Path,
