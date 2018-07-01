@@ -36,7 +36,20 @@ pub fn render(t: &NamedType) -> String {
         NamedType::Name(name) => name.to_string(),
         NamedType::Simple(simple) => render_simple(simple),
         NamedType::Array { tee, .. } => format!("Vec<{}>", render(tee)),
-        NamedType::Unknown => "()".to_string(),
+        NamedType::Unknown => "::serde_json::Value".to_string(),
+    }
+}
+
+pub fn render_ref(t: &NamedType) -> String {
+    // TODO: named types could be passed by value?
+    // TODO: some simple types (like dates) could probably be passed by ref
+    match t {
+        NamedType::Name(name) => format!("&{}", name),
+        NamedType::Simple(DataType::String { .. })
+        | NamedType::Simple(DataType::MatchString { .. }) => "&str".to_string(),
+        NamedType::Simple(simple) => render_simple(simple),
+        NamedType::Array { tee, .. } => format!("&[{}]", render(tee)),
+        NamedType::Unknown => "::serde_json::Value".to_string(),
     }
 }
 
@@ -245,7 +258,7 @@ fn render_op<W: Write>(
             into,
             "    {}: {},",
             rustify_field_name(&param.name),
-            render(&param.param_type)
+            render_ref(&param.param_type)
         )?;
     }
 

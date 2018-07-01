@@ -92,7 +92,7 @@ struct ConfigSpec {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Data")]
     data: String,
     #[serde(rename = "Templating")]
@@ -122,7 +122,7 @@ struct ContainerConfig {
     #[serde(rename = "AttachStderr")]
     attach_stderr: bool,
     #[serde(rename = "ExposedPorts")]
-    exposed_ports: (),
+    exposed_ports: ::serde_json::Value,
     #[serde(rename = "Tty")]
     tty: bool,
     #[serde(rename = "OpenStdin")]
@@ -140,7 +140,7 @@ struct ContainerConfig {
     #[serde(rename = "Image")]
     image: String,
     #[serde(rename = "Volumes")]
-    volumes: (),
+    volumes: ::serde_json::Value,
     #[serde(rename = "WorkingDir")]
     working_dir: String,
     #[serde(rename = "Entrypoint")]
@@ -152,7 +152,7 @@ struct ContainerConfig {
     #[serde(rename = "OnBuild")]
     on_build: Vec<String>,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "StopSignal")]
     stop_signal: String,
     #[serde(rename = "StopTimeout")]
@@ -176,7 +176,7 @@ struct ContainerCreateBody {
     #[serde(rename = "AttachStderr")]
     attach_stderr: bool,
     #[serde(rename = "ExposedPorts")]
-    exposed_ports: (),
+    exposed_ports: ::serde_json::Value,
     #[serde(rename = "Tty")]
     tty: bool,
     #[serde(rename = "OpenStdin")]
@@ -194,7 +194,7 @@ struct ContainerCreateBody {
     #[serde(rename = "Image")]
     image: String,
     #[serde(rename = "Volumes")]
-    volumes: (),
+    volumes: ::serde_json::Value,
     #[serde(rename = "WorkingDir")]
     working_dir: String,
     #[serde(rename = "Entrypoint")]
@@ -206,7 +206,7 @@ struct ContainerCreateBody {
     #[serde(rename = "OnBuild")]
     on_build: Vec<String>,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "StopSignal")]
     stop_signal: String,
     #[serde(rename = "StopTimeout")]
@@ -250,7 +250,7 @@ struct ContainerCreateHostConfigLogConfig {
     #[serde(rename = "Type")]
     type_: ContainerCreateHostConfigLogConfigType,
     #[serde(rename = "Config")]
-    config: (),
+    config: ::serde_json::Value,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -300,7 +300,7 @@ struct ContainerCreateHostConfigUlimits {
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ContainerCreateNetworkingConfig {
     #[serde(rename = "EndpointsConfig")]
-    endpoints_config: (),
+    endpoints_config: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -350,7 +350,7 @@ struct ContainerInspect {
     #[serde(rename = "LogPath")]
     log_path: String,
     #[serde(rename = "Node")]
-    node: (),
+    node: ::serde_json::Value,
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "RestartCount")]
@@ -446,7 +446,7 @@ struct ContainerList {
     #[serde(rename = "SizeRootFs")]
     size_root_fs: i64,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "State")]
     state: String,
     #[serde(rename = "Status")]
@@ -510,7 +510,7 @@ struct ContainerListMountsVolumeOptions {
     #[serde(rename = "NoCopy")]
     no_copy: bool,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "DriverConfig")]
     driver_config: ContainerListMountsVolumeOptionsDriverConfig,
 }
@@ -520,13 +520,13 @@ struct ContainerListMountsVolumeOptionsDriverConfig {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
 struct ContainerListNetworkSettings {
     #[serde(rename = "Networks")]
-    networks: (),
+    networks: ::serde_json::Value,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
@@ -708,7 +708,7 @@ struct Driver {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -762,7 +762,7 @@ struct EndpointSettings {
     #[serde(rename = "MacAddress")]
     mac_address: String,
     #[serde(rename = "DriverOpts")]
-    driver_opts: (),
+    driver_opts: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -778,7 +778,7 @@ struct EngineDescription {
     #[serde(rename = "EngineVersion")]
     engine_version: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Plugins")]
     plugins: Vec<NodeListDescriptionEnginePlugins>,
 }
@@ -846,7 +846,7 @@ struct GraphDriverData {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Data")]
-    data: (),
+    data: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -936,7 +936,7 @@ struct HostConfig {
     #[serde(rename = "NetworkMode")]
     network_mode: String,
     #[serde(rename = "PortBindings")]
-    port_bindings: (),
+    port_bindings: ::serde_json::Value,
     #[serde(rename = "RestartPolicy")]
     restart_policy: RestartPolicy,
     #[serde(rename = "AutoRemove")]
@@ -980,9 +980,9 @@ struct HostConfig {
     #[serde(rename = "SecurityOpt")]
     security_opt: Vec<String>,
     #[serde(rename = "StorageOpt")]
-    storage_opt: (),
+    storage_opt: ::serde_json::Value,
     #[serde(rename = "Tmpfs")]
-    tmpfs: (),
+    tmpfs: ::serde_json::Value,
     #[serde(rename = "UTSMode")]
     uts_mode: String,
     #[serde(rename = "UsernsMode")]
@@ -990,7 +990,7 @@ struct HostConfig {
     #[serde(rename = "ShmSize")]
     shm_size: u64,
     #[serde(rename = "Sysctls")]
-    sysctls: (),
+    sysctls: ::serde_json::Value,
     #[serde(rename = "Runtime")]
     runtime: String,
     #[serde(rename = "ConsoleSize")]
@@ -1004,9 +1004,9 @@ struct IPAM {
     #[serde(rename = "Driver")]
     driver: String,
     #[serde(rename = "Config")]
-    config: Vec<()>,
+    config: Vec<::serde_json::Value>,
     #[serde(rename = "Options")]
-    options: Vec<()>,
+    options: Vec<::serde_json::Value>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1156,7 +1156,7 @@ struct ImageSummary {
     #[serde(rename = "VirtualSize")]
     virtual_size: i64,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Containers")]
     containers: i64,
 }
@@ -1276,11 +1276,11 @@ struct Network {
     #[serde(rename = "Ingress")]
     ingress: bool,
     #[serde(rename = "Containers")]
-    containers: (),
+    containers: ::serde_json::Value,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1332,9 +1332,9 @@ struct NetworkCreateNetworkConfig {
     #[serde(rename = "EnableIPv6")]
     enable_i_pv6: bool,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1364,7 +1364,7 @@ struct NetworkSettings {
     #[serde(rename = "LinkLocalIPv6PrefixLen")]
     link_local_i_pv6_prefix_len: i64,
     #[serde(rename = "Ports")]
-    ports: (),
+    ports: ::serde_json::Value,
     #[serde(rename = "SandboxKey")]
     sandbox_key: String,
     #[serde(rename = "SecondaryIPAddresses")]
@@ -1388,7 +1388,7 @@ struct NetworkSettings {
     #[serde(rename = "MacAddress")]
     mac_address: String,
     #[serde(rename = "Networks")]
-    networks: (),
+    networks: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -1456,7 +1456,7 @@ struct NodeSpec {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Role")]
     role: NodeListSpecRole,
     #[serde(rename = "Availability")]
@@ -1770,7 +1770,7 @@ struct RegistryServiceConfig {
     #[serde(rename = "InsecureRegistryCIDRs")]
     insecure_registry_cid_rs: Vec<String>,
     #[serde(rename = "IndexConfigs")]
-    index_configs: (),
+    index_configs: ::serde_json::Value,
     #[serde(rename = "Mirrors")]
     mirrors: Vec<String>,
 }
@@ -1886,7 +1886,7 @@ struct SecretSpec {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Data")]
     data: String,
     #[serde(rename = "Driver")]
@@ -1972,7 +1972,7 @@ struct ServiceListSpecMode {
     #[serde(rename = "Replicated")]
     replicated: ServiceListSpecModeReplicated,
     #[serde(rename = "Global")]
-    global: (),
+    global: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2010,7 +2010,7 @@ struct ServiceListSpecTaskTemplateContainerSpec {
     #[serde(rename = "Image")]
     image: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Command")]
     command: Vec<String>,
     #[serde(rename = "Args")]
@@ -2130,7 +2130,7 @@ struct ServiceListSpecTaskTemplateLogDriver {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2272,7 +2272,7 @@ struct ServiceSpec {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "TaskTemplate")]
     task_template: TaskSpec,
     #[serde(rename = "Mode")]
@@ -2368,7 +2368,7 @@ struct SwarmSpec {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Orchestration")]
     orchestration: SystemInfoSwarmClusterSpecOrchestration,
     #[serde(rename = "Raft")]
@@ -2450,7 +2450,7 @@ struct SystemEventsActor {
     #[serde(rename = "ID")]
     id: String,
     #[serde(rename = "Attributes")]
-    attributes: (),
+    attributes: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2550,7 +2550,7 @@ struct SystemInfo {
     #[serde(rename = "ClusterAdvertise")]
     cluster_advertise: String,
     #[serde(rename = "Runtimes")]
-    runtimes: (),
+    runtimes: ::serde_json::Value,
     #[serde(rename = "DefaultRuntime")]
     default_runtime: String,
     #[serde(rename = "Swarm")]
@@ -2646,7 +2646,7 @@ struct SystemInfoSwarmClusterSpecCAConfigExternalCAs {
     #[serde(rename = "URL")]
     url: String,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
     #[serde(rename = "CACert")]
     ca_cert: String,
 }
@@ -2706,7 +2706,7 @@ struct SystemInfoSwarmClusterSpecTaskDefaultsLogDriver {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2744,7 +2744,7 @@ struct SystemVersionComponents {
     #[serde(rename = "Version")]
     version: String,
     #[serde(rename = "Details")]
-    details: (),
+    details: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2776,7 +2776,7 @@ struct Task {
     #[serde(rename = "Name")]
     name: String,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Spec")]
     spec: TaskSpec,
     #[serde(rename = "ServiceID")]
@@ -2894,13 +2894,13 @@ struct Volume {
     #[serde(rename = "CreatedAt")]
     created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Status")]
-    status: (),
+    status: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
     #[serde(rename = "Scope")]
     scope: SystemDataUsageVolumesScope,
     #[serde(rename = "Options")]
-    options: (),
+    options: ::serde_json::Value,
     #[serde(rename = "UsageData")]
     usage_data: SystemDataUsageVolumesUsageData,
 }
@@ -2912,9 +2912,9 @@ struct VolumeCreate {
     #[serde(rename = "Driver")]
     driver: String,
     #[serde(rename = "DriverOpts")]
-    driver_opts: (),
+    driver_opts: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: (),
+    labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
@@ -2938,22 +2938,22 @@ fn container_list(
     all: bool,
     limit: i64,
     size: bool,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_create(
     client: &Client,
-    name: String,
-    body: ContainerCreateBody,
+    name: &str,
+    body: &ContainerCreateBody,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_inspect(
     client: &Client,
-    id: String,
+    id: &str,
     size: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -2961,43 +2961,43 @@ fn container_inspect(
 
 fn container_top(
     client: &Client,
-    id: String,
-    ps_args: String,
+    id: &str,
+    ps_args: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_logs(
     client: &Client,
-    id: String,
+    id: &str,
     follow: bool,
     stdout: bool,
     stderr: bool,
     since: i64,
     until: i64,
     timestamps: bool,
-    tail: String,
+    tail: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_changes(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_export(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_stats(
     client: &Client,
-    id: String,
+    id: &str,
     stream: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3005,7 +3005,7 @@ fn container_stats(
 
 fn container_resize(
     client: &Client,
-    id: String,
+    id: &str,
     h: i64,
     w: i64,
 ) -> Result<(), Error> {
@@ -3014,15 +3014,15 @@ fn container_resize(
 
 fn container_start(
     client: &Client,
-    id: String,
-    detach_keys: String,
+    id: &str,
+    detach_keys: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_stop(
     client: &Client,
-    id: String,
+    id: &str,
     t: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3030,7 +3030,7 @@ fn container_stop(
 
 fn container_restart(
     client: &Client,
-    id: String,
+    id: &str,
     t: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3038,46 +3038,46 @@ fn container_restart(
 
 fn container_kill(
     client: &Client,
-    id: String,
-    signal: String,
+    id: &str,
+    signal: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_update(
     client: &Client,
-    id: String,
-    update: ContainerUpdateUpdate,
+    id: &str,
+    update: &ContainerUpdateUpdate,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_rename(
     client: &Client,
-    id: String,
-    name: String,
+    id: &str,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_pause(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_unpause(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_attach(
     client: &Client,
-    id: String,
-    detach_keys: String,
+    id: &str,
+    detach_keys: &str,
     logs: bool,
     stream: bool,
     stdin: bool,
@@ -3089,8 +3089,8 @@ fn container_attach(
 
 fn container_attach_websocket(
     client: &Client,
-    id: String,
-    detach_keys: String,
+    id: &str,
+    detach_keys: &str,
     logs: bool,
     stream: bool,
     stdin: bool,
@@ -3102,15 +3102,15 @@ fn container_attach_websocket(
 
 fn container_wait(
     client: &Client,
-    id: String,
-    condition: String,
+    id: &str,
+    condition: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_delete(
     client: &Client,
-    id: String,
+    id: &str,
     v: bool,
     force: bool,
     link: bool,
@@ -3120,33 +3120,33 @@ fn container_delete(
 
 fn container_archive(
     client: &Client,
-    id: String,
-    path: String,
+    id: &str,
+    path: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_archive_info(
     client: &Client,
-    id: String,
-    path: String,
+    id: &str,
+    path: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn put_container_archive(
     client: &Client,
-    id: String,
-    path: String,
-    no_overwrite_dir_non_dir: String,
-    input_stream: String,
+    id: &str,
+    path: &str,
+    no_overwrite_dir_non_dir: &str,
+    input_stream: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn container_prune(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3154,7 +3154,7 @@ fn container_prune(
 fn image_list(
     client: &Client,
     all: bool,
-    filters: String,
+    filters: &str,
     digests: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3163,31 +3163,31 @@ fn image_list(
 fn image_build(
     client: &Client,
     input_stream: (/* binary */),
-    dockerfile: String,
-    t: String,
-    extrahosts: String,
-    remote: String,
+    dockerfile: &str,
+    t: &str,
+    extrahosts: &str,
+    remote: &str,
     q: bool,
     nocache: bool,
-    cachefrom: String,
-    pull: String,
+    cachefrom: &str,
+    pull: &str,
     rm: bool,
     forcerm: bool,
     memory: i64,
     memswap: i64,
     cpushares: i64,
-    cpusetcpus: String,
+    cpusetcpus: &str,
     cpuperiod: i64,
     cpuquota: i64,
-    buildargs: String,
+    buildargs: &str,
     shmsize: i64,
     squash: bool,
-    labels: String,
-    networkmode: String,
-    content_type: ImageBuild,
-    x_registry_config: String,
-    platform: String,
-    target: String,
+    labels: &str,
+    networkmode: &str,
+    content_type: &ImageBuild,
+    x_registry_config: &str,
+    platform: &str,
+    target: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3200,52 +3200,52 @@ fn build_prune(
 
 fn image_create(
     client: &Client,
-    from_image: String,
-    from_src: String,
-    repo: String,
-    tag: String,
-    input_image: String,
-    x_registry_auth: String,
-    platform: String,
+    from_image: &str,
+    from_src: &str,
+    repo: &str,
+    tag: &str,
+    input_image: &str,
+    x_registry_auth: &str,
+    platform: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_inspect(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_history(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_push(
     client: &Client,
-    name: String,
-    tag: String,
-    x_registry_auth: String,
+    name: &str,
+    tag: &str,
+    x_registry_auth: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_tag(
     client: &Client,
-    name: String,
-    repo: String,
-    tag: String,
+    name: &str,
+    repo: &str,
+    tag: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_delete(
     client: &Client,
-    name: String,
+    name: &str,
     force: bool,
     noprune: bool,
 ) -> Result<(), Error> {
@@ -3254,23 +3254,23 @@ fn image_delete(
 
 fn image_search(
     client: &Client,
-    term: String,
+    term: &str,
     limit: i64,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_prune(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn system_auth(
     client: &Client,
-    auth_config: AuthConfig,
+    auth_config: &AuthConfig,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3295,23 +3295,23 @@ fn system_ping(
 
 fn image_commit(
     client: &Client,
-    container_config: ContainerConfig,
-    container: String,
-    repo: String,
-    tag: String,
-    comment: String,
-    author: String,
+    container_config: &ContainerConfig,
+    container: &str,
+    repo: &str,
+    tag: &str,
+    comment: &str,
+    author: &str,
     pause: bool,
-    changes: String,
+    changes: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn system_events(
     client: &Client,
-    since: String,
-    until: String,
-    filters: String,
+    since: &str,
+    until: &str,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3324,14 +3324,14 @@ fn system_data_usage(
 
 fn image_get(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn image_get_all(
     client: &Client,
-    names: Vec<String>,
+    names: &[String],
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3346,23 +3346,23 @@ fn image_load(
 
 fn container_exec(
     client: &Client,
-    exec_config: ContainerExec,
-    id: String,
+    exec_config: &ContainerExec,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn exec_start(
     client: &Client,
-    exec_start_config: ExecStart,
-    id: String,
+    exec_start_config: &ExecStart,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn exec_resize(
     client: &Client,
-    id: String,
+    id: &str,
     h: i64,
     w: i64,
 ) -> Result<(), Error> {
@@ -3371,7 +3371,7 @@ fn exec_resize(
 
 fn exec_inspect(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3385,21 +3385,21 @@ fn volume_list(
 
 fn volume_create(
     client: &Client,
-    volume_config: VolumeCreate,
+    volume_config: &VolumeCreate,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn volume_inspect(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn volume_delete(
     client: &Client,
-    name: String,
+    name: &str,
     force: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3407,98 +3407,98 @@ fn volume_delete(
 
 fn volume_prune(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_inspect(
     client: &Client,
-    id: String,
+    id: &str,
     verbose: bool,
-    scope: String,
+    scope: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_delete(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_create(
     client: &Client,
-    network_config: NetworkCreateNetworkConfig,
+    network_config: &NetworkCreateNetworkConfig,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_connect(
     client: &Client,
-    id: String,
-    container: NetworkConnect,
+    id: &str,
+    container: &NetworkConnect,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_disconnect(
     client: &Client,
-    id: String,
-    container: NetworkDisconnect,
+    id: &str,
+    container: &NetworkDisconnect,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn network_prune(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn get_plugin_privileges(
     client: &Client,
-    remote: String,
+    remote: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_pull(
     client: &Client,
-    remote: String,
-    name: String,
-    x_registry_auth: String,
-    body: Vec<GetPluginPrivileges>,
+    remote: &str,
+    name: &str,
+    x_registry_auth: &str,
+    body: &[GetPluginPrivileges],
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_inspect(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_delete(
     client: &Client,
-    name: String,
+    name: &str,
     force: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3506,7 +3506,7 @@ fn plugin_delete(
 
 fn plugin_enable(
     client: &Client,
-    name: String,
+    name: &str,
     timeout: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3514,24 +3514,24 @@ fn plugin_enable(
 
 fn plugin_disable(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_upgrade(
     client: &Client,
-    name: String,
-    remote: String,
-    x_registry_auth: String,
-    body: Vec<GetPluginPrivileges>,
+    name: &str,
+    remote: &str,
+    x_registry_auth: &str,
+    body: &[GetPluginPrivileges],
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_create(
     client: &Client,
-    name: String,
+    name: &str,
     tar_context: (/* binary */),
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3539,36 +3539,36 @@ fn plugin_create(
 
 fn plugin_push(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn plugin_set(
     client: &Client,
-    name: String,
-    body: Vec<String>,
+    name: &str,
+    body: &[String],
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn node_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn node_inspect(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn node_delete(
     client: &Client,
-    id: String,
+    id: &str,
     force: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3576,8 +3576,8 @@ fn node_delete(
 
 fn node_update(
     client: &Client,
-    id: String,
-    body: NodeSpec,
+    id: &str,
+    body: &NodeSpec,
     version: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3591,14 +3591,14 @@ fn swarm_inspect(
 
 fn swarm_init(
     client: &Client,
-    body: SwarmInit,
+    body: &SwarmInit,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn swarm_join(
     client: &Client,
-    body: SwarmJoin,
+    body: &SwarmJoin,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
@@ -3612,7 +3612,7 @@ fn swarm_leave(
 
 fn swarm_update(
     client: &Client,
-    body: SwarmSpec,
+    body: &SwarmSpec,
     version: i64,
     rotate_worker_token: bool,
     rotate_manager_token: bool,
@@ -3629,29 +3629,29 @@ fn swarm_unlockkey(
 
 fn swarm_unlock(
     client: &Client,
-    body: SwarmUnlockkey,
+    body: &SwarmUnlockkey,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn service_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn service_create(
     client: &Client,
-    body: ServiceSpec,
-    x_registry_auth: String,
+    body: &ServiceSpec,
+    x_registry_auth: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn service_inspect(
     client: &Client,
-    id: String,
+    id: &str,
     insert_defaults: bool,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3659,97 +3659,97 @@ fn service_inspect(
 
 fn service_delete(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn service_update(
     client: &Client,
-    id: String,
-    body: ServiceSpec,
+    id: &str,
+    body: &ServiceSpec,
     version: i64,
-    registry_auth_from: String,
-    rollback: String,
-    x_registry_auth: String,
+    registry_auth_from: &str,
+    rollback: &str,
+    x_registry_auth: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn service_logs(
     client: &Client,
-    id: String,
+    id: &str,
     details: bool,
     follow: bool,
     stdout: bool,
     stderr: bool,
     since: i64,
     timestamps: bool,
-    tail: String,
+    tail: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn task_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn task_inspect(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn task_logs(
     client: &Client,
-    id: String,
+    id: &str,
     details: bool,
     follow: bool,
     stdout: bool,
     stderr: bool,
     since: i64,
     timestamps: bool,
-    tail: String,
+    tail: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn secret_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn secret_create(
     client: &Client,
-    body: SecretSpec,
+    body: &SecretSpec,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn secret_inspect(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn secret_delete(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn secret_update(
     client: &Client,
-    id: String,
-    body: SecretSpec,
+    id: &str,
+    body: &SecretSpec,
     version: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3757,36 +3757,36 @@ fn secret_update(
 
 fn config_list(
     client: &Client,
-    filters: String,
+    filters: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn config_create(
     client: &Client,
-    body: ConfigSpec,
+    body: &ConfigSpec,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn config_inspect(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn config_delete(
     client: &Client,
-    id: String,
+    id: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
 
 fn config_update(
     client: &Client,
-    id: String,
-    body: ConfigSpec,
+    id: &str,
+    body: &ConfigSpec,
     version: i64,
 ) -> Result<(), Error> {
     bail!("unimplemented")
@@ -3794,7 +3794,7 @@ fn config_update(
 
 fn distribution_inspect(
     client: &Client,
-    name: String,
+    name: &str,
 ) -> Result<(), Error> {
     bail!("unimplemented")
 }
