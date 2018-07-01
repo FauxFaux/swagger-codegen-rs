@@ -95,7 +95,18 @@ fn deref(definitions: &Defs, data_type: PartialType) -> Result<FullType, Error> 
                     other => bail!("can't all-of {:?}", other),
                 }
             }
-            FullType::Fields(new)
+
+            let mut seen = HashSet::new();
+            let mut dedup = Vec::new();
+            for field in new {
+                if !seen.insert(field.name.to_string()) {
+                    // TODO: validation, merge attributes, etc.
+                    // TODO: No, really, this needs doing.
+                }
+                dedup.push(field);
+            }
+
+            FullType::Fields(dedup)
         }
         PartialType::Fields(fields) => FullType::Fields(
             fields

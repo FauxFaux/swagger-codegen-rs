@@ -214,13 +214,16 @@ impl<T> Endpoint<T> {
     where
         F: FnMut(T) -> Result<R, Error>,
     {
+        let error_location = self.path_url.to_string();
+
         Ok(Endpoint::<R> {
             path_url: self.path_url,
             ops: self
                 .ops
                 .into_iter()
                 .map(|(method, op)| op.map_type(&mut func).map(|op| (method, op)))
-                .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()?,
+                .collect::<Result<HashMap<HttpMethod, Operation<R>>, Error>>()
+                .with_context(|_| format_err!("mapping endpoint {}", error_location))?,
         })
     }
 
@@ -261,6 +264,8 @@ impl<T> Operation<T> {
     where
         F: FnMut(T) -> Result<R, Error>,
     {
+        let error_location = self.id.to_string();
+
         Ok(Operation::<R> {
             id: self.id,
             consumes: self.consumes,
@@ -269,12 +274,14 @@ impl<T> Operation<T> {
                 .params
                 .into_iter()
                 .map(|p| p.map_type(&mut func))
-                .collect::<Result<Vec<Param<R>>, Error>>()?,
+                .collect::<Result<Vec<Param<R>>, Error>>()
+                .with_context(|_| format_err!("processing param in {}", error_location))?,
             responses: self
                 .responses
                 .into_iter()
                 .map(|(code, resp)| resp.map_type(&mut func).map(|resp| (code, resp)))
-                .collect::<Result<HashMap<u16, Response<R>>, Error>>()?,
+                .collect::<Result<HashMap<u16, Response<R>>, Error>>()
+                .with_context(|_| format_err!("processing response in {}", error_location))?,
         })
     }
 

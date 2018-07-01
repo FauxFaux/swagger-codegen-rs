@@ -38,10 +38,14 @@ pub fn go<W: Write>(mut into: W) -> Result<(), Error> {
 
 #[cfg(test)]
 mod tests {
+    extern crate tempfile_fast;
+
     use std::fs;
 
     #[test]
     fn test() {
-        ::go(fs::File::create("demo/src/docker_gen.rs").unwrap()).unwrap()
+        let mut temp = self::tempfile_fast::PersistableTempFile::new_in("demo/src").unwrap();
+        ::go(&mut temp).unwrap();
+        temp.persist_by_rename("demo/src/docker_gen.rs").unwrap();
     }
 }

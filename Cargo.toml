@@ -10,3 +10,6 @@ heck = "0.3"
 ordered-float = "0.5"
 result = "1"
 yaml-rust = "0.4"
+
+[dev-dependencies]
+tempfile-fast = "0.2"
