@@ -2947,7 +2947,8 @@ fn container_list(
         ("limit", format!("{}", limit)),
         ("size", format!("{}", size)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -2959,7 +2960,9 @@ fn container_create(
     let url = Url::parse_with_params("/containers/create", &[
         ("name", name.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -2974,7 +2977,8 @@ fn container_inspect(
     let url = Url::parse_with_params(&url, &[
         ("size", format!("{}", size)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -2989,7 +2993,8 @@ fn container_top(
     let url = Url::parse_with_params(&url, &[
         ("ps_args", ps_args.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3016,7 +3021,8 @@ fn container_logs(
         ("timestamps", format!("{}", timestamps)),
         ("until", format!("{}", until)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3027,7 +3033,8 @@ fn container_changes(
     let url = format!("/containers/{id}/changes",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3038,7 +3045,8 @@ fn container_export(
     let url = format!("/containers/{id}/export",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3053,7 +3061,8 @@ fn container_stats(
     let url = Url::parse_with_params(&url, &[
         ("stream", format!("{}", stream)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3070,7 +3079,8 @@ fn container_resize(
         ("h", format!("{}", h)),
         ("w", format!("{}", w)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3085,7 +3095,8 @@ fn container_start(
     let url = Url::parse_with_params(&url, &[
         ("detachKeys", detach_keys.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3100,7 +3111,8 @@ fn container_stop(
     let url = Url::parse_with_params(&url, &[
         ("t", format!("{}", t)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3115,7 +3127,8 @@ fn container_restart(
     let url = Url::parse_with_params(&url, &[
         ("t", format!("{}", t)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3130,7 +3143,8 @@ fn container_kill(
     let url = Url::parse_with_params(&url, &[
         ("signal", signal.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3142,7 +3156,9 @@ fn container_update(
     let url = format!("/containers/{id}/update",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(update)
+        .send()?;
     Ok(())
 }
 
@@ -3157,7 +3173,8 @@ fn container_rename(
     let url = Url::parse_with_params(&url, &[
         ("name", name.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3168,7 +3185,8 @@ fn container_pause(
     let url = format!("/containers/{id}/pause",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3179,7 +3197,8 @@ fn container_unpause(
     let url = format!("/containers/{id}/unpause",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3204,7 +3223,8 @@ fn container_attach(
         ("stdout", format!("{}", stdout)),
         ("stream", format!("{}", stream)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3229,7 +3249,8 @@ fn container_attach_websocket(
         ("stdout", format!("{}", stdout)),
         ("stream", format!("{}", stream)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3244,7 +3265,8 @@ fn container_wait(
     let url = Url::parse_with_params(&url, &[
         ("condition", condition.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3263,7 +3285,8 @@ fn container_delete(
         ("link", format!("{}", link)),
         ("v", format!("{}", v)),
     ])?;
-    client.delete(url).send()?;
+    client.delete(url)
+        .send()?;
     Ok(())
 }
 
@@ -3278,7 +3301,8 @@ fn container_archive(
     let url = Url::parse_with_params(&url, &[
         ("path", path.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3293,7 +3317,8 @@ fn container_archive_info(
     let url = Url::parse_with_params(&url, &[
         ("path", path.to_string()),
     ])?;
-    client.head(url).send()?;
+    client.head(url)
+        .send()?;
     Ok(())
 }
 
@@ -3311,7 +3336,9 @@ fn put_container_archive(
         ("noOverwriteDirNonDir", no_overwrite_dir_non_dir.to_string()),
         ("path", path.to_string()),
     ])?;
-    client.put(url).send()?;
+    client.put(url)
+        .json(input_stream)
+        .send()?;
     Ok(())
 }
 
@@ -3322,7 +3349,8 @@ fn container_prune(
     let url = Url::parse_with_params("/containers/prune", &[
         ("filters", filters.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3337,7 +3365,8 @@ fn image_list(
         ("digests", format!("{}", digests)),
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3395,14 +3424,17 @@ fn image_build(
         ("t", t.to_string()),
         ("target", target.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        // TODO: unknown body type
+        .send()?;
     Ok(())
 }
 
 fn build_prune(
     client: &Client,
 ) -> Result<(), Error> {
-    client.post("/build/prune").send()?;
+    client.post("/build/prune")
+        .send()?;
     Ok(())
 }
 
@@ -3423,7 +3455,9 @@ fn image_create(
         ("repo", repo.to_string()),
         ("tag", tag.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(input_image)
+        .send()?;
     Ok(())
 }
 
@@ -3434,7 +3468,8 @@ fn image_inspect(
     let url = format!("/images/{name}/json",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3445,7 +3480,8 @@ fn image_history(
     let url = format!("/images/{name}/history",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3461,7 +3497,8 @@ fn image_push(
     let url = Url::parse_with_params(&url, &[
         ("tag", tag.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3478,7 +3515,8 @@ fn image_tag(
         ("repo", repo.to_string()),
         ("tag", tag.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3495,7 +3533,8 @@ fn image_delete(
         ("force", format!("{}", force)),
         ("noprune", format!("{}", noprune)),
     ])?;
-    client.delete(url).send()?;
+    client.delete(url)
+        .send()?;
     Ok(())
 }
 
@@ -3510,7 +3549,8 @@ fn image_search(
         ("limit", format!("{}", limit)),
         ("term", term.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3521,7 +3561,8 @@ fn image_prune(
     let url = Url::parse_with_params("/images/prune", &[
         ("filters", filters.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3529,28 +3570,33 @@ fn system_auth(
     client: &Client,
     auth_config: &AuthConfig,
 ) -> Result<(), Error> {
-    client.post("/auth").send()?;
+    client.post("/auth")
+        .json(auth_config)
+        .send()?;
     Ok(())
 }
 
 fn system_info(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/info").send()?;
+    client.get("/info")
+        .send()?;
     Ok(())
 }
 
 fn system_version(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/version").send()?;
+    client.get("/version")
+        .send()?;
     Ok(())
 }
 
 fn system_ping(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/_ping").send()?;
+    client.get("/_ping")
+        .send()?;
     Ok(())
 }
 
@@ -3574,7 +3620,9 @@ fn image_commit(
         ("repo", repo.to_string()),
         ("tag", tag.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(container_config)
+        .send()?;
     Ok(())
 }
 
@@ -3589,14 +3637,16 @@ fn system_events(
         ("since", since.to_string()),
         ("until", until.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
 fn system_data_usage(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/system/df").send()?;
+    client.get("/system/df")
+        .send()?;
     Ok(())
 }
 
@@ -3607,7 +3657,8 @@ fn image_get(
     let url = format!("/images/{name}/get",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3618,7 +3669,8 @@ fn image_get_all(
     let url = Url::parse_with_params("/images/get", &[
         ("names", names.to_vec().join(",")),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3630,7 +3682,9 @@ fn image_load(
     let url = Url::parse_with_params("/images/load", &[
         ("quiet", format!("{}", quiet)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        // TODO: unknown body type
+        .send()?;
     Ok(())
 }
 
@@ -3642,7 +3696,9 @@ fn container_exec(
     let url = format!("/containers/{id}/exec",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(exec_config)
+        .send()?;
     Ok(())
 }
 
@@ -3654,7 +3710,9 @@ fn exec_start(
     let url = format!("/exec/{id}/start",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(exec_start_config)
+        .send()?;
     Ok(())
 }
 
@@ -3671,7 +3729,8 @@ fn exec_resize(
         ("h", format!("{}", h)),
         ("w", format!("{}", w)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3682,7 +3741,8 @@ fn exec_inspect(
     let url = format!("/exec/{id}/json",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3693,7 +3753,8 @@ fn volume_list(
     let url = Url::parse_with_params("/volumes", &[
         ("filters", format!("{}", filters)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3701,7 +3762,9 @@ fn volume_create(
     client: &Client,
     volume_config: &VolumeCreate,
 ) -> Result<(), Error> {
-    client.post("/volumes/create").send()?;
+    client.post("/volumes/create")
+        .json(volume_config)
+        .send()?;
     Ok(())
 }
 
@@ -3712,7 +3775,8 @@ fn volume_inspect(
     let url = format!("/volumes/{name}",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3727,7 +3791,8 @@ fn volume_delete(
     let url = Url::parse_with_params(&url, &[
         ("force", format!("{}", force)),
     ])?;
-    client.delete(url).send()?;
+    client.delete(url)
+        .send()?;
     Ok(())
 }
 
@@ -3738,7 +3803,8 @@ fn volume_prune(
     let url = Url::parse_with_params("/volumes/prune", &[
         ("filters", filters.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3749,7 +3815,8 @@ fn network_list(
     let url = Url::parse_with_params("/networks", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3766,7 +3833,8 @@ fn network_inspect(
         ("scope", scope.to_string()),
         ("verbose", format!("{}", verbose)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3777,7 +3845,8 @@ fn network_delete(
     let url = format!("/networks/{id}",
         id=id,
     );
-    client.delete(&url).send()?;
+    client.delete(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3785,7 +3854,9 @@ fn network_create(
     client: &Client,
     network_config: &NetworkCreateNetworkConfig,
 ) -> Result<(), Error> {
-    client.post("/networks/create").send()?;
+    client.post("/networks/create")
+        .json(network_config)
+        .send()?;
     Ok(())
 }
 
@@ -3797,7 +3868,9 @@ fn network_connect(
     let url = format!("/networks/{id}/connect",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(container)
+        .send()?;
     Ok(())
 }
 
@@ -3809,7 +3882,9 @@ fn network_disconnect(
     let url = format!("/networks/{id}/disconnect",
         id=id,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(container)
+        .send()?;
     Ok(())
 }
 
@@ -3820,7 +3895,8 @@ fn network_prune(
     let url = Url::parse_with_params("/networks/prune", &[
         ("filters", filters.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3831,7 +3907,8 @@ fn plugin_list(
     let url = Url::parse_with_params("/plugins", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3842,7 +3919,8 @@ fn get_plugin_privileges(
     let url = Url::parse_with_params("/plugins/privileges", &[
         ("remote", remote.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3857,7 +3935,9 @@ fn plugin_pull(
         ("name", name.to_string()),
         ("remote", remote.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -3868,7 +3948,8 @@ fn plugin_inspect(
     let url = format!("/plugins/{name}/json",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3883,7 +3964,8 @@ fn plugin_delete(
     let url = Url::parse_with_params(&url, &[
         ("force", format!("{}", force)),
     ])?;
-    client.delete(url).send()?;
+    client.delete(url)
+        .send()?;
     Ok(())
 }
 
@@ -3898,7 +3980,8 @@ fn plugin_enable(
     let url = Url::parse_with_params(&url, &[
         ("timeout", format!("{}", timeout)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -3909,7 +3992,8 @@ fn plugin_disable(
     let url = format!("/plugins/{name}/disable",
         name=name,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3926,7 +4010,9 @@ fn plugin_upgrade(
     let url = Url::parse_with_params(&url, &[
         ("remote", remote.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -3938,7 +4024,9 @@ fn plugin_create(
     let url = Url::parse_with_params("/plugins/create", &[
         ("name", name.to_string()),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        // TODO: unknown body type
+        .send()?;
     Ok(())
 }
 
@@ -3949,7 +4037,8 @@ fn plugin_push(
     let url = format!("/plugins/{name}/push",
         name=name,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3961,7 +4050,9 @@ fn plugin_set(
     let url = format!("/plugins/{name}/set",
         name=name,
     );
-    client.post(&url).send()?;
+    client.post(&url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -3972,7 +4063,8 @@ fn node_list(
     let url = Url::parse_with_params("/nodes", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -3983,7 +4075,8 @@ fn node_inspect(
     let url = format!("/nodes/{id}",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -3998,7 +4091,8 @@ fn node_delete(
     let url = Url::parse_with_params(&url, &[
         ("force", format!("{}", force)),
     ])?;
-    client.delete(url).send()?;
+    client.delete(url)
+        .send()?;
     Ok(())
 }
 
@@ -4014,14 +4108,17 @@ fn node_update(
     let url = Url::parse_with_params(&url, &[
         ("version", format!("{}", version)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
 fn swarm_inspect(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/swarm").send()?;
+    client.get("/swarm")
+        .send()?;
     Ok(())
 }
 
@@ -4029,7 +4126,9 @@ fn swarm_init(
     client: &Client,
     body: &SwarmInit,
 ) -> Result<(), Error> {
-    client.post("/swarm/init").send()?;
+    client.post("/swarm/init")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4037,7 +4136,9 @@ fn swarm_join(
     client: &Client,
     body: &SwarmJoin,
 ) -> Result<(), Error> {
-    client.post("/swarm/join").send()?;
+    client.post("/swarm/join")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4048,7 +4149,8 @@ fn swarm_leave(
     let url = Url::parse_with_params("/swarm/leave", &[
         ("force", format!("{}", force)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .send()?;
     Ok(())
 }
 
@@ -4066,14 +4168,17 @@ fn swarm_update(
         ("rotateWorkerToken", format!("{}", rotate_worker_token)),
         ("version", format!("{}", version)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
 fn swarm_unlockkey(
     client: &Client,
 ) -> Result<(), Error> {
-    client.get("/swarm/unlockkey").send()?;
+    client.get("/swarm/unlockkey")
+        .send()?;
     Ok(())
 }
 
@@ -4081,7 +4186,9 @@ fn swarm_unlock(
     client: &Client,
     body: &SwarmUnlockkey,
 ) -> Result<(), Error> {
-    client.post("/swarm/unlock").send()?;
+    client.post("/swarm/unlock")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4092,7 +4199,8 @@ fn service_list(
     let url = Url::parse_with_params("/services", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4101,7 +4209,9 @@ fn service_create(
     body: &ServiceSpec,
     x_registry_auth: &str,
 ) -> Result<(), Error> {
-    client.post("/services/create").send()?;
+    client.post("/services/create")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4116,7 +4226,8 @@ fn service_inspect(
     let url = Url::parse_with_params(&url, &[
         ("insertDefaults", format!("{}", insert_defaults)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4127,7 +4238,8 @@ fn service_delete(
     let url = format!("/services/{id}",
         id=id,
     );
-    client.delete(&url).send()?;
+    client.delete(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4148,7 +4260,9 @@ fn service_update(
         ("rollback", rollback.to_string()),
         ("version", format!("{}", version)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4175,7 +4289,8 @@ fn service_logs(
         ("tail", tail.to_string()),
         ("timestamps", format!("{}", timestamps)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4186,7 +4301,8 @@ fn task_list(
     let url = Url::parse_with_params("/tasks", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4197,7 +4313,8 @@ fn task_inspect(
     let url = format!("/tasks/{id}",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4224,7 +4341,8 @@ fn task_logs(
         ("tail", tail.to_string()),
         ("timestamps", format!("{}", timestamps)),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4235,7 +4353,8 @@ fn secret_list(
     let url = Url::parse_with_params("/secrets", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4243,7 +4362,9 @@ fn secret_create(
     client: &Client,
     body: &SecretSpec,
 ) -> Result<(), Error> {
-    client.post("/secrets/create").send()?;
+    client.post("/secrets/create")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4254,7 +4375,8 @@ fn secret_inspect(
     let url = format!("/secrets/{id}",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4265,7 +4387,8 @@ fn secret_delete(
     let url = format!("/secrets/{id}",
         id=id,
     );
-    client.delete(&url).send()?;
+    client.delete(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4281,7 +4404,9 @@ fn secret_update(
     let url = Url::parse_with_params(&url, &[
         ("version", format!("{}", version)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4292,7 +4417,8 @@ fn config_list(
     let url = Url::parse_with_params("/configs", &[
         ("filters", filters.to_string()),
     ])?;
-    client.get(url).send()?;
+    client.get(url)
+        .send()?;
     Ok(())
 }
 
@@ -4300,7 +4426,9 @@ fn config_create(
     client: &Client,
     body: &ConfigSpec,
 ) -> Result<(), Error> {
-    client.post("/configs/create").send()?;
+    client.post("/configs/create")
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4311,7 +4439,8 @@ fn config_inspect(
     let url = format!("/configs/{id}",
         id=id,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4322,7 +4451,8 @@ fn config_delete(
     let url = format!("/configs/{id}",
         id=id,
     );
-    client.delete(&url).send()?;
+    client.delete(&url)
+        .send()?;
     Ok(())
 }
 
@@ -4338,7 +4468,9 @@ fn config_update(
     let url = Url::parse_with_params(&url, &[
         ("version", format!("{}", version)),
     ])?;
-    client.post(url).send()?;
+    client.post(url)
+        .json(body)
+        .send()?;
     Ok(())
 }
 
@@ -4349,14 +4481,16 @@ fn distribution_inspect(
     let url = format!("/distribution/{name}/json",
         name=name,
     );
-    client.get(&url).send()?;
+    client.get(&url)
+        .send()?;
     Ok(())
 }
 
 fn session(
     client: &Client,
 ) -> Result<(), Error> {
-    client.post("/session").send()?;
+    client.post("/session")
+        .send()?;
     Ok(())
 }
 

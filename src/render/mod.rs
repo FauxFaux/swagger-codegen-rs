@@ -318,12 +318,17 @@ fn render_op<W: Write>(
         url = "url".to_string();
     }
 
-    writeln!(
-        into,
-        "    client.{}({}).send()?;",
-        method.reqwest_method_name(),
-        url,
-    )?;
+    writeln!(into, "    client.{}({})", method.reqwest_method_name(), url,)?;
+    if let Some(body) = body {
+        match body.param_type {
+            NamedType::Unknown | NamedType::Simple(DataType::Binary) => {
+                writeln!(into, "        // TODO: unknown body type")?
+            }
+            _ => writeln!(into, "        .json({})", rustify_field_name(&body.name))?,
+        }
+    }
+    writeln!(into, "        .send()?;")?;
+
     writeln!(into, "    Ok(())")?;
     writeln!(into, "}}")?;
     writeln!(into)?;
