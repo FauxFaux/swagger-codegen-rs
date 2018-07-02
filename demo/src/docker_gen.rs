@@ -3215,17 +3215,28 @@ struct VolumePrune {
 
 fn container_list(
     client: &Client,
-    all: bool,
-    limit: i64,
-    size: bool,
-    filters: &str,
+    all: Option<bool>,
+    limit: Option<i64>,
+    size: Option<bool>,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/containers/json", &[
-        ("all", format!("{}", all)),
-        ("filters", filters.to_string()),
-        ("limit", format!("{}", limit)),
-        ("size", format!("{}", size)),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(4);
+        if let Some(all) = all {
+            params.push(("all", all.to_string()));
+        }
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        if let Some(limit) = limit {
+            params.push(("limit", limit.to_string()));
+        }
+        if let Some(size) = size {
+            params.push(("size", size.to_string()));
+        }
+        Url::parse_with_params("/containers/json", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3233,12 +3244,17 @@ fn container_list(
 
 fn container_create(
     client: &Client,
-    name: &str,
+    name: Option<&str>,
     body: &ContainerCreateBody,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/containers/create", &[
-        ("name", name.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(name) = name {
+            params.push(("name", name.to_string()));
+        }
+        Url::parse_with_params("/containers/create", &params)?
+    };
+
     client.post(url)
         .json(body)
         .send()?;
@@ -3248,14 +3264,20 @@ fn container_create(
 fn container_inspect(
     client: &Client,
     id: &str,
-    size: bool,
+    size: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/json",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("size", format!("{}", size)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(size) = size {
+            params.push(("size", size.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3264,14 +3286,20 @@ fn container_inspect(
 fn container_top(
     client: &Client,
     id: &str,
-    ps_args: &str,
+    ps_args: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/top",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("ps_args", ps_args.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(ps_args) = ps_args {
+            params.push(("ps_args", ps_args.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3280,26 +3308,44 @@ fn container_top(
 fn container_logs(
     client: &Client,
     id: &str,
-    follow: bool,
-    stdout: bool,
-    stderr: bool,
-    since: i64,
-    until: i64,
-    timestamps: bool,
-    tail: &str,
+    follow: Option<bool>,
+    stdout: Option<bool>,
+    stderr: Option<bool>,
+    since: Option<i64>,
+    until: Option<i64>,
+    timestamps: Option<bool>,
+    tail: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/logs",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("follow", format!("{}", follow)),
-        ("since", format!("{}", since)),
-        ("stderr", format!("{}", stderr)),
-        ("stdout", format!("{}", stdout)),
-        ("tail", tail.to_string()),
-        ("timestamps", format!("{}", timestamps)),
-        ("until", format!("{}", until)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(7);
+        if let Some(follow) = follow {
+            params.push(("follow", follow.to_string()));
+        }
+        if let Some(since) = since {
+            params.push(("since", since.to_string()));
+        }
+        if let Some(stderr) = stderr {
+            params.push(("stderr", stderr.to_string()));
+        }
+        if let Some(stdout) = stdout {
+            params.push(("stdout", stdout.to_string()));
+        }
+        if let Some(tail) = tail {
+            params.push(("tail", tail.to_string()));
+        }
+        if let Some(timestamps) = timestamps {
+            params.push(("timestamps", timestamps.to_string()));
+        }
+        if let Some(until) = until {
+            params.push(("until", until.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3312,6 +3358,7 @@ fn container_changes(
     let url = format!("/containers/{id}/changes",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -3324,6 +3371,7 @@ fn container_export(
     let url = format!("/containers/{id}/export",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -3332,14 +3380,20 @@ fn container_export(
 fn container_stats(
     client: &Client,
     id: &str,
-    stream: bool,
+    stream: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/stats",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("stream", format!("{}", stream)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(stream) = stream {
+            params.push(("stream", stream.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3348,16 +3402,24 @@ fn container_stats(
 fn container_resize(
     client: &Client,
     id: &str,
-    h: i64,
-    w: i64,
+    h: Option<i64>,
+    w: Option<i64>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/resize",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("h", format!("{}", h)),
-        ("w", format!("{}", w)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(h) = h {
+            params.push(("h", h.to_string()));
+        }
+        if let Some(w) = w {
+            params.push(("w", w.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3366,14 +3428,20 @@ fn container_resize(
 fn container_start(
     client: &Client,
     id: &str,
-    detach_keys: &str,
+    detach_keys: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/start",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("detachKeys", detach_keys.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(detach_keys) = detach_keys {
+            params.push(("detach_keys", detach_keys.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3382,14 +3450,20 @@ fn container_start(
 fn container_stop(
     client: &Client,
     id: &str,
-    t: i64,
+    t: Option<i64>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/stop",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("t", format!("{}", t)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(t) = t {
+            params.push(("t", t.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3398,14 +3472,20 @@ fn container_stop(
 fn container_restart(
     client: &Client,
     id: &str,
-    t: i64,
+    t: Option<i64>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/restart",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("t", format!("{}", t)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(t) = t {
+            params.push(("t", t.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3414,14 +3494,20 @@ fn container_restart(
 fn container_kill(
     client: &Client,
     id: &str,
-    signal: &str,
+    signal: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/kill",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("signal", signal.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(signal) = signal {
+            params.push(("signal", signal.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3435,6 +3521,7 @@ fn container_update(
     let url = format!("/containers/{id}/update",
         id=id,
     );
+
     client.post(&url)
         .json(update)
         .send()?;
@@ -3449,9 +3536,13 @@ fn container_rename(
     let url = format!("/containers/{id}/rename",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("name", name.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("name", name.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3464,6 +3555,7 @@ fn container_pause(
     let url = format!("/containers/{id}/pause",
         id=id,
     );
+
     client.post(&url)
         .send()?;
     Ok(())
@@ -3476,6 +3568,7 @@ fn container_unpause(
     let url = format!("/containers/{id}/unpause",
         id=id,
     );
+
     client.post(&url)
         .send()?;
     Ok(())
@@ -3484,24 +3577,40 @@ fn container_unpause(
 fn container_attach(
     client: &Client,
     id: &str,
-    detach_keys: &str,
-    logs: bool,
-    stream: bool,
-    stdin: bool,
-    stdout: bool,
-    stderr: bool,
+    detach_keys: Option<&str>,
+    logs: Option<bool>,
+    stream: Option<bool>,
+    stdin: Option<bool>,
+    stdout: Option<bool>,
+    stderr: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/attach",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("detachKeys", detach_keys.to_string()),
-        ("logs", format!("{}", logs)),
-        ("stderr", format!("{}", stderr)),
-        ("stdin", format!("{}", stdin)),
-        ("stdout", format!("{}", stdout)),
-        ("stream", format!("{}", stream)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(6);
+        if let Some(detach_keys) = detach_keys {
+            params.push(("detach_keys", detach_keys.to_string()));
+        }
+        if let Some(logs) = logs {
+            params.push(("logs", logs.to_string()));
+        }
+        if let Some(stderr) = stderr {
+            params.push(("stderr", stderr.to_string()));
+        }
+        if let Some(stdin) = stdin {
+            params.push(("stdin", stdin.to_string()));
+        }
+        if let Some(stdout) = stdout {
+            params.push(("stdout", stdout.to_string()));
+        }
+        if let Some(stream) = stream {
+            params.push(("stream", stream.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3510,24 +3619,40 @@ fn container_attach(
 fn container_attach_websocket(
     client: &Client,
     id: &str,
-    detach_keys: &str,
-    logs: bool,
-    stream: bool,
-    stdin: bool,
-    stdout: bool,
-    stderr: bool,
+    detach_keys: Option<&str>,
+    logs: Option<bool>,
+    stream: Option<bool>,
+    stdin: Option<bool>,
+    stdout: Option<bool>,
+    stderr: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/attach/ws",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("detachKeys", detach_keys.to_string()),
-        ("logs", format!("{}", logs)),
-        ("stderr", format!("{}", stderr)),
-        ("stdin", format!("{}", stdin)),
-        ("stdout", format!("{}", stdout)),
-        ("stream", format!("{}", stream)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(6);
+        if let Some(detach_keys) = detach_keys {
+            params.push(("detach_keys", detach_keys.to_string()));
+        }
+        if let Some(logs) = logs {
+            params.push(("logs", logs.to_string()));
+        }
+        if let Some(stderr) = stderr {
+            params.push(("stderr", stderr.to_string()));
+        }
+        if let Some(stdin) = stdin {
+            params.push(("stdin", stdin.to_string()));
+        }
+        if let Some(stdout) = stdout {
+            params.push(("stdout", stdout.to_string()));
+        }
+        if let Some(stream) = stream {
+            params.push(("stream", stream.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3536,14 +3661,20 @@ fn container_attach_websocket(
 fn container_wait(
     client: &Client,
     id: &str,
-    condition: &str,
+    condition: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/wait",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("condition", condition.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(condition) = condition {
+            params.push(("condition", condition.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3552,18 +3683,28 @@ fn container_wait(
 fn container_delete(
     client: &Client,
     id: &str,
-    v: bool,
-    force: bool,
-    link: bool,
+    v: Option<bool>,
+    force: Option<bool>,
+    link: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("force", format!("{}", force)),
-        ("link", format!("{}", link)),
-        ("v", format!("{}", v)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(3);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        if let Some(link) = link {
+            params.push(("link", link.to_string()));
+        }
+        if let Some(v) = v {
+            params.push(("v", v.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.delete(url)
         .send()?;
     Ok(())
@@ -3577,9 +3718,13 @@ fn container_archive(
     let url = format!("/containers/{id}/archive",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("path", path.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("path", path.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3593,9 +3738,13 @@ fn container_archive_info(
     let url = format!("/containers/{id}/archive",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("path", path.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("path", path.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.head(url)
         .send()?;
     Ok(())
@@ -3605,16 +3754,22 @@ fn put_container_archive(
     client: &Client,
     id: &str,
     path: &str,
-    no_overwrite_dir_non_dir: &str,
+    no_overwrite_dir_non_dir: Option<&str>,
     input_stream: &str,
 ) -> Result<(), Error> {
     let url = format!("/containers/{id}/archive",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("noOverwriteDirNonDir", no_overwrite_dir_non_dir.to_string()),
-        ("path", path.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(no_overwrite_dir_non_dir) = no_overwrite_dir_non_dir {
+            params.push(("no_overwrite_dir_non_dir", no_overwrite_dir_non_dir.to_string()));
+        }
+        params.push(("path", path.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.put(url)
         .json(input_stream)
         .send()?;
@@ -3623,11 +3778,16 @@ fn put_container_archive(
 
 fn container_prune(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/containers/prune", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/containers/prune", &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3635,15 +3795,24 @@ fn container_prune(
 
 fn image_list(
     client: &Client,
-    all: bool,
-    filters: &str,
-    digests: bool,
+    all: Option<bool>,
+    filters: Option<&str>,
+    digests: Option<bool>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/json", &[
-        ("all", format!("{}", all)),
-        ("digests", format!("{}", digests)),
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(3);
+        if let Some(all) = all {
+            params.push(("all", all.to_string()));
+        }
+        if let Some(digests) = digests {
+            params.push(("digests", digests.to_string()));
+        }
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/images/json", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3652,60 +3821,114 @@ fn image_list(
 fn image_build(
     client: &Client,
     input_stream: (/* binary */),
-    dockerfile: &str,
-    t: &str,
-    extrahosts: &str,
-    remote: &str,
-    q: bool,
-    nocache: bool,
-    cachefrom: &str,
-    pull: &str,
-    rm: bool,
-    forcerm: bool,
-    memory: i64,
-    memswap: i64,
-    cpushares: i64,
-    cpusetcpus: &str,
-    cpuperiod: i64,
-    cpuquota: i64,
-    buildargs: &str,
-    shmsize: i64,
-    squash: bool,
-    labels: &str,
-    networkmode: &str,
-    content_type: &ImageBuild,
-    x_registry_config: &str,
-    platform: &str,
-    target: &str,
+    dockerfile: Option<&str>,
+    t: Option<&str>,
+    extrahosts: Option<&str>,
+    remote: Option<&str>,
+    q: Option<bool>,
+    nocache: Option<bool>,
+    cachefrom: Option<&str>,
+    pull: Option<&str>,
+    rm: Option<bool>,
+    forcerm: Option<bool>,
+    memory: Option<i64>,
+    memswap: Option<i64>,
+    cpushares: Option<i64>,
+    cpusetcpus: Option<&str>,
+    cpuperiod: Option<i64>,
+    cpuquota: Option<i64>,
+    buildargs: Option<&str>,
+    shmsize: Option<i64>,
+    squash: Option<bool>,
+    labels: Option<&str>,
+    networkmode: Option<&str>,
+    content_type: Option<&ImageBuild>,
+    x_registry_config: Option<&str>,
+    platform: Option<&str>,
+    target: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/build", &[
-        ("buildargs", buildargs.to_string()),
-        ("cachefrom", cachefrom.to_string()),
-        ("cpuperiod", format!("{}", cpuperiod)),
-        ("cpuquota", format!("{}", cpuquota)),
-        ("cpusetcpus", cpusetcpus.to_string()),
-        ("cpushares", format!("{}", cpushares)),
-        ("dockerfile", dockerfile.to_string()),
-        ("extrahosts", extrahosts.to_string()),
-        ("forcerm", format!("{}", forcerm)),
-        ("labels", labels.to_string()),
-        ("memory", format!("{}", memory)),
-        ("memswap", format!("{}", memswap)),
-        ("networkmode", networkmode.to_string()),
-        ("nocache", format!("{}", nocache)),
-        ("platform", platform.to_string()),
-        ("pull", pull.to_string()),
-        ("q", format!("{}", q)),
-        ("remote", remote.to_string()),
-        ("rm", format!("{}", rm)),
-        ("shmsize", format!("{}", shmsize)),
-        ("squash", format!("{}", squash)),
-        ("t", t.to_string()),
-        ("target", target.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(23);
+        if let Some(buildargs) = buildargs {
+            params.push(("buildargs", buildargs.to_string()));
+        }
+        if let Some(cachefrom) = cachefrom {
+            params.push(("cachefrom", cachefrom.to_string()));
+        }
+        if let Some(cpuperiod) = cpuperiod {
+            params.push(("cpuperiod", cpuperiod.to_string()));
+        }
+        if let Some(cpuquota) = cpuquota {
+            params.push(("cpuquota", cpuquota.to_string()));
+        }
+        if let Some(cpusetcpus) = cpusetcpus {
+            params.push(("cpusetcpus", cpusetcpus.to_string()));
+        }
+        if let Some(cpushares) = cpushares {
+            params.push(("cpushares", cpushares.to_string()));
+        }
+        if let Some(dockerfile) = dockerfile {
+            params.push(("dockerfile", dockerfile.to_string()));
+        }
+        if let Some(extrahosts) = extrahosts {
+            params.push(("extrahosts", extrahosts.to_string()));
+        }
+        if let Some(forcerm) = forcerm {
+            params.push(("forcerm", forcerm.to_string()));
+        }
+        if let Some(labels) = labels {
+            params.push(("labels", labels.to_string()));
+        }
+        if let Some(memory) = memory {
+            params.push(("memory", memory.to_string()));
+        }
+        if let Some(memswap) = memswap {
+            params.push(("memswap", memswap.to_string()));
+        }
+        if let Some(networkmode) = networkmode {
+            params.push(("networkmode", networkmode.to_string()));
+        }
+        if let Some(nocache) = nocache {
+            params.push(("nocache", nocache.to_string()));
+        }
+        if let Some(platform) = platform {
+            params.push(("platform", platform.to_string()));
+        }
+        if let Some(pull) = pull {
+            params.push(("pull", pull.to_string()));
+        }
+        if let Some(q) = q {
+            params.push(("q", q.to_string()));
+        }
+        if let Some(remote) = remote {
+            params.push(("remote", remote.to_string()));
+        }
+        if let Some(rm) = rm {
+            params.push(("rm", rm.to_string()));
+        }
+        if let Some(shmsize) = shmsize {
+            params.push(("shmsize", shmsize.to_string()));
+        }
+        if let Some(squash) = squash {
+            params.push(("squash", squash.to_string()));
+        }
+        if let Some(t) = t {
+            params.push(("t", t.to_string()));
+        }
+        if let Some(target) = target {
+            params.push(("target", target.to_string()));
+        }
+        Url::parse_with_params("/build", &params)?
+    };
+
     let mut headers = Headers::new();
-    headers.set_raw("Content-type", content_type.to_string());
-    headers.set_raw("X-Registry-Config", x_registry_config.to_string());
+    if let Some(content_type) = content_type {
+        headers.set_raw("Content-type", content_type.to_string());
+    }
+    if let Some(x_registry_config) = x_registry_config {
+        headers.set_raw("X-Registry-Config", x_registry_config.to_string());
+    }
+
     client.post(url)
         .headers(headers)
         // TODO: unknown body type
@@ -3723,23 +3946,39 @@ fn build_prune(
 
 fn image_create(
     client: &Client,
-    from_image: &str,
-    from_src: &str,
-    repo: &str,
-    tag: &str,
+    from_image: Option<&str>,
+    from_src: Option<&str>,
+    repo: Option<&str>,
+    tag: Option<&str>,
     input_image: &str,
-    x_registry_auth: &str,
-    platform: &str,
+    x_registry_auth: Option<&str>,
+    platform: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/create", &[
-        ("fromImage", from_image.to_string()),
-        ("fromSrc", from_src.to_string()),
-        ("platform", platform.to_string()),
-        ("repo", repo.to_string()),
-        ("tag", tag.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(5);
+        if let Some(from_image) = from_image {
+            params.push(("from_image", from_image.to_string()));
+        }
+        if let Some(from_src) = from_src {
+            params.push(("from_src", from_src.to_string()));
+        }
+        if let Some(platform) = platform {
+            params.push(("platform", platform.to_string()));
+        }
+        if let Some(repo) = repo {
+            params.push(("repo", repo.to_string()));
+        }
+        if let Some(tag) = tag {
+            params.push(("tag", tag.to_string()));
+        }
+        Url::parse_with_params("/images/create", &params)?
+    };
+
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    if let Some(x_registry_auth) = x_registry_auth {
+        headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    }
+
     client.post(url)
         .headers(headers)
         .json(input_image)
@@ -3754,6 +3993,7 @@ fn image_inspect(
     let url = format!("/images/{name}/json",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -3766,6 +4006,7 @@ fn image_history(
     let url = format!("/images/{name}/history",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -3774,17 +4015,24 @@ fn image_history(
 fn image_push(
     client: &Client,
     name: &str,
-    tag: &str,
+    tag: Option<&str>,
     x_registry_auth: &str,
 ) -> Result<(), Error> {
     let url = format!("/images/{name}/push",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("tag", tag.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(tag) = tag {
+            params.push(("tag", tag.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     let mut headers = Headers::new();
     headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+
     client.post(url)
         .headers(headers)
         .send()?;
@@ -3794,16 +4042,24 @@ fn image_push(
 fn image_tag(
     client: &Client,
     name: &str,
-    repo: &str,
-    tag: &str,
+    repo: Option<&str>,
+    tag: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/images/{name}/tag",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("repo", repo.to_string()),
-        ("tag", tag.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(repo) = repo {
+            params.push(("repo", repo.to_string()));
+        }
+        if let Some(tag) = tag {
+            params.push(("tag", tag.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3812,16 +4068,24 @@ fn image_tag(
 fn image_delete(
     client: &Client,
     name: &str,
-    force: bool,
-    noprune: bool,
+    force: Option<bool>,
+    noprune: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/images/{name}",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("force", format!("{}", force)),
-        ("noprune", format!("{}", noprune)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        if let Some(noprune) = noprune {
+            params.push(("noprune", noprune.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.delete(url)
         .send()?;
     Ok(())
@@ -3830,14 +4094,21 @@ fn image_delete(
 fn image_search(
     client: &Client,
     term: &str,
-    limit: i64,
-    filters: &str,
+    limit: Option<i64>,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/search", &[
-        ("filters", filters.to_string()),
-        ("limit", format!("{}", limit)),
-        ("term", term.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(3);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        if let Some(limit) = limit {
+            params.push(("limit", limit.to_string()));
+        }
+        params.push(("term", term.to_string()));
+        Url::parse_with_params("/images/search", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3845,11 +4116,16 @@ fn image_search(
 
 fn image_prune(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/prune", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/images/prune", &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -3892,23 +4168,40 @@ fn system_ping(
 fn image_commit(
     client: &Client,
     container_config: &ContainerConfig,
-    container: &str,
-    repo: &str,
-    tag: &str,
-    comment: &str,
-    author: &str,
-    pause: bool,
-    changes: &str,
+    container: Option<&str>,
+    repo: Option<&str>,
+    tag: Option<&str>,
+    comment: Option<&str>,
+    author: Option<&str>,
+    pause: Option<bool>,
+    changes: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/commit", &[
-        ("author", author.to_string()),
-        ("changes", changes.to_string()),
-        ("comment", comment.to_string()),
-        ("container", container.to_string()),
-        ("pause", format!("{}", pause)),
-        ("repo", repo.to_string()),
-        ("tag", tag.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(7);
+        if let Some(author) = author {
+            params.push(("author", author.to_string()));
+        }
+        if let Some(changes) = changes {
+            params.push(("changes", changes.to_string()));
+        }
+        if let Some(comment) = comment {
+            params.push(("comment", comment.to_string()));
+        }
+        if let Some(container) = container {
+            params.push(("container", container.to_string()));
+        }
+        if let Some(pause) = pause {
+            params.push(("pause", pause.to_string()));
+        }
+        if let Some(repo) = repo {
+            params.push(("repo", repo.to_string()));
+        }
+        if let Some(tag) = tag {
+            params.push(("tag", tag.to_string()));
+        }
+        Url::parse_with_params("/commit", &params)?
+    };
+
     client.post(url)
         .json(container_config)
         .send()?;
@@ -3917,15 +4210,24 @@ fn image_commit(
 
 fn system_events(
     client: &Client,
-    since: &str,
-    until: &str,
-    filters: &str,
+    since: Option<&str>,
+    until: Option<&str>,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/events", &[
-        ("filters", filters.to_string()),
-        ("since", since.to_string()),
-        ("until", until.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(3);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        if let Some(since) = since {
+            params.push(("since", since.to_string()));
+        }
+        if let Some(until) = until {
+            params.push(("until", until.to_string()));
+        }
+        Url::parse_with_params("/events", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3946,6 +4248,7 @@ fn image_get(
     let url = format!("/images/{name}/get",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -3953,11 +4256,16 @@ fn image_get(
 
 fn image_get_all(
     client: &Client,
-    names: &[String],
+    names: Option<&[String]>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/get", &[
-        ("names", names.to_vec().join(",")),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(names) = names {
+            params.push(("names", names.to_vec().join(",")));
+        }
+        Url::parse_with_params("/images/get", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -3966,11 +4274,16 @@ fn image_get_all(
 fn image_load(
     client: &Client,
     images_tarball: (/* binary */),
-    quiet: bool,
+    quiet: Option<bool>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/images/load", &[
-        ("quiet", format!("{}", quiet)),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(quiet) = quiet {
+            params.push(("quiet", quiet.to_string()));
+        }
+        Url::parse_with_params("/images/load", &params)?
+    };
+
     client.post(url)
         // TODO: unknown body type
         .send()?;
@@ -3985,6 +4298,7 @@ fn container_exec(
     let url = format!("/containers/{id}/exec",
         id=id,
     );
+
     client.post(&url)
         .json(exec_config)
         .send()?;
@@ -3999,6 +4313,7 @@ fn exec_start(
     let url = format!("/exec/{id}/start",
         id=id,
     );
+
     client.post(&url)
         .json(exec_start_config)
         .send()?;
@@ -4008,16 +4323,24 @@ fn exec_start(
 fn exec_resize(
     client: &Client,
     id: &str,
-    h: i64,
-    w: i64,
+    h: Option<i64>,
+    w: Option<i64>,
 ) -> Result<(), Error> {
     let url = format!("/exec/{id}/resize",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("h", format!("{}", h)),
-        ("w", format!("{}", w)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(h) = h {
+            params.push(("h", h.to_string()));
+        }
+        if let Some(w) = w {
+            params.push(("w", w.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -4030,6 +4353,7 @@ fn exec_inspect(
     let url = format!("/exec/{id}/json",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4037,11 +4361,16 @@ fn exec_inspect(
 
 fn volume_list(
     client: &Client,
-    filters: ::serde_json::Value,
+    filters: Option<::serde_json::Value>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/volumes", &[
-        ("filters", format!("{}", filters)),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/volumes", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4064,6 +4393,7 @@ fn volume_inspect(
     let url = format!("/volumes/{name}",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4072,14 +4402,20 @@ fn volume_inspect(
 fn volume_delete(
     client: &Client,
     name: &str,
-    force: bool,
+    force: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/volumes/{name}",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("force", format!("{}", force)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.delete(url)
         .send()?;
     Ok(())
@@ -4087,11 +4423,16 @@ fn volume_delete(
 
 fn volume_prune(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/volumes/prune", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/volumes/prune", &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -4099,11 +4440,16 @@ fn volume_prune(
 
 fn network_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/networks", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/networks", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4112,16 +4458,24 @@ fn network_list(
 fn network_inspect(
     client: &Client,
     id: &str,
-    verbose: bool,
-    scope: &str,
+    verbose: Option<bool>,
+    scope: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/networks/{id}",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("scope", scope.to_string()),
-        ("verbose", format!("{}", verbose)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(scope) = scope {
+            params.push(("scope", scope.to_string()));
+        }
+        if let Some(verbose) = verbose {
+            params.push(("verbose", verbose.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4134,6 +4488,7 @@ fn network_delete(
     let url = format!("/networks/{id}",
         id=id,
     );
+
     client.delete(&url)
         .send()?;
     Ok(())
@@ -4157,6 +4512,7 @@ fn network_connect(
     let url = format!("/networks/{id}/connect",
         id=id,
     );
+
     client.post(&url)
         .json(container)
         .send()?;
@@ -4171,6 +4527,7 @@ fn network_disconnect(
     let url = format!("/networks/{id}/disconnect",
         id=id,
     );
+
     client.post(&url)
         .json(container)
         .send()?;
@@ -4179,11 +4536,16 @@ fn network_disconnect(
 
 fn network_prune(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/networks/prune", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/networks/prune", &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -4191,11 +4553,16 @@ fn network_prune(
 
 fn plugin_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/plugins", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/plugins", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4205,9 +4572,12 @@ fn get_plugin_privileges(
     client: &Client,
     remote: &str,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/plugins/privileges", &[
-        ("remote", remote.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("remote", remote.to_string()));
+        Url::parse_with_params("/plugins/privileges", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4216,16 +4586,24 @@ fn get_plugin_privileges(
 fn plugin_pull(
     client: &Client,
     remote: &str,
-    name: &str,
-    x_registry_auth: &str,
+    name: Option<&str>,
+    x_registry_auth: Option<&str>,
     body: &[GetPluginPrivileges],
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/plugins/pull", &[
-        ("name", name.to_string()),
-        ("remote", remote.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(2);
+        if let Some(name) = name {
+            params.push(("name", name.to_string()));
+        }
+        params.push(("remote", remote.to_string()));
+        Url::parse_with_params("/plugins/pull", &params)?
+    };
+
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    if let Some(x_registry_auth) = x_registry_auth {
+        headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    }
+
     client.post(url)
         .headers(headers)
         .json(body)
@@ -4240,6 +4618,7 @@ fn plugin_inspect(
     let url = format!("/plugins/{name}/json",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4248,14 +4627,20 @@ fn plugin_inspect(
 fn plugin_delete(
     client: &Client,
     name: &str,
-    force: bool,
+    force: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/plugins/{name}",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("force", format!("{}", force)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.delete(url)
         .send()?;
     Ok(())
@@ -4264,14 +4649,20 @@ fn plugin_delete(
 fn plugin_enable(
     client: &Client,
     name: &str,
-    timeout: i64,
+    timeout: Option<i64>,
 ) -> Result<(), Error> {
     let url = format!("/plugins/{name}/enable",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("timeout", format!("{}", timeout)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(timeout) = timeout {
+            params.push(("timeout", timeout.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -4284,6 +4675,7 @@ fn plugin_disable(
     let url = format!("/plugins/{name}/disable",
         name=name,
     );
+
     client.post(&url)
         .send()?;
     Ok(())
@@ -4293,17 +4685,24 @@ fn plugin_upgrade(
     client: &Client,
     name: &str,
     remote: &str,
-    x_registry_auth: &str,
+    x_registry_auth: Option<&str>,
     body: &[GetPluginPrivileges],
 ) -> Result<(), Error> {
     let url = format!("/plugins/{name}/upgrade",
         name=name,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("remote", remote.to_string()),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("remote", remote.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    if let Some(x_registry_auth) = x_registry_auth {
+        headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    }
+
     client.post(url)
         .headers(headers)
         .json(body)
@@ -4316,9 +4715,12 @@ fn plugin_create(
     name: &str,
     tar_context: (/* binary */),
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/plugins/create", &[
-        ("name", name.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("name", name.to_string()));
+        Url::parse_with_params("/plugins/create", &params)?
+    };
+
     client.post(url)
         // TODO: unknown body type
         .send()?;
@@ -4332,6 +4734,7 @@ fn plugin_push(
     let url = format!("/plugins/{name}/push",
         name=name,
     );
+
     client.post(&url)
         .send()?;
     Ok(())
@@ -4345,6 +4748,7 @@ fn plugin_set(
     let url = format!("/plugins/{name}/set",
         name=name,
     );
+
     client.post(&url)
         .json(body)
         .send()?;
@@ -4353,11 +4757,16 @@ fn plugin_set(
 
 fn node_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/nodes", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/nodes", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4370,6 +4779,7 @@ fn node_inspect(
     let url = format!("/nodes/{id}",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4378,14 +4788,20 @@ fn node_inspect(
 fn node_delete(
     client: &Client,
     id: &str,
-    force: bool,
+    force: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/nodes/{id}",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("force", format!("{}", force)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.delete(url)
         .send()?;
     Ok(())
@@ -4400,9 +4816,13 @@ fn node_update(
     let url = format!("/nodes/{id}/update",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("version", format!("{}", version)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("version", version.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .json(body)
         .send()?;
@@ -4439,11 +4859,16 @@ fn swarm_join(
 
 fn swarm_leave(
     client: &Client,
-    force: bool,
+    force: Option<bool>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/swarm/leave", &[
-        ("force", format!("{}", force)),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(force) = force {
+            params.push(("force", force.to_string()));
+        }
+        Url::parse_with_params("/swarm/leave", &params)?
+    };
+
     client.post(url)
         .send()?;
     Ok(())
@@ -4453,16 +4878,25 @@ fn swarm_update(
     client: &Client,
     body: &SwarmSpec,
     version: i64,
-    rotate_worker_token: bool,
-    rotate_manager_token: bool,
-    rotate_manager_unlock_key: bool,
+    rotate_worker_token: Option<bool>,
+    rotate_manager_token: Option<bool>,
+    rotate_manager_unlock_key: Option<bool>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/swarm/update", &[
-        ("rotateManagerToken", format!("{}", rotate_manager_token)),
-        ("rotateManagerUnlockKey", format!("{}", rotate_manager_unlock_key)),
-        ("rotateWorkerToken", format!("{}", rotate_worker_token)),
-        ("version", format!("{}", version)),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(4);
+        if let Some(rotate_manager_token) = rotate_manager_token {
+            params.push(("rotate_manager_token", rotate_manager_token.to_string()));
+        }
+        if let Some(rotate_manager_unlock_key) = rotate_manager_unlock_key {
+            params.push(("rotate_manager_unlock_key", rotate_manager_unlock_key.to_string()));
+        }
+        if let Some(rotate_worker_token) = rotate_worker_token {
+            params.push(("rotate_worker_token", rotate_worker_token.to_string()));
+        }
+        params.push(("version", version.to_string()));
+        Url::parse_with_params("/swarm/update", &params)?
+    };
+
     client.post(url)
         .json(body)
         .send()?;
@@ -4489,11 +4923,16 @@ fn swarm_unlock(
 
 fn service_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/services", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/services", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4502,10 +4941,13 @@ fn service_list(
 fn service_create(
     client: &Client,
     body: &ServiceSpec,
-    x_registry_auth: &str,
+    x_registry_auth: Option<&str>,
 ) -> Result<(), Error> {
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    if let Some(x_registry_auth) = x_registry_auth {
+        headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    }
+
     client.post("/services/create")
         .headers(headers)
         .json(body)
@@ -4516,14 +4958,20 @@ fn service_create(
 fn service_inspect(
     client: &Client,
     id: &str,
-    insert_defaults: bool,
+    insert_defaults: Option<bool>,
 ) -> Result<(), Error> {
     let url = format!("/services/{id}",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("insertDefaults", format!("{}", insert_defaults)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(insert_defaults) = insert_defaults {
+            params.push(("insert_defaults", insert_defaults.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4536,6 +4984,7 @@ fn service_delete(
     let url = format!("/services/{id}",
         id=id,
     );
+
     client.delete(&url)
         .send()?;
     Ok(())
@@ -4546,20 +4995,31 @@ fn service_update(
     id: &str,
     body: &ServiceSpec,
     version: i64,
-    registry_auth_from: &str,
-    rollback: &str,
-    x_registry_auth: &str,
+    registry_auth_from: Option<&str>,
+    rollback: Option<&str>,
+    x_registry_auth: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/services/{id}/update",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("registryAuthFrom", registry_auth_from.to_string()),
-        ("rollback", rollback.to_string()),
-        ("version", format!("{}", version)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(3);
+        if let Some(registry_auth_from) = registry_auth_from {
+            params.push(("registry_auth_from", registry_auth_from.to_string()));
+        }
+        if let Some(rollback) = rollback {
+            params.push(("rollback", rollback.to_string()));
+        }
+        params.push(("version", version.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     let mut headers = Headers::new();
-    headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    if let Some(x_registry_auth) = x_registry_auth {
+        headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
+    }
+
     client.post(url)
         .headers(headers)
         .json(body)
@@ -4570,26 +5030,44 @@ fn service_update(
 fn service_logs(
     client: &Client,
     id: &str,
-    details: bool,
-    follow: bool,
-    stdout: bool,
-    stderr: bool,
-    since: i64,
-    timestamps: bool,
-    tail: &str,
+    details: Option<bool>,
+    follow: Option<bool>,
+    stdout: Option<bool>,
+    stderr: Option<bool>,
+    since: Option<i64>,
+    timestamps: Option<bool>,
+    tail: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/services/{id}/logs",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("details", format!("{}", details)),
-        ("follow", format!("{}", follow)),
-        ("since", format!("{}", since)),
-        ("stderr", format!("{}", stderr)),
-        ("stdout", format!("{}", stdout)),
-        ("tail", tail.to_string()),
-        ("timestamps", format!("{}", timestamps)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(7);
+        if let Some(details) = details {
+            params.push(("details", details.to_string()));
+        }
+        if let Some(follow) = follow {
+            params.push(("follow", follow.to_string()));
+        }
+        if let Some(since) = since {
+            params.push(("since", since.to_string()));
+        }
+        if let Some(stderr) = stderr {
+            params.push(("stderr", stderr.to_string()));
+        }
+        if let Some(stdout) = stdout {
+            params.push(("stdout", stdout.to_string()));
+        }
+        if let Some(tail) = tail {
+            params.push(("tail", tail.to_string()));
+        }
+        if let Some(timestamps) = timestamps {
+            params.push(("timestamps", timestamps.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4597,11 +5075,16 @@ fn service_logs(
 
 fn task_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/tasks", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/tasks", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4614,6 +5097,7 @@ fn task_inspect(
     let url = format!("/tasks/{id}",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4622,26 +5106,44 @@ fn task_inspect(
 fn task_logs(
     client: &Client,
     id: &str,
-    details: bool,
-    follow: bool,
-    stdout: bool,
-    stderr: bool,
-    since: i64,
-    timestamps: bool,
-    tail: &str,
+    details: Option<bool>,
+    follow: Option<bool>,
+    stdout: Option<bool>,
+    stderr: Option<bool>,
+    since: Option<i64>,
+    timestamps: Option<bool>,
+    tail: Option<&str>,
 ) -> Result<(), Error> {
     let url = format!("/tasks/{id}/logs",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("details", format!("{}", details)),
-        ("follow", format!("{}", follow)),
-        ("since", format!("{}", since)),
-        ("stderr", format!("{}", stderr)),
-        ("stdout", format!("{}", stdout)),
-        ("tail", tail.to_string()),
-        ("timestamps", format!("{}", timestamps)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(7);
+        if let Some(details) = details {
+            params.push(("details", details.to_string()));
+        }
+        if let Some(follow) = follow {
+            params.push(("follow", follow.to_string()));
+        }
+        if let Some(since) = since {
+            params.push(("since", since.to_string()));
+        }
+        if let Some(stderr) = stderr {
+            params.push(("stderr", stderr.to_string()));
+        }
+        if let Some(stdout) = stdout {
+            params.push(("stdout", stdout.to_string()));
+        }
+        if let Some(tail) = tail {
+            params.push(("tail", tail.to_string()));
+        }
+        if let Some(timestamps) = timestamps {
+            params.push(("timestamps", timestamps.to_string()));
+        }
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4649,11 +5151,16 @@ fn task_logs(
 
 fn secret_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/secrets", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/secrets", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4676,6 +5183,7 @@ fn secret_inspect(
     let url = format!("/secrets/{id}",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4688,6 +5196,7 @@ fn secret_delete(
     let url = format!("/secrets/{id}",
         id=id,
     );
+
     client.delete(&url)
         .send()?;
     Ok(())
@@ -4702,9 +5211,13 @@ fn secret_update(
     let url = format!("/secrets/{id}/update",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("version", format!("{}", version)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("version", version.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .json(body)
         .send()?;
@@ -4713,11 +5226,16 @@ fn secret_update(
 
 fn config_list(
     client: &Client,
-    filters: &str,
+    filters: Option<&str>,
 ) -> Result<(), Error> {
-    let url = Url::parse_with_params("/configs", &[
-        ("filters", filters.to_string()),
-    ])?;
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        if let Some(filters) = filters {
+            params.push(("filters", filters.to_string()));
+        }
+        Url::parse_with_params("/configs", &params)?
+    };
+
     client.get(url)
         .send()?;
     Ok(())
@@ -4740,6 +5258,7 @@ fn config_inspect(
     let url = format!("/configs/{id}",
         id=id,
     );
+
     client.get(&url)
         .send()?;
     Ok(())
@@ -4752,6 +5271,7 @@ fn config_delete(
     let url = format!("/configs/{id}",
         id=id,
     );
+
     client.delete(&url)
         .send()?;
     Ok(())
@@ -4766,9 +5286,13 @@ fn config_update(
     let url = format!("/configs/{id}/update",
         id=id,
     );
-    let url = Url::parse_with_params(&url, &[
-        ("version", format!("{}", version)),
-    ])?;
+
+    let url = {
+        let mut params = Vec::with_capacity(1);
+        params.push(("version", version.to_string()));
+        Url::parse_with_params(&url, &params)?
+    };
+
     client.post(url)
         .json(body)
         .send()?;
@@ -4782,6 +5306,7 @@ fn distribution_inspect(
     let url = format!("/distribution/{name}/json",
         name=name,
     );
+
     client.get(&url)
         .send()?;
     Ok(())

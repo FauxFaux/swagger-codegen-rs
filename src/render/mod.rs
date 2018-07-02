@@ -276,12 +276,13 @@ fn render_op<W: Write>(
     let mut paths = Vec::new();
 
     for param in &op.params {
-        writeln!(
-            into,
-            "    {}: {},",
-            rustify_field_name(&param.name),
-            render_ref(&param.param_type)
-        )?;
+        let param_name = rustify_field_name(&param.name);
+        let type_text = render_ref(&param.param_type);
+        if param.required.unwrap_or(false) || ParamLocation::Body == param.loc {
+            writeln!(into, "    {}: {},", param_name, type_text)?;
+        } else {
+            writeln!(into, "    {}: Option<{}>,", param_name, type_text)?;
+        }
 
         match param.loc {
             ParamLocation::Body => {
@@ -306,29 +307,44 @@ fn render_op<W: Write>(
             writeln!(into, "        {0}={0},", path.name)?;
         }
         writeln!(into, "    );",)?;
+        writeln!(into)?;
         "&url".to_string()
     };
 
     if !queries.is_empty() {
-        writeln!(into, "    let url = Url::parse_with_params({}, &[", url)?;
+        writeln!(into, "    let url = {{")?;
+        writeln!(
+            into,
+            "        let mut params = Vec::with_capacity({});",
+            queries.len()
+        )?;
         for query in queries {
             let input = rustify_field_name(&query.name);
+            let type_string = match query.param_type {
+                // TODO: this is what DOCKER wants, surely other people want different things?
+                NamedType::Array { .. } => format!("{}.to_vec().join(\",\")", input),
+                _ => format!("{}.to_string()", input),
+            };
+            let optional = !query.required.unwrap_or(false);
+
+            if optional {
+                writeln!(into, "        if let Some({0}) = {0} {{", input)?;
+                write!(into, "    ")?;
+            }
+
             writeln!(
                 into,
-                "        (\"{}\", {}),",
-                query.name,
-                match query.param_type {
-                    NamedType::Simple(DataType::String { .. })
-                    | NamedType::Simple(DataType::MatchString { .. }) => {
-                        format!("{}.to_string()", input)
-                    }
-                    // TODO: this is what DOCKER wants, surely other people want different things?
-                    NamedType::Array { .. } => format!("{}.to_vec().join(\",\")", input),
-                    _ => format!("format!(\"{{}}\", {})", input),
-                }
+                "        params.push((\"{}\", {}));",
+                input, type_string
             )?;
+
+            if optional {
+                writeln!(into, "        }}")?;
+            }
         }
-        writeln!(into, "    ])?;")?;
+        writeln!(into, "        Url::parse_with_params({}, &params)?", url)?;
+        writeln!(into, "    }};")?;
+        writeln!(into)?;
 
         url = "url".to_string();
     }
@@ -336,13 +352,23 @@ fn render_op<W: Write>(
     if !headers.is_empty() {
         writeln!(into, "    let mut headers = Headers::new();")?;
         for header in &headers {
+            let input = rustify_field_name(&header.name);
+            let optional = !header.required.unwrap_or(false);
+            if optional {
+                writeln!(into, "    if let Some({0}) = {0} {{", input)?;
+                write!(into, "    ")?;
+            }
             writeln!(
                 into,
                 "    headers.set_raw(\"{}\", {}.to_string());",
-                header.name,
-                rustify_field_name(&header.name)
+                header.name, input
             )?;
+            if optional {
+                writeln!(into, "    }}")?;
+            }
         }
+
+        writeln!(into)?;
     }
 
     writeln!(into, "    client.{}({})", method.reqwest_method_name(), url,)?;
