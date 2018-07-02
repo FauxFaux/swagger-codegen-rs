@@ -113,12 +113,12 @@ pub fn render_struct<W: Write>(
     fields: &[Field<NamedType>],
 ) -> Result<(), Error> {
     writeln!(into, "#[derive(Clone, PartialEq, Serialize, Deserialize)]")?;
-    writeln!(into, "struct {} {{", name)?;
+    writeln!(into, "pub struct {} {{", name)?;
     for field in fields {
         writeln!(into, "    #[serde(rename = \"{}\")]", field.name)?;
         writeln!(
             into,
-            "    {}: {},",
+            "    pub {}: {},",
             rustify_field_name(&field.name),
             render(&field.data_type)
         )?;
@@ -142,7 +142,7 @@ pub fn render_enum<W: Write>(
         into,
         "#[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]"
     )?;
-    writeln!(into, "enum {} {{", name)?;
+    writeln!(into, "pub enum {} {{", name)?;
     for value in values {
         let rusty_name = rustify_enum_constant(value);
 
@@ -274,7 +274,7 @@ fn render_op<W: Write>(
     let codes_enum_name = format!("{}Codes", op.id);
 
     writeln!(into, "#[derive(Clone, PartialEq)]")?;
-    writeln!(into, "enum {} {{", codes_enum_name)?;
+    writeln!(into, "pub enum {} {{", codes_enum_name)?;
     for (&resp_code, response) in &resp_codes {
         if !response.description.is_empty() {
             writeln!(into, "    /// {}", response.description)?;
@@ -288,7 +288,7 @@ fn render_op<W: Write>(
     writeln!(into, "}}")?;
     writeln!(into)?;
 
-    writeln!(into, "fn {}(", rustify_field_name(&op.id))?;
+    writeln!(into, "pub fn {}(", rustify_field_name(&op.id))?;
     writeln!(into, "    client: &Client,")?;
 
     let mut queries = Vec::new();

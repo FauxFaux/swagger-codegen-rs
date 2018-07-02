@@ -3,242 +3,243 @@ use failure::Error;
 use reqwest::Client;
 use reqwest::header::Headers;
 use reqwest::Url;
+
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Address {
+pub struct Address {
     #[serde(rename = "Addr")]
-    addr: String,
+    pub addr: String,
     #[serde(rename = "PrefixLen")]
-    prefix_len: i64,
+    pub prefix_len: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct AuthConfig {
+pub struct AuthConfig {
     #[serde(rename = "username")]
-    username: String,
+    pub username: String,
     #[serde(rename = "password")]
-    password: String,
+    pub password: String,
     #[serde(rename = "email")]
-    email: String,
+    pub email: String,
     #[serde(rename = "serveraddress")]
-    serveraddress: String,
+    pub serveraddress: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct BuildInfo {
+pub struct BuildInfo {
     #[serde(rename = "id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "stream")]
-    stream: String,
+    pub stream: String,
     #[serde(rename = "error")]
-    error: String,
+    pub error: String,
     #[serde(rename = "errorDetail")]
-    error_detail: ErrorDetail,
+    pub error_detail: ErrorDetail,
     #[serde(rename = "status")]
-    status: String,
+    pub status: String,
     #[serde(rename = "progress")]
-    progress: String,
+    pub progress: String,
     #[serde(rename = "progressDetail")]
-    progress_detail: ProgressDetail,
+    pub progress_detail: ProgressDetail,
     #[serde(rename = "aux")]
-    aux: ImageID,
+    pub aux: ImageID,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct BuildPrune {
+pub struct BuildPrune {
     #[serde(rename = "SpaceReclaimed")]
-    space_reclaimed: i64,
+    pub space_reclaimed: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ClusterInfo {
+pub struct ClusterInfo {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: SwarmSpec,
+    pub spec: SwarmSpec,
     #[serde(rename = "TLSInfo")]
-    tls_info: TLSInfo,
+    pub tls_info: TLSInfo,
     #[serde(rename = "RootRotationInProgress")]
-    root_rotation_in_progress: bool,
+    pub root_rotation_in_progress: bool,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Commit {
+pub struct Commit {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Expected")]
-    expected: String,
+    pub expected: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Config {
+pub struct Config {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: ConfigSpec,
+    pub spec: ConfigSpec,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ConfigSpec {
+pub struct ConfigSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Data")]
-    data: String,
+    pub data: String,
     #[serde(rename = "Templating")]
-    templating: Driver,
+    pub templating: Driver,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerChanges {
+pub struct ContainerChanges {
     #[serde(rename = "Path")]
-    path: String,
+    pub path: String,
     #[serde(rename = "Kind")]
-    kind: u8,
+    pub kind: u8,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerConfig {
+pub struct ContainerConfig {
     #[serde(rename = "Hostname")]
-    hostname: String,
+    pub hostname: String,
     #[serde(rename = "Domainname")]
-    domainname: String,
+    pub domainname: String,
     #[serde(rename = "User")]
-    user: String,
+    pub user: String,
     #[serde(rename = "AttachStdin")]
-    attach_stdin: bool,
+    pub attach_stdin: bool,
     #[serde(rename = "AttachStdout")]
-    attach_stdout: bool,
+    pub attach_stdout: bool,
     #[serde(rename = "AttachStderr")]
-    attach_stderr: bool,
+    pub attach_stderr: bool,
     #[serde(rename = "ExposedPorts")]
-    exposed_ports: ::serde_json::Value,
+    pub exposed_ports: ::serde_json::Value,
     #[serde(rename = "Tty")]
-    tty: bool,
+    pub tty: bool,
     #[serde(rename = "OpenStdin")]
-    open_stdin: bool,
+    pub open_stdin: bool,
     #[serde(rename = "StdinOnce")]
-    stdin_once: bool,
+    pub stdin_once: bool,
     #[serde(rename = "Env")]
-    env: Vec<String>,
+    pub env: Vec<String>,
     #[serde(rename = "Cmd")]
-    cmd: Vec<String>,
+    pub cmd: Vec<String>,
     #[serde(rename = "Healthcheck")]
-    healthcheck: HealthConfig,
+    pub healthcheck: HealthConfig,
     #[serde(rename = "ArgsEscaped")]
-    args_escaped: bool,
+    pub args_escaped: bool,
     #[serde(rename = "Image")]
-    image: String,
+    pub image: String,
     #[serde(rename = "Volumes")]
-    volumes: ::serde_json::Value,
+    pub volumes: ::serde_json::Value,
     #[serde(rename = "WorkingDir")]
-    working_dir: String,
+    pub working_dir: String,
     #[serde(rename = "Entrypoint")]
-    entrypoint: Vec<String>,
+    pub entrypoint: Vec<String>,
     #[serde(rename = "NetworkDisabled")]
-    network_disabled: bool,
+    pub network_disabled: bool,
     #[serde(rename = "MacAddress")]
-    mac_address: String,
+    pub mac_address: String,
     #[serde(rename = "OnBuild")]
-    on_build: Vec<String>,
+    pub on_build: Vec<String>,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "StopSignal")]
-    stop_signal: String,
+    pub stop_signal: String,
     #[serde(rename = "StopTimeout")]
-    stop_timeout: i64,
+    pub stop_timeout: i64,
     #[serde(rename = "Shell")]
-    shell: Vec<String>,
+    pub shell: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateBody {
+pub struct ContainerCreateBody {
     #[serde(rename = "Hostname")]
-    hostname: String,
+    pub hostname: String,
     #[serde(rename = "Domainname")]
-    domainname: String,
+    pub domainname: String,
     #[serde(rename = "User")]
-    user: String,
+    pub user: String,
     #[serde(rename = "AttachStdin")]
-    attach_stdin: bool,
+    pub attach_stdin: bool,
     #[serde(rename = "AttachStdout")]
-    attach_stdout: bool,
+    pub attach_stdout: bool,
     #[serde(rename = "AttachStderr")]
-    attach_stderr: bool,
+    pub attach_stderr: bool,
     #[serde(rename = "ExposedPorts")]
-    exposed_ports: ::serde_json::Value,
+    pub exposed_ports: ::serde_json::Value,
     #[serde(rename = "Tty")]
-    tty: bool,
+    pub tty: bool,
     #[serde(rename = "OpenStdin")]
-    open_stdin: bool,
+    pub open_stdin: bool,
     #[serde(rename = "StdinOnce")]
-    stdin_once: bool,
+    pub stdin_once: bool,
     #[serde(rename = "Env")]
-    env: Vec<String>,
+    pub env: Vec<String>,
     #[serde(rename = "Cmd")]
-    cmd: Vec<String>,
+    pub cmd: Vec<String>,
     #[serde(rename = "Healthcheck")]
-    healthcheck: HealthConfig,
+    pub healthcheck: HealthConfig,
     #[serde(rename = "ArgsEscaped")]
-    args_escaped: bool,
+    pub args_escaped: bool,
     #[serde(rename = "Image")]
-    image: String,
+    pub image: String,
     #[serde(rename = "Volumes")]
-    volumes: ::serde_json::Value,
+    pub volumes: ::serde_json::Value,
     #[serde(rename = "WorkingDir")]
-    working_dir: String,
+    pub working_dir: String,
     #[serde(rename = "Entrypoint")]
-    entrypoint: Vec<String>,
+    pub entrypoint: Vec<String>,
     #[serde(rename = "NetworkDisabled")]
-    network_disabled: bool,
+    pub network_disabled: bool,
     #[serde(rename = "MacAddress")]
-    mac_address: String,
+    pub mac_address: String,
     #[serde(rename = "OnBuild")]
-    on_build: Vec<String>,
+    pub on_build: Vec<String>,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "StopSignal")]
-    stop_signal: String,
+    pub stop_signal: String,
     #[serde(rename = "StopTimeout")]
-    stop_timeout: i64,
+    pub stop_timeout: i64,
     #[serde(rename = "Shell")]
-    shell: Vec<String>,
+    pub shell: Vec<String>,
     #[serde(rename = "HostConfig")]
-    host_config: HostConfig,
+    pub host_config: HostConfig,
     #[serde(rename = "NetworkingConfig")]
-    networking_config: ContainerCreateNetworkingConfig,
+    pub networking_config: ContainerCreateNetworkingConfig,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateCreated {
+pub struct ContainerCreateCreated {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Warnings")]
-    warnings: Vec<String>,
+    pub warnings: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateHostConfigBlkioWeightDevice {
+pub struct ContainerCreateHostConfigBlkioWeightDevice {
     #[serde(rename = "Path")]
-    path: String,
+    pub path: String,
     #[serde(rename = "Weight")]
-    weight: u64,
+    pub weight: u64,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerCreateHostConfigIsolation {
+pub enum ContainerCreateHostConfigIsolation {
     #[serde(rename = "default")]
     Default,
     #[serde(rename = "process")]
@@ -258,15 +259,15 @@ impl ToString for ContainerCreateHostConfigIsolation {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateHostConfigLogConfig {
+pub struct ContainerCreateHostConfigLogConfig {
     #[serde(rename = "Type")]
-    type_: ContainerCreateHostConfigLogConfigType,
+    pub type_: ContainerCreateHostConfigLogConfigType,
     #[serde(rename = "Config")]
-    config: ::serde_json::Value,
+    pub config: ::serde_json::Value,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerCreateHostConfigLogConfigType {
+pub enum ContainerCreateHostConfigLogConfigType {
     #[serde(rename = "json-file")]
     Jsonfile,
     #[serde(rename = "syslog")]
@@ -304,7 +305,7 @@ impl ToString for ContainerCreateHostConfigLogConfigType {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerCreateHostConfigRestartPolicyName {
+pub enum ContainerCreateHostConfigRestartPolicyName {
     #[serde(rename = "")]
     Empty,
     #[serde(rename = "always")]
@@ -327,127 +328,127 @@ impl ToString for ContainerCreateHostConfigRestartPolicyName {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateHostConfigUlimits {
+pub struct ContainerCreateHostConfigUlimits {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Soft")]
-    soft: i64,
+    pub soft: i64,
     #[serde(rename = "Hard")]
-    hard: i64,
+    pub hard: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerCreateNetworkingConfig {
+pub struct ContainerCreateNetworkingConfig {
     #[serde(rename = "EndpointsConfig")]
-    endpoints_config: ::serde_json::Value,
+    pub endpoints_config: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerExec {
+pub struct ContainerExec {
     #[serde(rename = "AttachStdin")]
-    attach_stdin: bool,
+    pub attach_stdin: bool,
     #[serde(rename = "AttachStdout")]
-    attach_stdout: bool,
+    pub attach_stdout: bool,
     #[serde(rename = "AttachStderr")]
-    attach_stderr: bool,
+    pub attach_stderr: bool,
     #[serde(rename = "DetachKeys")]
-    detach_keys: String,
+    pub detach_keys: String,
     #[serde(rename = "Tty")]
-    tty: bool,
+    pub tty: bool,
     #[serde(rename = "Env")]
-    env: Vec<String>,
+    pub env: Vec<String>,
     #[serde(rename = "Cmd")]
-    cmd: Vec<String>,
+    pub cmd: Vec<String>,
     #[serde(rename = "Privileged")]
-    privileged: bool,
+    pub privileged: bool,
     #[serde(rename = "User")]
-    user: String,
+    pub user: String,
     #[serde(rename = "WorkingDir")]
-    working_dir: String,
+    pub working_dir: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerInspect {
+pub struct ContainerInspect {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Created")]
-    created: String,
+    pub created: String,
     #[serde(rename = "Path")]
-    path: String,
+    pub path: String,
     #[serde(rename = "Args")]
-    args: Vec<String>,
+    pub args: Vec<String>,
     #[serde(rename = "State")]
-    state: ContainerInspectState,
+    pub state: ContainerInspectState,
     #[serde(rename = "Image")]
-    image: String,
+    pub image: String,
     #[serde(rename = "ResolvConfPath")]
-    resolv_conf_path: String,
+    pub resolv_conf_path: String,
     #[serde(rename = "HostnamePath")]
-    hostname_path: String,
+    pub hostname_path: String,
     #[serde(rename = "HostsPath")]
-    hosts_path: String,
+    pub hosts_path: String,
     #[serde(rename = "LogPath")]
-    log_path: String,
+    pub log_path: String,
     #[serde(rename = "Node")]
-    node: ::serde_json::Value,
+    pub node: ::serde_json::Value,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "RestartCount")]
-    restart_count: i64,
+    pub restart_count: i64,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "MountLabel")]
-    mount_label: String,
+    pub mount_label: String,
     #[serde(rename = "ProcessLabel")]
-    process_label: String,
+    pub process_label: String,
     #[serde(rename = "AppArmorProfile")]
-    app_armor_profile: String,
+    pub app_armor_profile: String,
     #[serde(rename = "ExecIDs")]
-    exec_i_ds: Vec<String>,
+    pub exec_i_ds: Vec<String>,
     #[serde(rename = "HostConfig")]
-    host_config: HostConfig,
+    pub host_config: HostConfig,
     #[serde(rename = "GraphDriver")]
-    graph_driver: GraphDriverData,
+    pub graph_driver: GraphDriverData,
     #[serde(rename = "SizeRw")]
-    size_rw: i64,
+    pub size_rw: i64,
     #[serde(rename = "SizeRootFs")]
-    size_root_fs: i64,
+    pub size_root_fs: i64,
     #[serde(rename = "Mounts")]
-    mounts: Vec<MountPoint>,
+    pub mounts: Vec<MountPoint>,
     #[serde(rename = "Config")]
-    config: ContainerConfig,
+    pub config: ContainerConfig,
     #[serde(rename = "NetworkSettings")]
-    network_settings: NetworkSettings,
+    pub network_settings: NetworkSettings,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerInspectState {
+pub struct ContainerInspectState {
     #[serde(rename = "Status")]
-    status: ContainerInspectStateStatus,
+    pub status: ContainerInspectStateStatus,
     #[serde(rename = "Running")]
-    running: bool,
+    pub running: bool,
     #[serde(rename = "Paused")]
-    paused: bool,
+    pub paused: bool,
     #[serde(rename = "Restarting")]
-    restarting: bool,
+    pub restarting: bool,
     #[serde(rename = "OOMKilled")]
-    oom_killed: bool,
+    pub oom_killed: bool,
     #[serde(rename = "Dead")]
-    dead: bool,
+    pub dead: bool,
     #[serde(rename = "Pid")]
-    pid: i64,
+    pub pid: i64,
     #[serde(rename = "ExitCode")]
-    exit_code: i64,
+    pub exit_code: i64,
     #[serde(rename = "Error")]
-    error: String,
+    pub error: String,
     #[serde(rename = "StartedAt")]
-    started_at: String,
+    pub started_at: String,
     #[serde(rename = "FinishedAt")]
-    finished_at: String,
+    pub finished_at: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerInspectStateStatus {
+pub enum ContainerInspectStateStatus {
     #[serde(rename = "created")]
     Created,
     #[serde(rename = "running")]
@@ -479,53 +480,53 @@ impl ToString for ContainerInspectStateStatus {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerList {
+pub struct ContainerList {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Names")]
-    names: Vec<String>,
+    pub names: Vec<String>,
     #[serde(rename = "Image")]
-    image: String,
+    pub image: String,
     #[serde(rename = "ImageID")]
-    image_id: String,
+    pub image_id: String,
     #[serde(rename = "Command")]
-    command: String,
+    pub command: String,
     #[serde(rename = "Created")]
-    created: i64,
+    pub created: i64,
     #[serde(rename = "Ports")]
-    ports: Vec<Port>,
+    pub ports: Vec<Port>,
     #[serde(rename = "SizeRw")]
-    size_rw: i64,
+    pub size_rw: i64,
     #[serde(rename = "SizeRootFs")]
-    size_root_fs: i64,
+    pub size_root_fs: i64,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "State")]
-    state: String,
+    pub state: String,
     #[serde(rename = "Status")]
-    status: String,
+    pub status: String,
     #[serde(rename = "HostConfig")]
-    host_config: ContainerListHostConfig,
+    pub host_config: ContainerListHostConfig,
     #[serde(rename = "NetworkSettings")]
-    network_settings: ContainerListNetworkSettings,
+    pub network_settings: ContainerListNetworkSettings,
     #[serde(rename = "Mounts")]
-    mounts: Vec<Mount>,
+    pub mounts: Vec<Mount>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListHostConfig {
+pub struct ContainerListHostConfig {
     #[serde(rename = "NetworkMode")]
-    network_mode: String,
+    pub network_mode: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListMountsBindOptions {
+pub struct ContainerListMountsBindOptions {
     #[serde(rename = "Propagation")]
-    propagation: ContainerListMountsBindOptionsPropagation,
+    pub propagation: ContainerListMountsBindOptionsPropagation,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerListMountsBindOptionsPropagation {
+pub enum ContainerListMountsBindOptionsPropagation {
     #[serde(rename = "private")]
     Private,
     #[serde(rename = "rprivate")]
@@ -554,15 +555,15 @@ impl ToString for ContainerListMountsBindOptionsPropagation {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListMountsTmpfsOptions {
+pub struct ContainerListMountsTmpfsOptions {
     #[serde(rename = "SizeBytes")]
-    size_bytes: i64,
+    pub size_bytes: i64,
     #[serde(rename = "Mode")]
-    mode: i64,
+    pub mode: i64,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerListMountsType {
+pub enum ContainerListMountsType {
     #[serde(rename = "bind")]
     Bind,
     #[serde(rename = "volume")]
@@ -582,31 +583,31 @@ impl ToString for ContainerListMountsType {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListMountsVolumeOptions {
+pub struct ContainerListMountsVolumeOptions {
     #[serde(rename = "NoCopy")]
-    no_copy: bool,
+    pub no_copy: bool,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "DriverConfig")]
-    driver_config: ContainerListMountsVolumeOptionsDriverConfig,
+    pub driver_config: ContainerListMountsVolumeOptionsDriverConfig,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListMountsVolumeOptionsDriverConfig {
+pub struct ContainerListMountsVolumeOptionsDriverConfig {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerListNetworkSettings {
+pub struct ContainerListNetworkSettings {
     #[serde(rename = "Networks")]
-    networks: ::serde_json::Value,
+    pub networks: ::serde_json::Value,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ContainerListPortsType {
+pub enum ContainerListPortsType {
     #[serde(rename = "tcp")]
     Tcp,
     #[serde(rename = "udp")]
@@ -626,525 +627,525 @@ impl ToString for ContainerListPortsType {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerPrune {
+pub struct ContainerPrune {
     #[serde(rename = "ContainersDeleted")]
-    containers_deleted: Vec<String>,
+    pub containers_deleted: Vec<String>,
     #[serde(rename = "SpaceReclaimed")]
-    space_reclaimed: i64,
+    pub space_reclaimed: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerTop {
+pub struct ContainerTop {
     #[serde(rename = "Titles")]
-    titles: Vec<String>,
+    pub titles: Vec<String>,
     #[serde(rename = "Processes")]
-    processes: Vec<Vec<String>>,
+    pub processes: Vec<Vec<String>>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerUpdateOk {
+pub struct ContainerUpdateOk {
     #[serde(rename = "Warnings")]
-    warnings: Vec<String>,
+    pub warnings: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerUpdateUpdate {
+pub struct ContainerUpdateUpdate {
     #[serde(rename = "CpuShares")]
-    cpu_shares: i64,
+    pub cpu_shares: i64,
     #[serde(rename = "Memory")]
-    memory: i64,
+    pub memory: i64,
     #[serde(rename = "CgroupParent")]
-    cgroup_parent: String,
+    pub cgroup_parent: String,
     #[serde(rename = "BlkioWeight")]
-    blkio_weight: u64,
+    pub blkio_weight: u64,
     #[serde(rename = "BlkioWeightDevice")]
-    blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
+    pub blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
     #[serde(rename = "BlkioDeviceReadBps")]
-    blkio_device_read_bps: Vec<ThrottleDevice>,
+    pub blkio_device_read_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteBps")]
-    blkio_device_write_bps: Vec<ThrottleDevice>,
+    pub blkio_device_write_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceReadIOps")]
-    blkio_device_read_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_read_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteIOps")]
-    blkio_device_write_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_write_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "CpuPeriod")]
-    cpu_period: i64,
+    pub cpu_period: i64,
     #[serde(rename = "CpuQuota")]
-    cpu_quota: i64,
+    pub cpu_quota: i64,
     #[serde(rename = "CpuRealtimePeriod")]
-    cpu_realtime_period: i64,
+    pub cpu_realtime_period: i64,
     #[serde(rename = "CpuRealtimeRuntime")]
-    cpu_realtime_runtime: i64,
+    pub cpu_realtime_runtime: i64,
     #[serde(rename = "CpusetCpus")]
-    cpuset_cpus: String,
+    pub cpuset_cpus: String,
     #[serde(rename = "CpusetMems")]
-    cpuset_mems: String,
+    pub cpuset_mems: String,
     #[serde(rename = "Devices")]
-    devices: Vec<DeviceMapping>,
+    pub devices: Vec<DeviceMapping>,
     #[serde(rename = "DeviceCgroupRules")]
-    device_cgroup_rules: Vec<String>,
+    pub device_cgroup_rules: Vec<String>,
     #[serde(rename = "DiskQuota")]
-    disk_quota: i64,
+    pub disk_quota: i64,
     #[serde(rename = "KernelMemory")]
-    kernel_memory: i64,
+    pub kernel_memory: i64,
     #[serde(rename = "MemoryReservation")]
-    memory_reservation: i64,
+    pub memory_reservation: i64,
     #[serde(rename = "MemorySwap")]
-    memory_swap: i64,
+    pub memory_swap: i64,
     #[serde(rename = "MemorySwappiness")]
-    memory_swappiness: u64,
+    pub memory_swappiness: u64,
     #[serde(rename = "NanoCPUs")]
-    nano_cp_us: i64,
+    pub nano_cp_us: i64,
     #[serde(rename = "OomKillDisable")]
-    oom_kill_disable: bool,
+    pub oom_kill_disable: bool,
     #[serde(rename = "Init")]
-    init: bool,
+    pub init: bool,
     #[serde(rename = "PidsLimit")]
-    pids_limit: i64,
+    pub pids_limit: i64,
     #[serde(rename = "Ulimits")]
-    ulimits: Vec<ContainerCreateHostConfigUlimits>,
+    pub ulimits: Vec<ContainerCreateHostConfigUlimits>,
     #[serde(rename = "CpuCount")]
-    cpu_count: i64,
+    pub cpu_count: i64,
     #[serde(rename = "CpuPercent")]
-    cpu_percent: i64,
+    pub cpu_percent: i64,
     #[serde(rename = "IOMaximumIOps")]
-    io_maximum_i_ops: i64,
+    pub io_maximum_i_ops: i64,
     #[serde(rename = "IOMaximumBandwidth")]
-    io_maximum_bandwidth: i64,
+    pub io_maximum_bandwidth: i64,
     #[serde(rename = "RestartPolicy")]
-    restart_policy: RestartPolicy,
+    pub restart_policy: RestartPolicy,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerWait {
+pub struct ContainerWait {
     #[serde(rename = "StatusCode")]
-    status_code: i64,
+    pub status_code: i64,
     #[serde(rename = "Error")]
-    error: ContainerWaitError,
+    pub error: ContainerWaitError,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ContainerWaitError {
+pub struct ContainerWaitError {
     #[serde(rename = "Message")]
-    message: String,
+    pub message: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct CreateImageInfo {
+pub struct CreateImageInfo {
     #[serde(rename = "id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "error")]
-    error: String,
+    pub error: String,
     #[serde(rename = "status")]
-    status: String,
+    pub status: String,
     #[serde(rename = "progress")]
-    progress: String,
+    pub progress: String,
     #[serde(rename = "progressDetail")]
-    progress_detail: ProgressDetail,
+    pub progress_detail: ProgressDetail,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct DeviceMapping {
+pub struct DeviceMapping {
     #[serde(rename = "PathOnHost")]
-    path_on_host: String,
+    pub path_on_host: String,
     #[serde(rename = "PathInContainer")]
-    path_in_container: String,
+    pub path_in_container: String,
     #[serde(rename = "CgroupPermissions")]
-    cgroup_permissions: String,
+    pub cgroup_permissions: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct DistributionInspect {
+pub struct DistributionInspect {
     #[serde(rename = "Descriptor")]
-    descriptor: DistributionInspectDescriptor,
+    pub descriptor: DistributionInspectDescriptor,
     #[serde(rename = "Platforms")]
-    platforms: Vec<DistributionInspectPlatforms>,
+    pub platforms: Vec<DistributionInspectPlatforms>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct DistributionInspectDescriptor {
+pub struct DistributionInspectDescriptor {
     #[serde(rename = "MediaType")]
-    media_type: String,
+    pub media_type: String,
     #[serde(rename = "Size")]
-    size: i64,
+    pub size: i64,
     #[serde(rename = "Digest")]
-    digest: String,
+    pub digest: String,
     #[serde(rename = "URLs")]
-    ur_ls: Vec<String>,
+    pub ur_ls: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct DistributionInspectPlatforms {
+pub struct DistributionInspectPlatforms {
     #[serde(rename = "Architecture")]
-    architecture: String,
+    pub architecture: String,
     #[serde(rename = "OS")]
-    os: String,
+    pub os: String,
     #[serde(rename = "OSVersion")]
-    os_version: String,
+    pub os_version: String,
     #[serde(rename = "OSFeatures")]
-    os_features: Vec<String>,
+    pub os_features: Vec<String>,
     #[serde(rename = "Variant")]
-    variant: String,
+    pub variant: String,
     #[serde(rename = "Features")]
-    features: Vec<String>,
+    pub features: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Driver {
+pub struct Driver {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct EndpointIPAMConfig {
+pub struct EndpointIPAMConfig {
     #[serde(rename = "IPv4Address")]
-    i_pv4_address: String,
+    pub i_pv4_address: String,
     #[serde(rename = "IPv6Address")]
-    i_pv6_address: String,
+    pub i_pv6_address: String,
     #[serde(rename = "LinkLocalIPs")]
-    link_local_i_ps: Vec<String>,
+    pub link_local_i_ps: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct EndpointPortConfig {
+pub struct EndpointPortConfig {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Protocol")]
-    protocol: ContainerListPortsType,
+    pub protocol: ContainerListPortsType,
     #[serde(rename = "TargetPort")]
-    target_port: i64,
+    pub target_port: i64,
     #[serde(rename = "PublishedPort")]
-    published_port: i64,
+    pub published_port: i64,
     #[serde(rename = "PublishMode")]
-    publish_mode: ServiceListSpecEndpointSpecPortsPublishMode,
+    pub publish_mode: ServiceListSpecEndpointSpecPortsPublishMode,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct EndpointSettings {
+pub struct EndpointSettings {
     #[serde(rename = "IPAMConfig")]
-    ipam_config: EndpointIPAMConfig,
+    pub ipam_config: EndpointIPAMConfig,
     #[serde(rename = "Links")]
-    links: Vec<String>,
+    pub links: Vec<String>,
     #[serde(rename = "Aliases")]
-    aliases: Vec<String>,
+    pub aliases: Vec<String>,
     #[serde(rename = "NetworkID")]
-    network_id: String,
+    pub network_id: String,
     #[serde(rename = "EndpointID")]
-    endpoint_id: String,
+    pub endpoint_id: String,
     #[serde(rename = "Gateway")]
-    gateway: String,
+    pub gateway: String,
     #[serde(rename = "IPAddress")]
-    ip_address: String,
+    pub ip_address: String,
     #[serde(rename = "IPPrefixLen")]
-    ip_prefix_len: i64,
+    pub ip_prefix_len: i64,
     #[serde(rename = "IPv6Gateway")]
-    i_pv6_gateway: String,
+    pub i_pv6_gateway: String,
     #[serde(rename = "GlobalIPv6Address")]
-    global_i_pv6_address: String,
+    pub global_i_pv6_address: String,
     #[serde(rename = "GlobalIPv6PrefixLen")]
-    global_i_pv6_prefix_len: i64,
+    pub global_i_pv6_prefix_len: i64,
     #[serde(rename = "MacAddress")]
-    mac_address: String,
+    pub mac_address: String,
     #[serde(rename = "DriverOpts")]
-    driver_opts: ::serde_json::Value,
+    pub driver_opts: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct EndpointSpec {
+pub struct EndpointSpec {
     #[serde(rename = "Mode")]
-    mode: ServiceListSpecEndpointSpecMode,
+    pub mode: ServiceListSpecEndpointSpecMode,
     #[serde(rename = "Ports")]
-    ports: Vec<EndpointPortConfig>,
+    pub ports: Vec<EndpointPortConfig>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct EngineDescription {
+pub struct EngineDescription {
     #[serde(rename = "EngineVersion")]
-    engine_version: String,
+    pub engine_version: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Plugins")]
-    plugins: Vec<NodeListDescriptionEnginePlugins>,
+    pub plugins: Vec<NodeListDescriptionEnginePlugins>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ErrorDetail {
+pub struct ErrorDetail {
     #[serde(rename = "code")]
-    code: i64,
+    pub code: i64,
     #[serde(rename = "message")]
-    message: String,
+    pub message: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ErrorResponse {
+pub struct ErrorResponse {
     #[serde(rename = "message")]
-    message: String,
+    pub message: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ExecInspect {
+pub struct ExecInspect {
     #[serde(rename = "CanRemove")]
-    can_remove: bool,
+    pub can_remove: bool,
     #[serde(rename = "DetachKeys")]
-    detach_keys: String,
+    pub detach_keys: String,
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Running")]
-    running: bool,
+    pub running: bool,
     #[serde(rename = "ExitCode")]
-    exit_code: i64,
+    pub exit_code: i64,
     #[serde(rename = "ProcessConfig")]
-    process_config: ProcessConfig,
+    pub process_config: ProcessConfig,
     #[serde(rename = "OpenStdin")]
-    open_stdin: bool,
+    pub open_stdin: bool,
     #[serde(rename = "OpenStderr")]
-    open_stderr: bool,
+    pub open_stderr: bool,
     #[serde(rename = "OpenStdout")]
-    open_stdout: bool,
+    pub open_stdout: bool,
     #[serde(rename = "ContainerID")]
-    container_id: String,
+    pub container_id: String,
     #[serde(rename = "Pid")]
-    pid: i64,
+    pub pid: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ExecStart {
+pub struct ExecStart {
     #[serde(rename = "Detach")]
-    detach: bool,
+    pub detach: bool,
     #[serde(rename = "Tty")]
-    tty: bool,
+    pub tty: bool,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct GetPluginPrivileges {
+pub struct GetPluginPrivileges {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Value")]
-    value: Vec<String>,
+    pub value: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct GraphDriverData {
+pub struct GraphDriverData {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Data")]
-    data: ::serde_json::Value,
+    pub data: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct HealthConfig {
+pub struct HealthConfig {
     #[serde(rename = "Test")]
-    test: Vec<String>,
+    pub test: Vec<String>,
     #[serde(rename = "Interval")]
-    interval: i64,
+    pub interval: i64,
     #[serde(rename = "Timeout")]
-    timeout: i64,
+    pub timeout: i64,
     #[serde(rename = "Retries")]
-    retries: i64,
+    pub retries: i64,
     #[serde(rename = "StartPeriod")]
-    start_period: i64,
+    pub start_period: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct HostConfig {
+pub struct HostConfig {
     #[serde(rename = "CpuShares")]
-    cpu_shares: i64,
+    pub cpu_shares: i64,
     #[serde(rename = "Memory")]
-    memory: i64,
+    pub memory: i64,
     #[serde(rename = "CgroupParent")]
-    cgroup_parent: String,
+    pub cgroup_parent: String,
     #[serde(rename = "BlkioWeight")]
-    blkio_weight: u64,
+    pub blkio_weight: u64,
     #[serde(rename = "BlkioWeightDevice")]
-    blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
+    pub blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
     #[serde(rename = "BlkioDeviceReadBps")]
-    blkio_device_read_bps: Vec<ThrottleDevice>,
+    pub blkio_device_read_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteBps")]
-    blkio_device_write_bps: Vec<ThrottleDevice>,
+    pub blkio_device_write_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceReadIOps")]
-    blkio_device_read_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_read_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteIOps")]
-    blkio_device_write_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_write_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "CpuPeriod")]
-    cpu_period: i64,
+    pub cpu_period: i64,
     #[serde(rename = "CpuQuota")]
-    cpu_quota: i64,
+    pub cpu_quota: i64,
     #[serde(rename = "CpuRealtimePeriod")]
-    cpu_realtime_period: i64,
+    pub cpu_realtime_period: i64,
     #[serde(rename = "CpuRealtimeRuntime")]
-    cpu_realtime_runtime: i64,
+    pub cpu_realtime_runtime: i64,
     #[serde(rename = "CpusetCpus")]
-    cpuset_cpus: String,
+    pub cpuset_cpus: String,
     #[serde(rename = "CpusetMems")]
-    cpuset_mems: String,
+    pub cpuset_mems: String,
     #[serde(rename = "Devices")]
-    devices: Vec<DeviceMapping>,
+    pub devices: Vec<DeviceMapping>,
     #[serde(rename = "DeviceCgroupRules")]
-    device_cgroup_rules: Vec<String>,
+    pub device_cgroup_rules: Vec<String>,
     #[serde(rename = "DiskQuota")]
-    disk_quota: i64,
+    pub disk_quota: i64,
     #[serde(rename = "KernelMemory")]
-    kernel_memory: i64,
+    pub kernel_memory: i64,
     #[serde(rename = "MemoryReservation")]
-    memory_reservation: i64,
+    pub memory_reservation: i64,
     #[serde(rename = "MemorySwap")]
-    memory_swap: i64,
+    pub memory_swap: i64,
     #[serde(rename = "MemorySwappiness")]
-    memory_swappiness: u64,
+    pub memory_swappiness: u64,
     #[serde(rename = "NanoCPUs")]
-    nano_cp_us: i64,
+    pub nano_cp_us: i64,
     #[serde(rename = "OomKillDisable")]
-    oom_kill_disable: bool,
+    pub oom_kill_disable: bool,
     #[serde(rename = "Init")]
-    init: bool,
+    pub init: bool,
     #[serde(rename = "PidsLimit")]
-    pids_limit: i64,
+    pub pids_limit: i64,
     #[serde(rename = "Ulimits")]
-    ulimits: Vec<ContainerCreateHostConfigUlimits>,
+    pub ulimits: Vec<ContainerCreateHostConfigUlimits>,
     #[serde(rename = "CpuCount")]
-    cpu_count: i64,
+    pub cpu_count: i64,
     #[serde(rename = "CpuPercent")]
-    cpu_percent: i64,
+    pub cpu_percent: i64,
     #[serde(rename = "IOMaximumIOps")]
-    io_maximum_i_ops: i64,
+    pub io_maximum_i_ops: i64,
     #[serde(rename = "IOMaximumBandwidth")]
-    io_maximum_bandwidth: i64,
+    pub io_maximum_bandwidth: i64,
     #[serde(rename = "Binds")]
-    binds: Vec<String>,
+    pub binds: Vec<String>,
     #[serde(rename = "ContainerIDFile")]
-    container_id_file: String,
+    pub container_id_file: String,
     #[serde(rename = "LogConfig")]
-    log_config: ContainerCreateHostConfigLogConfig,
+    pub log_config: ContainerCreateHostConfigLogConfig,
     #[serde(rename = "NetworkMode")]
-    network_mode: String,
+    pub network_mode: String,
     #[serde(rename = "PortBindings")]
-    port_bindings: ::serde_json::Value,
+    pub port_bindings: ::serde_json::Value,
     #[serde(rename = "RestartPolicy")]
-    restart_policy: RestartPolicy,
+    pub restart_policy: RestartPolicy,
     #[serde(rename = "AutoRemove")]
-    auto_remove: bool,
+    pub auto_remove: bool,
     #[serde(rename = "VolumeDriver")]
-    volume_driver: String,
+    pub volume_driver: String,
     #[serde(rename = "VolumesFrom")]
-    volumes_from: Vec<String>,
+    pub volumes_from: Vec<String>,
     #[serde(rename = "Mounts")]
-    mounts: Vec<Mount>,
+    pub mounts: Vec<Mount>,
     #[serde(rename = "CapAdd")]
-    cap_add: Vec<String>,
+    pub cap_add: Vec<String>,
     #[serde(rename = "CapDrop")]
-    cap_drop: Vec<String>,
+    pub cap_drop: Vec<String>,
     #[serde(rename = "Dns")]
-    dns: Vec<String>,
+    pub dns: Vec<String>,
     #[serde(rename = "DnsOptions")]
-    dns_options: Vec<String>,
+    pub dns_options: Vec<String>,
     #[serde(rename = "DnsSearch")]
-    dns_search: Vec<String>,
+    pub dns_search: Vec<String>,
     #[serde(rename = "ExtraHosts")]
-    extra_hosts: Vec<String>,
+    pub extra_hosts: Vec<String>,
     #[serde(rename = "GroupAdd")]
-    group_add: Vec<String>,
+    pub group_add: Vec<String>,
     #[serde(rename = "IpcMode")]
-    ipc_mode: String,
+    pub ipc_mode: String,
     #[serde(rename = "Cgroup")]
-    cgroup: String,
+    pub cgroup: String,
     #[serde(rename = "Links")]
-    links: Vec<String>,
+    pub links: Vec<String>,
     #[serde(rename = "OomScoreAdj")]
-    oom_score_adj: i64,
+    pub oom_score_adj: i64,
     #[serde(rename = "PidMode")]
-    pid_mode: String,
+    pub pid_mode: String,
     #[serde(rename = "Privileged")]
-    privileged: bool,
+    pub privileged: bool,
     #[serde(rename = "PublishAllPorts")]
-    publish_all_ports: bool,
+    pub publish_all_ports: bool,
     #[serde(rename = "ReadonlyRootfs")]
-    readonly_rootfs: bool,
+    pub readonly_rootfs: bool,
     #[serde(rename = "SecurityOpt")]
-    security_opt: Vec<String>,
+    pub security_opt: Vec<String>,
     #[serde(rename = "StorageOpt")]
-    storage_opt: ::serde_json::Value,
+    pub storage_opt: ::serde_json::Value,
     #[serde(rename = "Tmpfs")]
-    tmpfs: ::serde_json::Value,
+    pub tmpfs: ::serde_json::Value,
     #[serde(rename = "UTSMode")]
-    uts_mode: String,
+    pub uts_mode: String,
     #[serde(rename = "UsernsMode")]
-    userns_mode: String,
+    pub userns_mode: String,
     #[serde(rename = "ShmSize")]
-    shm_size: u64,
+    pub shm_size: u64,
     #[serde(rename = "Sysctls")]
-    sysctls: ::serde_json::Value,
+    pub sysctls: ::serde_json::Value,
     #[serde(rename = "Runtime")]
-    runtime: String,
+    pub runtime: String,
     #[serde(rename = "ConsoleSize")]
-    console_size: Vec<u64>,
+    pub console_size: Vec<u64>,
     #[serde(rename = "Isolation")]
-    isolation: ContainerCreateHostConfigIsolation,
+    pub isolation: ContainerCreateHostConfigIsolation,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct IPAM {
+pub struct IPAM {
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "Config")]
-    config: Vec<::serde_json::Value>,
+    pub config: Vec<::serde_json::Value>,
     #[serde(rename = "Options")]
-    options: Vec<::serde_json::Value>,
+    pub options: Vec<::serde_json::Value>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct IdResponse {
+pub struct IdResponse {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Image {
+pub struct Image {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "RepoTags")]
-    repo_tags: Vec<String>,
+    pub repo_tags: Vec<String>,
     #[serde(rename = "RepoDigests")]
-    repo_digests: Vec<String>,
+    pub repo_digests: Vec<String>,
     #[serde(rename = "Parent")]
-    parent: String,
+    pub parent: String,
     #[serde(rename = "Comment")]
-    comment: String,
+    pub comment: String,
     #[serde(rename = "Created")]
-    created: String,
+    pub created: String,
     #[serde(rename = "Container")]
-    container: String,
+    pub container: String,
     #[serde(rename = "ContainerConfig")]
-    container_config: ContainerConfig,
+    pub container_config: ContainerConfig,
     #[serde(rename = "DockerVersion")]
-    docker_version: String,
+    pub docker_version: String,
     #[serde(rename = "Author")]
-    author: String,
+    pub author: String,
     #[serde(rename = "Config")]
-    config: ContainerConfig,
+    pub config: ContainerConfig,
     #[serde(rename = "Architecture")]
-    architecture: String,
+    pub architecture: String,
     #[serde(rename = "Os")]
-    os: String,
+    pub os: String,
     #[serde(rename = "OsVersion")]
-    os_version: String,
+    pub os_version: String,
     #[serde(rename = "Size")]
-    size: i64,
+    pub size: i64,
     #[serde(rename = "VirtualSize")]
-    virtual_size: i64,
+    pub virtual_size: i64,
     #[serde(rename = "GraphDriver")]
-    graph_driver: GraphDriverData,
+    pub graph_driver: GraphDriverData,
     #[serde(rename = "RootFS")]
-    root_fs: ImageInspectRootFS,
+    pub root_fs: ImageInspectRootFS,
     #[serde(rename = "Metadata")]
-    metadata: ImageInspectMetadata,
+    pub metadata: ImageInspectMetadata,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ImageBuild {
+pub enum ImageBuild {
     #[serde(rename = "application/x-tar")]
     Applicationxtar,
 }
@@ -1164,119 +1165,119 @@ impl ToString for ImageBuild {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageDeleteResponseItem {
+pub struct ImageDeleteResponseItem {
     #[serde(rename = "Untagged")]
-    untagged: String,
+    pub untagged: String,
     #[serde(rename = "Deleted")]
-    deleted: String,
+    pub deleted: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageHistory {
+pub struct ImageHistory {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Created")]
-    created: i64,
+    pub created: i64,
     #[serde(rename = "CreatedBy")]
-    created_by: String,
+    pub created_by: String,
     #[serde(rename = "Tags")]
-    tags: Vec<String>,
+    pub tags: Vec<String>,
     #[serde(rename = "Size")]
-    size: i64,
+    pub size: i64,
     #[serde(rename = "Comment")]
-    comment: String,
+    pub comment: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageID {
+pub struct ImageID {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageInspectMetadata {
+pub struct ImageInspectMetadata {
     #[serde(rename = "LastTagTime")]
-    last_tag_time: ::chrono::DateTime<::chrono::Utc>,
+    pub last_tag_time: ::chrono::DateTime<::chrono::Utc>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageInspectRootFS {
+pub struct ImageInspectRootFS {
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Layers")]
-    layers: Vec<String>,
+    pub layers: Vec<String>,
     #[serde(rename = "BaseLayer")]
-    base_layer: String,
+    pub base_layer: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImagePrune {
+pub struct ImagePrune {
     #[serde(rename = "ImagesDeleted")]
-    images_deleted: Vec<ImageDeleteResponseItem>,
+    pub images_deleted: Vec<ImageDeleteResponseItem>,
     #[serde(rename = "SpaceReclaimed")]
-    space_reclaimed: i64,
+    pub space_reclaimed: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageSearch {
+pub struct ImageSearch {
     #[serde(rename = "description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "is_official")]
-    is_official: bool,
+    pub is_official: bool,
     #[serde(rename = "is_automated")]
-    is_automated: bool,
+    pub is_automated: bool,
     #[serde(rename = "name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "star_count")]
-    star_count: i64,
+    pub star_count: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ImageSummary {
+pub struct ImageSummary {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "ParentId")]
-    parent_id: String,
+    pub parent_id: String,
     #[serde(rename = "RepoTags")]
-    repo_tags: Vec<String>,
+    pub repo_tags: Vec<String>,
     #[serde(rename = "RepoDigests")]
-    repo_digests: Vec<String>,
+    pub repo_digests: Vec<String>,
     #[serde(rename = "Created")]
-    created: i64,
+    pub created: i64,
     #[serde(rename = "Size")]
-    size: i64,
+    pub size: i64,
     #[serde(rename = "SharedSize")]
-    shared_size: i64,
+    pub shared_size: i64,
     #[serde(rename = "VirtualSize")]
-    virtual_size: i64,
+    pub virtual_size: i64,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Containers")]
-    containers: i64,
+    pub containers: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct IndexInfo {
+pub struct IndexInfo {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Mirrors")]
-    mirrors: Vec<String>,
+    pub mirrors: Vec<String>,
     #[serde(rename = "Secure")]
-    secure: bool,
+    pub secure: bool,
     #[serde(rename = "Official")]
-    official: bool,
+    pub official: bool,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct JoinTokens {
+pub struct JoinTokens {
     #[serde(rename = "Worker")]
-    worker: String,
+    pub worker: String,
     #[serde(rename = "Manager")]
-    manager: String,
+    pub manager: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum LocalNodeState {
+pub enum LocalNodeState {
     #[serde(rename = "")]
     Empty,
     #[serde(rename = "inactive")]
@@ -1311,237 +1312,237 @@ impl ToString for LocalNodeState {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ManagerStatus {
+pub struct ManagerStatus {
     #[serde(rename = "Leader")]
-    leader: bool,
+    pub leader: bool,
     #[serde(rename = "Reachability")]
-    reachability: Reachability,
+    pub reachability: Reachability,
     #[serde(rename = "Addr")]
-    addr: String,
+    pub addr: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Mount {
+pub struct Mount {
     #[serde(rename = "Target")]
-    target: String,
+    pub target: String,
     #[serde(rename = "Source")]
-    source: String,
+    pub source: String,
     #[serde(rename = "Type")]
-    type_: ContainerListMountsType,
+    pub type_: ContainerListMountsType,
     #[serde(rename = "ReadOnly")]
-    read_only: bool,
+    pub read_only: bool,
     #[serde(rename = "Consistency")]
-    consistency: String,
+    pub consistency: String,
     #[serde(rename = "BindOptions")]
-    bind_options: ContainerListMountsBindOptions,
+    pub bind_options: ContainerListMountsBindOptions,
     #[serde(rename = "VolumeOptions")]
-    volume_options: ContainerListMountsVolumeOptions,
+    pub volume_options: ContainerListMountsVolumeOptions,
     #[serde(rename = "TmpfsOptions")]
-    tmpfs_options: ContainerListMountsTmpfsOptions,
+    pub tmpfs_options: ContainerListMountsTmpfsOptions,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct MountPoint {
+pub struct MountPoint {
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Source")]
-    source: String,
+    pub source: String,
     #[serde(rename = "Destination")]
-    destination: String,
+    pub destination: String,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "Mode")]
-    mode: String,
+    pub mode: String,
     #[serde(rename = "RW")]
-    rw: bool,
+    pub rw: bool,
     #[serde(rename = "Propagation")]
-    propagation: String,
+    pub propagation: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Network {
+pub struct Network {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Created")]
-    created: ::chrono::DateTime<::chrono::Utc>,
+    pub created: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Scope")]
-    scope: String,
+    pub scope: String,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "EnableIPv6")]
-    enable_i_pv6: bool,
+    pub enable_i_pv6: bool,
     #[serde(rename = "IPAM")]
-    ipam: IPAM,
+    pub ipam: IPAM,
     #[serde(rename = "Internal")]
-    internal: bool,
+    pub internal: bool,
     #[serde(rename = "Attachable")]
-    attachable: bool,
+    pub attachable: bool,
     #[serde(rename = "Ingress")]
-    ingress: bool,
+    pub ingress: bool,
     #[serde(rename = "Containers")]
-    containers: ::serde_json::Value,
+    pub containers: ::serde_json::Value,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkConnect {
+pub struct NetworkConnect {
     #[serde(rename = "Container")]
-    container: String,
+    pub container: String,
     #[serde(rename = "EndpointConfig")]
-    endpoint_config: EndpointSettings,
+    pub endpoint_config: EndpointSettings,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkContainer {
+pub struct NetworkContainer {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "EndpointID")]
-    endpoint_id: String,
+    pub endpoint_id: String,
     #[serde(rename = "MacAddress")]
-    mac_address: String,
+    pub mac_address: String,
     #[serde(rename = "IPv4Address")]
-    i_pv4_address: String,
+    pub i_pv4_address: String,
     #[serde(rename = "IPv6Address")]
-    i_pv6_address: String,
+    pub i_pv6_address: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkCreateCreated {
+pub struct NetworkCreateCreated {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Warning")]
-    warning: String,
+    pub warning: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkCreateNetworkConfig {
+pub struct NetworkCreateNetworkConfig {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "CheckDuplicate")]
-    check_duplicate: bool,
+    pub check_duplicate: bool,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "Internal")]
-    internal: bool,
+    pub internal: bool,
     #[serde(rename = "Attachable")]
-    attachable: bool,
+    pub attachable: bool,
     #[serde(rename = "Ingress")]
-    ingress: bool,
+    pub ingress: bool,
     #[serde(rename = "IPAM")]
-    ipam: IPAM,
+    pub ipam: IPAM,
     #[serde(rename = "EnableIPv6")]
-    enable_i_pv6: bool,
+    pub enable_i_pv6: bool,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkDisconnect {
+pub struct NetworkDisconnect {
     #[serde(rename = "Container")]
-    container: String,
+    pub container: String,
     #[serde(rename = "Force")]
-    force: bool,
+    pub force: bool,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkPrune {
+pub struct NetworkPrune {
     #[serde(rename = "NetworksDeleted")]
-    networks_deleted: Vec<String>,
+    pub networks_deleted: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NetworkSettings {
+pub struct NetworkSettings {
     #[serde(rename = "Bridge")]
-    bridge: String,
+    pub bridge: String,
     #[serde(rename = "SandboxID")]
-    sandbox_id: String,
+    pub sandbox_id: String,
     #[serde(rename = "HairpinMode")]
-    hairpin_mode: bool,
+    pub hairpin_mode: bool,
     #[serde(rename = "LinkLocalIPv6Address")]
-    link_local_i_pv6_address: String,
+    pub link_local_i_pv6_address: String,
     #[serde(rename = "LinkLocalIPv6PrefixLen")]
-    link_local_i_pv6_prefix_len: i64,
+    pub link_local_i_pv6_prefix_len: i64,
     #[serde(rename = "Ports")]
-    ports: ::serde_json::Value,
+    pub ports: ::serde_json::Value,
     #[serde(rename = "SandboxKey")]
-    sandbox_key: String,
+    pub sandbox_key: String,
     #[serde(rename = "SecondaryIPAddresses")]
-    secondary_ip_addresses: Vec<Address>,
+    pub secondary_ip_addresses: Vec<Address>,
     #[serde(rename = "SecondaryIPv6Addresses")]
-    secondary_i_pv6_addresses: Vec<Address>,
+    pub secondary_i_pv6_addresses: Vec<Address>,
     #[serde(rename = "EndpointID")]
-    endpoint_id: String,
+    pub endpoint_id: String,
     #[serde(rename = "Gateway")]
-    gateway: String,
+    pub gateway: String,
     #[serde(rename = "GlobalIPv6Address")]
-    global_i_pv6_address: String,
+    pub global_i_pv6_address: String,
     #[serde(rename = "GlobalIPv6PrefixLen")]
-    global_i_pv6_prefix_len: i64,
+    pub global_i_pv6_prefix_len: i64,
     #[serde(rename = "IPAddress")]
-    ip_address: String,
+    pub ip_address: String,
     #[serde(rename = "IPPrefixLen")]
-    ip_prefix_len: i64,
+    pub ip_prefix_len: i64,
     #[serde(rename = "IPv6Gateway")]
-    i_pv6_gateway: String,
+    pub i_pv6_gateway: String,
     #[serde(rename = "MacAddress")]
-    mac_address: String,
+    pub mac_address: String,
     #[serde(rename = "Networks")]
-    networks: ::serde_json::Value,
+    pub networks: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Node {
+pub struct Node {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: NodeSpec,
+    pub spec: NodeSpec,
     #[serde(rename = "Description")]
-    description: NodeDescription,
+    pub description: NodeDescription,
     #[serde(rename = "Status")]
-    status: NodeStatus,
+    pub status: NodeStatus,
     #[serde(rename = "ManagerStatus")]
-    manager_status: ManagerStatus,
+    pub manager_status: ManagerStatus,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NodeDescription {
+pub struct NodeDescription {
     #[serde(rename = "Hostname")]
-    hostname: String,
+    pub hostname: String,
     #[serde(rename = "Platform")]
-    platform: Platform,
+    pub platform: Platform,
     #[serde(rename = "Resources")]
-    resources: ResourceObject,
+    pub resources: ResourceObject,
     #[serde(rename = "Engine")]
-    engine: EngineDescription,
+    pub engine: EngineDescription,
     #[serde(rename = "TLSInfo")]
-    tls_info: TLSInfo,
+    pub tls_info: TLSInfo,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NodeListDescriptionEnginePlugins {
+pub struct NodeListDescriptionEnginePlugins {
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum NodeListSpecAvailability {
+pub enum NodeListSpecAvailability {
     #[serde(rename = "active")]
     Active,
     #[serde(rename = "pause")]
@@ -1561,7 +1562,7 @@ impl ToString for NodeListSpecAvailability {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum NodeListSpecRole {
+pub enum NodeListSpecRole {
     #[serde(rename = "worker")]
     Worker,
     #[serde(rename = "manager")]
@@ -1578,19 +1579,19 @@ impl ToString for NodeListSpecRole {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NodeSpec {
+pub struct NodeSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Role")]
-    role: NodeListSpecRole,
+    pub role: NodeListSpecRole,
     #[serde(rename = "Availability")]
-    availability: NodeListSpecAvailability,
+    pub availability: NodeListSpecAvailability,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum NodeState {
+pub enum NodeState {
     #[serde(rename = "unknown")]
     Unknown,
     #[serde(rename = "down")]
@@ -1613,147 +1614,147 @@ impl ToString for NodeState {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct NodeStatus {
+pub struct NodeStatus {
     #[serde(rename = "State")]
-    state: NodeState,
+    pub state: NodeState,
     #[serde(rename = "Message")]
-    message: String,
+    pub message: String,
     #[serde(rename = "Addr")]
-    addr: String,
+    pub addr: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ObjectVersion {
+pub struct ObjectVersion {
     #[serde(rename = "Inde")]
-    inde: u64,
+    pub inde: u64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PeerNode {
+pub struct PeerNode {
     #[serde(rename = "NodeID")]
-    node_id: String,
+    pub node_id: String,
     #[serde(rename = "Addr")]
-    addr: String,
+    pub addr: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Platform {
+pub struct Platform {
     #[serde(rename = "Architecture")]
-    architecture: String,
+    pub architecture: String,
     #[serde(rename = "OS")]
-    os: String,
+    pub os: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Plugin {
+pub struct Plugin {
     #[serde(rename = "Id")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Enabled")]
-    enabled: bool,
+    pub enabled: bool,
     #[serde(rename = "Settings")]
-    settings: PluginListSettings,
+    pub settings: PluginListSettings,
     #[serde(rename = "PluginReference")]
-    plugin_reference: String,
+    pub plugin_reference: String,
     #[serde(rename = "Config")]
-    config: PluginListConfig,
+    pub config: PluginListConfig,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginDevice {
+pub struct PluginDevice {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Settable")]
-    settable: Vec<String>,
+    pub settable: Vec<String>,
     #[serde(rename = "Path")]
-    path: String,
+    pub path: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginEnv {
+pub struct PluginEnv {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Settable")]
-    settable: Vec<String>,
+    pub settable: Vec<String>,
     #[serde(rename = "Value")]
-    value: String,
+    pub value: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginInterfaceType {
+pub struct PluginInterfaceType {
     #[serde(rename = "Prefix")]
-    prefix: String,
+    pub prefix: String,
     #[serde(rename = "Capability")]
-    capability: String,
+    pub capability: String,
     #[serde(rename = "Version")]
-    version: String,
+    pub version: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfig {
+pub struct PluginListConfig {
     #[serde(rename = "DockerVersion")]
-    docker_version: String,
+    pub docker_version: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Documentation")]
-    documentation: String,
+    pub documentation: String,
     #[serde(rename = "Interface")]
-    interface: PluginListConfigInterface,
+    pub interface: PluginListConfigInterface,
     #[serde(rename = "Entrypoint")]
-    entrypoint: Vec<String>,
+    pub entrypoint: Vec<String>,
     #[serde(rename = "WorkDir")]
-    work_dir: String,
+    pub work_dir: String,
     #[serde(rename = "User")]
-    user: PluginListConfigUser,
+    pub user: PluginListConfigUser,
     #[serde(rename = "Network")]
-    network: PluginListConfigNetwork,
+    pub network: PluginListConfigNetwork,
     #[serde(rename = "Linux")]
-    linux: PluginListConfigLinux,
+    pub linux: PluginListConfigLinux,
     #[serde(rename = "PropagatedMount")]
-    propagated_mount: String,
+    pub propagated_mount: String,
     #[serde(rename = "IpcHost")]
-    ipc_host: bool,
+    pub ipc_host: bool,
     #[serde(rename = "PidHost")]
-    pid_host: bool,
+    pub pid_host: bool,
     #[serde(rename = "Mounts")]
-    mounts: Vec<PluginMount>,
+    pub mounts: Vec<PluginMount>,
     #[serde(rename = "Env")]
-    env: Vec<PluginEnv>,
+    pub env: Vec<PluginEnv>,
     #[serde(rename = "Args")]
-    args: PluginListConfigArgs,
+    pub args: PluginListConfigArgs,
     #[serde(rename = "rootfs")]
-    rootfs: PluginListConfigrootfs,
+    pub rootfs: PluginListConfigrootfs,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigArgs {
+pub struct PluginListConfigArgs {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Settable")]
-    settable: Vec<String>,
+    pub settable: Vec<String>,
     #[serde(rename = "Value")]
-    value: Vec<String>,
+    pub value: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigInterface {
+pub struct PluginListConfigInterface {
     #[serde(rename = "Types")]
-    types: Vec<PluginInterfaceType>,
+    pub types: Vec<PluginInterfaceType>,
     #[serde(rename = "Socket")]
-    socket: String,
+    pub socket: String,
     #[serde(rename = "ProtocolScheme")]
-    protocol_scheme: PluginListConfigInterfaceProtocolScheme,
+    pub protocol_scheme: PluginListConfigInterfaceProtocolScheme,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum PluginListConfigInterfaceProtocolScheme {
+pub enum PluginListConfigInterfaceProtocolScheme {
     #[serde(rename = "")]
     Empty,
     #[serde(rename = "moby.plugins.http/v1")]
@@ -1770,135 +1771,135 @@ impl ToString for PluginListConfigInterfaceProtocolScheme {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigLinux {
+pub struct PluginListConfigLinux {
     #[serde(rename = "Capabilities")]
-    capabilities: Vec<String>,
+    pub capabilities: Vec<String>,
     #[serde(rename = "AllowAllDevices")]
-    allow_all_devices: bool,
+    pub allow_all_devices: bool,
     #[serde(rename = "Devices")]
-    devices: Vec<PluginDevice>,
+    pub devices: Vec<PluginDevice>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigNetwork {
+pub struct PluginListConfigNetwork {
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigUser {
+pub struct PluginListConfigUser {
     #[serde(rename = "UID")]
-    uid: u32,
+    pub uid: u32,
     #[serde(rename = "GID")]
-    gid: u32,
+    pub gid: u32,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListConfigrootfs {
+pub struct PluginListConfigrootfs {
     #[serde(rename = "type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "diff_ids")]
-    diff_ids: Vec<String>,
+    pub diff_ids: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginListSettings {
+pub struct PluginListSettings {
     #[serde(rename = "Mounts")]
-    mounts: Vec<PluginMount>,
+    pub mounts: Vec<PluginMount>,
     #[serde(rename = "Env")]
-    env: Vec<String>,
+    pub env: Vec<String>,
     #[serde(rename = "Args")]
-    args: Vec<String>,
+    pub args: Vec<String>,
     #[serde(rename = "Devices")]
-    devices: Vec<PluginDevice>,
+    pub devices: Vec<PluginDevice>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginMount {
+pub struct PluginMount {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Description")]
-    description: String,
+    pub description: String,
     #[serde(rename = "Settable")]
-    settable: Vec<String>,
+    pub settable: Vec<String>,
     #[serde(rename = "Source")]
-    source: String,
+    pub source: String,
     #[serde(rename = "Destination")]
-    destination: String,
+    pub destination: String,
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Options")]
-    options: Vec<String>,
+    pub options: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PluginsInfo {
+pub struct PluginsInfo {
     #[serde(rename = "Volume")]
-    volume: Vec<String>,
+    pub volume: Vec<String>,
     #[serde(rename = "Network")]
-    network: Vec<String>,
+    pub network: Vec<String>,
     #[serde(rename = "Authorization")]
-    authorization: Vec<String>,
+    pub authorization: Vec<String>,
     #[serde(rename = "Log")]
-    log: Vec<String>,
+    pub log: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Port {
+pub struct Port {
     #[serde(rename = "IP")]
-    ip: ::std::net::IpAddr,
+    pub ip: ::std::net::IpAddr,
     #[serde(rename = "PrivatePort")]
-    private_port: u16,
+    pub private_port: u16,
     #[serde(rename = "PublicPort")]
-    public_port: u16,
+    pub public_port: u16,
     #[serde(rename = "Type")]
-    type_: ContainerListPortsType,
+    pub type_: ContainerListPortsType,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PortBinding {
+pub struct PortBinding {
     #[serde(rename = "HostIp")]
-    host_ip: String,
+    pub host_ip: String,
     #[serde(rename = "HostPort")]
-    host_port: String,
+    pub host_port: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ProcessConfig {
+pub struct ProcessConfig {
     #[serde(rename = "privileged")]
-    privileged: bool,
+    pub privileged: bool,
     #[serde(rename = "user")]
-    user: String,
+    pub user: String,
     #[serde(rename = "tty")]
-    tty: bool,
+    pub tty: bool,
     #[serde(rename = "entrypoint")]
-    entrypoint: String,
+    pub entrypoint: String,
     #[serde(rename = "arguments")]
-    arguments: Vec<String>,
+    pub arguments: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ProgressDetail {
+pub struct ProgressDetail {
     #[serde(rename = "current")]
-    current: i64,
+    pub current: i64,
     #[serde(rename = "total")]
-    total: i64,
+    pub total: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct PushImageInfo {
+pub struct PushImageInfo {
     #[serde(rename = "error")]
-    error: String,
+    pub error: String,
     #[serde(rename = "status")]
-    status: String,
+    pub status: String,
     #[serde(rename = "progress")]
-    progress: String,
+    pub progress: String,
     #[serde(rename = "progressDetail")]
-    progress_detail: ProgressDetail,
+    pub progress_detail: ProgressDetail,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum Reachability {
+pub enum Reachability {
     #[serde(rename = "unknown")]
     Unknown,
     #[serde(rename = "unreachable")]
@@ -1918,185 +1919,185 @@ impl ToString for Reachability {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct RegistryServiceConfig {
+pub struct RegistryServiceConfig {
     #[serde(rename = "AllowNondistributableArtifactsCIDRs")]
-    allow_nondistributable_artifacts_cid_rs: Vec<String>,
+    pub allow_nondistributable_artifacts_cid_rs: Vec<String>,
     #[serde(rename = "AllowNondistributableArtifactsHostnames")]
-    allow_nondistributable_artifacts_hostnames: Vec<String>,
+    pub allow_nondistributable_artifacts_hostnames: Vec<String>,
     #[serde(rename = "InsecureRegistryCIDRs")]
-    insecure_registry_cid_rs: Vec<String>,
+    pub insecure_registry_cid_rs: Vec<String>,
     #[serde(rename = "IndexConfigs")]
-    index_configs: ::serde_json::Value,
+    pub index_configs: ::serde_json::Value,
     #[serde(rename = "Mirrors")]
-    mirrors: Vec<String>,
+    pub mirrors: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ResourceObject {
+pub struct ResourceObject {
     #[serde(rename = "NanoCPUs")]
-    nano_cp_us: i64,
+    pub nano_cp_us: i64,
     #[serde(rename = "MemoryBytes")]
-    memory_bytes: i64,
+    pub memory_bytes: i64,
     #[serde(rename = "GenericResources")]
-    generic_resources: Vec<SystemInfoGenericResources>,
+    pub generic_resources: Vec<SystemInfoGenericResources>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Resources {
+pub struct Resources {
     #[serde(rename = "CpuShares")]
-    cpu_shares: i64,
+    pub cpu_shares: i64,
     #[serde(rename = "Memory")]
-    memory: i64,
+    pub memory: i64,
     #[serde(rename = "CgroupParent")]
-    cgroup_parent: String,
+    pub cgroup_parent: String,
     #[serde(rename = "BlkioWeight")]
-    blkio_weight: u64,
+    pub blkio_weight: u64,
     #[serde(rename = "BlkioWeightDevice")]
-    blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
+    pub blkio_weight_device: Vec<ContainerCreateHostConfigBlkioWeightDevice>,
     #[serde(rename = "BlkioDeviceReadBps")]
-    blkio_device_read_bps: Vec<ThrottleDevice>,
+    pub blkio_device_read_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteBps")]
-    blkio_device_write_bps: Vec<ThrottleDevice>,
+    pub blkio_device_write_bps: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceReadIOps")]
-    blkio_device_read_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_read_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "BlkioDeviceWriteIOps")]
-    blkio_device_write_i_ops: Vec<ThrottleDevice>,
+    pub blkio_device_write_i_ops: Vec<ThrottleDevice>,
     #[serde(rename = "CpuPeriod")]
-    cpu_period: i64,
+    pub cpu_period: i64,
     #[serde(rename = "CpuQuota")]
-    cpu_quota: i64,
+    pub cpu_quota: i64,
     #[serde(rename = "CpuRealtimePeriod")]
-    cpu_realtime_period: i64,
+    pub cpu_realtime_period: i64,
     #[serde(rename = "CpuRealtimeRuntime")]
-    cpu_realtime_runtime: i64,
+    pub cpu_realtime_runtime: i64,
     #[serde(rename = "CpusetCpus")]
-    cpuset_cpus: String,
+    pub cpuset_cpus: String,
     #[serde(rename = "CpusetMems")]
-    cpuset_mems: String,
+    pub cpuset_mems: String,
     #[serde(rename = "Devices")]
-    devices: Vec<DeviceMapping>,
+    pub devices: Vec<DeviceMapping>,
     #[serde(rename = "DeviceCgroupRules")]
-    device_cgroup_rules: Vec<String>,
+    pub device_cgroup_rules: Vec<String>,
     #[serde(rename = "DiskQuota")]
-    disk_quota: i64,
+    pub disk_quota: i64,
     #[serde(rename = "KernelMemory")]
-    kernel_memory: i64,
+    pub kernel_memory: i64,
     #[serde(rename = "MemoryReservation")]
-    memory_reservation: i64,
+    pub memory_reservation: i64,
     #[serde(rename = "MemorySwap")]
-    memory_swap: i64,
+    pub memory_swap: i64,
     #[serde(rename = "MemorySwappiness")]
-    memory_swappiness: u64,
+    pub memory_swappiness: u64,
     #[serde(rename = "NanoCPUs")]
-    nano_cp_us: i64,
+    pub nano_cp_us: i64,
     #[serde(rename = "OomKillDisable")]
-    oom_kill_disable: bool,
+    pub oom_kill_disable: bool,
     #[serde(rename = "Init")]
-    init: bool,
+    pub init: bool,
     #[serde(rename = "PidsLimit")]
-    pids_limit: i64,
+    pub pids_limit: i64,
     #[serde(rename = "Ulimits")]
-    ulimits: Vec<ContainerCreateHostConfigUlimits>,
+    pub ulimits: Vec<ContainerCreateHostConfigUlimits>,
     #[serde(rename = "CpuCount")]
-    cpu_count: i64,
+    pub cpu_count: i64,
     #[serde(rename = "CpuPercent")]
-    cpu_percent: i64,
+    pub cpu_percent: i64,
     #[serde(rename = "IOMaximumIOps")]
-    io_maximum_i_ops: i64,
+    pub io_maximum_i_ops: i64,
     #[serde(rename = "IOMaximumBandwidth")]
-    io_maximum_bandwidth: i64,
+    pub io_maximum_bandwidth: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct RestartPolicy {
+pub struct RestartPolicy {
     #[serde(rename = "Name")]
-    name: ContainerCreateHostConfigRestartPolicyName,
+    pub name: ContainerCreateHostConfigRestartPolicyName,
     #[serde(rename = "MaximumRetryCount")]
-    maximum_retry_count: i64,
+    pub maximum_retry_count: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Runtime {
+pub struct Runtime {
     #[serde(rename = "path")]
-    path: String,
+    pub path: String,
     #[serde(rename = "runtimeArgs")]
-    runtime_args: Vec<String>,
+    pub runtime_args: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Secret {
+pub struct Secret {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: SecretSpec,
+    pub spec: SecretSpec,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SecretSpec {
+pub struct SecretSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Data")]
-    data: String,
+    pub data: String,
     #[serde(rename = "Driver")]
-    driver: Driver,
+    pub driver: Driver,
     #[serde(rename = "Templating")]
-    templating: Driver,
+    pub templating: Driver,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Service {
+pub struct Service {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: ServiceSpec,
+    pub spec: ServiceSpec,
     #[serde(rename = "Endpoint")]
-    endpoint: ServiceListEndpoint,
+    pub endpoint: ServiceListEndpoint,
     #[serde(rename = "UpdateStatus")]
-    update_status: ServiceListUpdateStatus,
+    pub update_status: ServiceListUpdateStatus,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceCreate {
+pub struct ServiceCreate {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Warning")]
-    warning: String,
+    pub warning: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListEndpoint {
+pub struct ServiceListEndpoint {
     #[serde(rename = "Spec")]
-    spec: EndpointSpec,
+    pub spec: EndpointSpec,
     #[serde(rename = "Ports")]
-    ports: Vec<EndpointPortConfig>,
+    pub ports: Vec<EndpointPortConfig>,
     #[serde(rename = "VirtualIPs")]
-    virtual_i_ps: Vec<ServiceListEndpointVirtualIPs>,
+    pub virtual_i_ps: Vec<ServiceListEndpointVirtualIPs>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListEndpointVirtualIPs {
+pub struct ServiceListEndpointVirtualIPs {
     #[serde(rename = "NetworkID")]
-    network_id: String,
+    pub network_id: String,
     #[serde(rename = "Addr")]
-    addr: String,
+    pub addr: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecEndpointSpecMode {
+pub enum ServiceListSpecEndpointSpecMode {
     #[serde(rename = "vip")]
     Vip,
     #[serde(rename = "dnsrr")]
@@ -2119,7 +2120,7 @@ impl ToString for ServiceListSpecEndpointSpecMode {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecEndpointSpecPortsPublishMode {
+pub enum ServiceListSpecEndpointSpecPortsPublishMode {
     #[serde(rename = "ingress")]
     Ingress,
     #[serde(rename = "host")]
@@ -2142,37 +2143,37 @@ impl ToString for ServiceListSpecEndpointSpecPortsPublishMode {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecMode {
+pub struct ServiceListSpecMode {
     #[serde(rename = "Replicated")]
-    replicated: ServiceListSpecModeReplicated,
+    pub replicated: ServiceListSpecModeReplicated,
     #[serde(rename = "Global")]
-    global: ::serde_json::Value,
+    pub global: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecModeReplicated {
+pub struct ServiceListSpecModeReplicated {
     #[serde(rename = "Replicas")]
-    replicas: i64,
+    pub replicas: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecRollbackConfig {
+pub struct ServiceListSpecRollbackConfig {
     #[serde(rename = "Parallelism")]
-    parallelism: i64,
+    pub parallelism: i64,
     #[serde(rename = "Delay")]
-    delay: i64,
+    pub delay: i64,
     #[serde(rename = "FailureAction")]
-    failure_action: ServiceListSpecRollbackConfigFailureAction,
+    pub failure_action: ServiceListSpecRollbackConfigFailureAction,
     #[serde(rename = "Monitor")]
-    monitor: i64,
+    pub monitor: i64,
     #[serde(rename = "MaxFailureRatio")]
-    max_failure_ratio: f64,
+    pub max_failure_ratio: f64,
     #[serde(rename = "Order")]
-    order: ServiceListSpecUpdateConfigOrder,
+    pub order: ServiceListSpecUpdateConfigOrder,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecRollbackConfigFailureAction {
+pub enum ServiceListSpecRollbackConfigFailureAction {
     #[serde(rename = "continue")]
     Continue,
     #[serde(rename = "pause")]
@@ -2189,203 +2190,203 @@ impl ToString for ServiceListSpecRollbackConfigFailureAction {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpec {
+pub struct ServiceListSpecTaskTemplateContainerSpec {
     #[serde(rename = "Image")]
-    image: String,
+    pub image: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Command")]
-    command: Vec<String>,
+    pub command: Vec<String>,
     #[serde(rename = "Args")]
-    args: Vec<String>,
+    pub args: Vec<String>,
     #[serde(rename = "Hostname")]
-    hostname: String,
+    pub hostname: String,
     #[serde(rename = "Env")]
-    env: Vec<String>,
+    pub env: Vec<String>,
     #[serde(rename = "Dir")]
-    dir: String,
+    pub dir: String,
     #[serde(rename = "User")]
-    user: String,
+    pub user: String,
     #[serde(rename = "Groups")]
-    groups: Vec<String>,
+    pub groups: Vec<String>,
     #[serde(rename = "Privileges")]
-    privileges: ServiceListSpecTaskTemplateContainerSpecPrivileges,
+    pub privileges: ServiceListSpecTaskTemplateContainerSpecPrivileges,
     #[serde(rename = "TTY")]
-    tty: bool,
+    pub tty: bool,
     #[serde(rename = "OpenStdin")]
-    open_stdin: bool,
+    pub open_stdin: bool,
     #[serde(rename = "ReadOnly")]
-    read_only: bool,
+    pub read_only: bool,
     #[serde(rename = "Mounts")]
-    mounts: Vec<Mount>,
+    pub mounts: Vec<Mount>,
     #[serde(rename = "StopSignal")]
-    stop_signal: String,
+    pub stop_signal: String,
     #[serde(rename = "StopGracePeriod")]
-    stop_grace_period: i64,
+    pub stop_grace_period: i64,
     #[serde(rename = "HealthCheck")]
-    health_check: HealthConfig,
+    pub health_check: HealthConfig,
     #[serde(rename = "Hosts")]
-    hosts: Vec<String>,
+    pub hosts: Vec<String>,
     #[serde(rename = "DNSConfig")]
-    dns_config: ServiceListSpecTaskTemplateContainerSpecDNSConfig,
+    pub dns_config: ServiceListSpecTaskTemplateContainerSpecDNSConfig,
     #[serde(rename = "Secrets")]
-    secrets: Vec<ServiceListSpecTaskTemplateContainerSpecSecrets>,
+    pub secrets: Vec<ServiceListSpecTaskTemplateContainerSpecSecrets>,
     #[serde(rename = "Configs")]
-    configs: Vec<ServiceListSpecTaskTemplateContainerSpecConfigs>,
+    pub configs: Vec<ServiceListSpecTaskTemplateContainerSpecConfigs>,
     #[serde(rename = "Isolation")]
-    isolation: ContainerCreateHostConfigIsolation,
+    pub isolation: ContainerCreateHostConfigIsolation,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecConfigs {
+pub struct ServiceListSpecTaskTemplateContainerSpecConfigs {
     #[serde(rename = "File")]
-    file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
+    pub file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
     #[serde(rename = "ConfigID")]
-    config_id: String,
+    pub config_id: String,
     #[serde(rename = "ConfigName")]
-    config_name: String,
+    pub config_name: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecDNSConfig {
+pub struct ServiceListSpecTaskTemplateContainerSpecDNSConfig {
     #[serde(rename = "Nameservers")]
-    nameservers: Vec<String>,
+    pub nameservers: Vec<String>,
     #[serde(rename = "Search")]
-    search: Vec<String>,
+    pub search: Vec<String>,
     #[serde(rename = "Options")]
-    options: Vec<String>,
+    pub options: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecPrivileges {
+pub struct ServiceListSpecTaskTemplateContainerSpecPrivileges {
     #[serde(rename = "CredentialSpec")]
-    credential_spec: ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec,
+    pub credential_spec: ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec,
     #[serde(rename = "SELinuxContext")]
-    se_linux_context: ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext,
+    pub se_linux_context: ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec {
+pub struct ServiceListSpecTaskTemplateContainerSpecPrivilegesCredentialSpec {
     #[serde(rename = "File")]
-    file: String,
+    pub file: String,
     #[serde(rename = "Registry")]
-    registry: String,
+    pub registry: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext {
+pub struct ServiceListSpecTaskTemplateContainerSpecPrivilegesSELinuxContext {
     #[serde(rename = "Disable")]
-    disable: bool,
+    pub disable: bool,
     #[serde(rename = "User")]
-    user: String,
+    pub user: String,
     #[serde(rename = "Role")]
-    role: String,
+    pub role: String,
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Level")]
-    level: String,
+    pub level: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecSecrets {
+pub struct ServiceListSpecTaskTemplateContainerSpecSecrets {
     #[serde(rename = "File")]
-    file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
+    pub file: ServiceListSpecTaskTemplateContainerSpecSecretsFile,
     #[serde(rename = "SecretID")]
-    secret_id: String,
+    pub secret_id: String,
     #[serde(rename = "SecretName")]
-    secret_name: String,
+    pub secret_name: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateContainerSpecSecretsFile {
+pub struct ServiceListSpecTaskTemplateContainerSpecSecretsFile {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "UID")]
-    uid: String,
+    pub uid: String,
     #[serde(rename = "GID")]
-    gid: String,
+    pub gid: String,
     #[serde(rename = "Mode")]
-    mode: u32,
+    pub mode: u32,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateLogDriver {
+pub struct ServiceListSpecTaskTemplateLogDriver {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateNetworkAttachmentSpec {
+pub struct ServiceListSpecTaskTemplateNetworkAttachmentSpec {
     #[serde(rename = "ContainerID")]
-    container_id: String,
+    pub container_id: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateNetworks {
+pub struct ServiceListSpecTaskTemplateNetworks {
     #[serde(rename = "Target")]
-    target: String,
+    pub target: String,
     #[serde(rename = "Aliases")]
-    aliases: Vec<String>,
+    pub aliases: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplatePlacement {
+pub struct ServiceListSpecTaskTemplatePlacement {
     #[serde(rename = "Constraints")]
-    constraints: Vec<String>,
+    pub constraints: Vec<String>,
     #[serde(rename = "Preferences")]
-    preferences: Vec<ServiceListSpecTaskTemplatePlacementPreferences>,
+    pub preferences: Vec<ServiceListSpecTaskTemplatePlacementPreferences>,
     #[serde(rename = "Platforms")]
-    platforms: Vec<Platform>,
+    pub platforms: Vec<Platform>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplatePlacementPreferences {
+pub struct ServiceListSpecTaskTemplatePlacementPreferences {
     #[serde(rename = "Spread")]
-    spread: ServiceListSpecTaskTemplatePlacementPreferencesSpread,
+    pub spread: ServiceListSpecTaskTemplatePlacementPreferencesSpread,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplatePlacementPreferencesSpread {
+pub struct ServiceListSpecTaskTemplatePlacementPreferencesSpread {
     #[serde(rename = "SpreadDescriptor")]
-    spread_descriptor: String,
+    pub spread_descriptor: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplatePluginSpec {
+pub struct ServiceListSpecTaskTemplatePluginSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Remote")]
-    remote: String,
+    pub remote: String,
     #[serde(rename = "Disabled")]
-    disabled: bool,
+    pub disabled: bool,
     #[serde(rename = "PluginPrivilege")]
-    plugin_privilege: Vec<GetPluginPrivileges>,
+    pub plugin_privilege: Vec<GetPluginPrivileges>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateResources {
+pub struct ServiceListSpecTaskTemplateResources {
     #[serde(rename = "Limits")]
-    limits: ResourceObject,
+    pub limits: ResourceObject,
     #[serde(rename = "Reservation")]
-    reservation: ResourceObject,
+    pub reservation: ResourceObject,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecTaskTemplateRestartPolicy {
+pub struct ServiceListSpecTaskTemplateRestartPolicy {
     #[serde(rename = "Condition")]
-    condition: ServiceListSpecTaskTemplateRestartPolicyCondition,
+    pub condition: ServiceListSpecTaskTemplateRestartPolicyCondition,
     #[serde(rename = "Delay")]
-    delay: i64,
+    pub delay: i64,
     #[serde(rename = "MaxAttempts")]
-    max_attempts: i64,
+    pub max_attempts: i64,
     #[serde(rename = "Window")]
-    window: i64,
+    pub window: i64,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecTaskTemplateRestartPolicyCondition {
+pub enum ServiceListSpecTaskTemplateRestartPolicyCondition {
     #[serde(rename = "none")]
     None,
     #[serde(rename = "on-failure")]
@@ -2405,23 +2406,23 @@ impl ToString for ServiceListSpecTaskTemplateRestartPolicyCondition {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListSpecUpdateConfig {
+pub struct ServiceListSpecUpdateConfig {
     #[serde(rename = "Parallelism")]
-    parallelism: i64,
+    pub parallelism: i64,
     #[serde(rename = "Delay")]
-    delay: i64,
+    pub delay: i64,
     #[serde(rename = "FailureAction")]
-    failure_action: ServiceListSpecUpdateConfigFailureAction,
+    pub failure_action: ServiceListSpecUpdateConfigFailureAction,
     #[serde(rename = "Monitor")]
-    monitor: i64,
+    pub monitor: i64,
     #[serde(rename = "MaxFailureRatio")]
-    max_failure_ratio: f64,
+    pub max_failure_ratio: f64,
     #[serde(rename = "Order")]
-    order: ServiceListSpecUpdateConfigOrder,
+    pub order: ServiceListSpecUpdateConfigOrder,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecUpdateConfigFailureAction {
+pub enum ServiceListSpecUpdateConfigFailureAction {
     #[serde(rename = "continue")]
     Continue,
     #[serde(rename = "pause")]
@@ -2441,7 +2442,7 @@ impl ToString for ServiceListSpecUpdateConfigFailureAction {
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListSpecUpdateConfigOrder {
+pub enum ServiceListSpecUpdateConfigOrder {
     #[serde(rename = "stop-first")]
     Stopfirst,
     #[serde(rename = "start-first")]
@@ -2458,19 +2459,19 @@ impl ToString for ServiceListSpecUpdateConfigOrder {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceListUpdateStatus {
+pub struct ServiceListUpdateStatus {
     #[serde(rename = "State")]
-    state: ServiceListUpdateStatusState,
+    pub state: ServiceListUpdateStatusState,
     #[serde(rename = "StartedAt")]
-    started_at: ::chrono::DateTime<::chrono::Utc>,
+    pub started_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "CompletedAt")]
-    completed_at: ::chrono::DateTime<::chrono::Utc>,
+    pub completed_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Message")]
-    message: String,
+    pub message: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum ServiceListUpdateStatusState {
+pub enum ServiceListUpdateStatusState {
     #[serde(rename = "updating")]
     Updating,
     #[serde(rename = "paused")]
@@ -2490,149 +2491,149 @@ impl ToString for ServiceListUpdateStatusState {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceSpec {
+pub struct ServiceSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "TaskTemplate")]
-    task_template: TaskSpec,
+    pub task_template: TaskSpec,
     #[serde(rename = "Mode")]
-    mode: ServiceListSpecMode,
+    pub mode: ServiceListSpecMode,
     #[serde(rename = "UpdateConfig")]
-    update_config: ServiceListSpecUpdateConfig,
+    pub update_config: ServiceListSpecUpdateConfig,
     #[serde(rename = "RollbackConfig")]
-    rollback_config: ServiceListSpecRollbackConfig,
+    pub rollback_config: ServiceListSpecRollbackConfig,
     #[serde(rename = "Networks")]
-    networks: Vec<ServiceListSpecTaskTemplateNetworks>,
+    pub networks: Vec<ServiceListSpecTaskTemplateNetworks>,
     #[serde(rename = "EndpointSpec")]
-    endpoint_spec: EndpointSpec,
+    pub endpoint_spec: EndpointSpec,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ServiceUpdateResponse {
+pub struct ServiceUpdateResponse {
     #[serde(rename = "Warnings")]
-    warnings: Vec<String>,
+    pub warnings: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Swarm {
+pub struct Swarm {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Spec")]
-    spec: SwarmSpec,
+    pub spec: SwarmSpec,
     #[serde(rename = "TLSInfo")]
-    tls_info: TLSInfo,
+    pub tls_info: TLSInfo,
     #[serde(rename = "RootRotationInProgress")]
-    root_rotation_in_progress: bool,
+    pub root_rotation_in_progress: bool,
     #[serde(rename = "JoinTokens")]
-    join_tokens: JoinTokens,
+    pub join_tokens: JoinTokens,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SwarmInfo {
+pub struct SwarmInfo {
     #[serde(rename = "NodeID")]
-    node_id: String,
+    pub node_id: String,
     #[serde(rename = "NodeAddr")]
-    node_addr: String,
+    pub node_addr: String,
     #[serde(rename = "LocalNodeState")]
-    local_node_state: LocalNodeState,
+    pub local_node_state: LocalNodeState,
     #[serde(rename = "ControlAvailable")]
-    control_available: bool,
+    pub control_available: bool,
     #[serde(rename = "Error")]
-    error: String,
+    pub error: String,
     #[serde(rename = "RemoteManagers")]
-    remote_managers: Vec<PeerNode>,
+    pub remote_managers: Vec<PeerNode>,
     #[serde(rename = "Nodes")]
-    nodes: i64,
+    pub nodes: i64,
     #[serde(rename = "Managers")]
-    managers: i64,
+    pub managers: i64,
     #[serde(rename = "Cluster")]
-    cluster: ClusterInfo,
+    pub cluster: ClusterInfo,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SwarmInit {
+pub struct SwarmInit {
     #[serde(rename = "ListenAddr")]
-    listen_addr: String,
+    pub listen_addr: String,
     #[serde(rename = "AdvertiseAddr")]
-    advertise_addr: String,
+    pub advertise_addr: String,
     #[serde(rename = "DataPathAddr")]
-    data_path_addr: String,
+    pub data_path_addr: String,
     #[serde(rename = "ForceNewCluster")]
-    force_new_cluster: bool,
+    pub force_new_cluster: bool,
     #[serde(rename = "Spec")]
-    spec: SwarmSpec,
+    pub spec: SwarmSpec,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SwarmJoin {
+pub struct SwarmJoin {
     #[serde(rename = "ListenAddr")]
-    listen_addr: String,
+    pub listen_addr: String,
     #[serde(rename = "AdvertiseAddr")]
-    advertise_addr: String,
+    pub advertise_addr: String,
     #[serde(rename = "DataPathAddr")]
-    data_path_addr: String,
+    pub data_path_addr: String,
     #[serde(rename = "RemoteAddrs")]
-    remote_addrs: String,
+    pub remote_addrs: String,
     #[serde(rename = "JoinToken")]
-    join_token: String,
+    pub join_token: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SwarmSpec {
+pub struct SwarmSpec {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Orchestration")]
-    orchestration: SystemInfoSwarmClusterSpecOrchestration,
+    pub orchestration: SystemInfoSwarmClusterSpecOrchestration,
     #[serde(rename = "Raft")]
-    raft: SystemInfoSwarmClusterSpecRaft,
+    pub raft: SystemInfoSwarmClusterSpecRaft,
     #[serde(rename = "Dispatcher")]
-    dispatcher: SystemInfoSwarmClusterSpecDispatcher,
+    pub dispatcher: SystemInfoSwarmClusterSpecDispatcher,
     #[serde(rename = "CAConfig")]
-    ca_config: SystemInfoSwarmClusterSpecCAConfig,
+    pub ca_config: SystemInfoSwarmClusterSpecCAConfig,
     #[serde(rename = "EncryptionConfig")]
-    encryption_config: SystemInfoSwarmClusterSpecEncryptionConfig,
+    pub encryption_config: SystemInfoSwarmClusterSpecEncryptionConfig,
     #[serde(rename = "TaskDefaults")]
-    task_defaults: SystemInfoSwarmClusterSpecTaskDefaults,
+    pub task_defaults: SystemInfoSwarmClusterSpecTaskDefaults,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SwarmUnlockkey {
+pub struct SwarmUnlockkey {
     #[serde(rename = "UnlockKey")]
-    unlock_key: String,
+    pub unlock_key: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemAuth {
+pub struct SystemAuth {
     #[serde(rename = "Status")]
-    status: String,
+    pub status: String,
     #[serde(rename = "IdentityToken")]
-    identity_token: String,
+    pub identity_token: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemDataUsage {
+pub struct SystemDataUsage {
     #[serde(rename = "LayersSize")]
-    layers_size: i64,
+    pub layers_size: i64,
     #[serde(rename = "Images")]
-    images: Vec<ImageSummary>,
+    pub images: Vec<ImageSummary>,
     #[serde(rename = "Containers")]
-    containers: Vec<Vec<ContainerList>>,
+    pub containers: Vec<Vec<ContainerList>>,
     #[serde(rename = "Volumes")]
-    volumes: Vec<Volume>,
+    pub volumes: Vec<Volume>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum SystemDataUsageVolumesScope {
+pub enum SystemDataUsageVolumesScope {
     #[serde(rename = "local")]
     Local,
     #[serde(rename = "global")]
@@ -2655,155 +2656,155 @@ impl ToString for SystemDataUsageVolumesScope {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemDataUsageVolumesUsageData {
+pub struct SystemDataUsageVolumesUsageData {
     #[serde(rename = "Size")]
-    size: i64,
+    pub size: i64,
     #[serde(rename = "RefCount")]
-    ref_count: i64,
+    pub ref_count: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemEvents {
+pub struct SystemEvents {
     #[serde(rename = "Type")]
-    type_: String,
+    pub type_: String,
     #[serde(rename = "Action")]
-    action: String,
+    pub action: String,
     #[serde(rename = "Actor")]
-    actor: SystemEventsActor,
+    pub actor: SystemEventsActor,
     #[serde(rename = "time")]
-    time: i64,
+    pub time: i64,
     #[serde(rename = "timeNano")]
-    time_nano: i64,
+    pub time_nano: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemEventsActor {
+pub struct SystemEventsActor {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Attributes")]
-    attributes: ::serde_json::Value,
+    pub attributes: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfo {
+pub struct SystemInfo {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Containers")]
-    containers: i64,
+    pub containers: i64,
     #[serde(rename = "ContainersRunning")]
-    containers_running: i64,
+    pub containers_running: i64,
     #[serde(rename = "ContainersPaused")]
-    containers_paused: i64,
+    pub containers_paused: i64,
     #[serde(rename = "ContainersStopped")]
-    containers_stopped: i64,
+    pub containers_stopped: i64,
     #[serde(rename = "Images")]
-    images: i64,
+    pub images: i64,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "DriverStatus")]
-    driver_status: Vec<Vec<String>>,
+    pub driver_status: Vec<Vec<String>>,
     #[serde(rename = "DockerRootDir")]
-    docker_root_dir: String,
+    pub docker_root_dir: String,
     #[serde(rename = "SystemStatus")]
-    system_status: Vec<Vec<String>>,
+    pub system_status: Vec<Vec<String>>,
     #[serde(rename = "Plugins")]
-    plugins: PluginsInfo,
+    pub plugins: PluginsInfo,
     #[serde(rename = "MemoryLimit")]
-    memory_limit: bool,
+    pub memory_limit: bool,
     #[serde(rename = "SwapLimit")]
-    swap_limit: bool,
+    pub swap_limit: bool,
     #[serde(rename = "KernelMemory")]
-    kernel_memory: bool,
+    pub kernel_memory: bool,
     #[serde(rename = "CpuCfsPeriod")]
-    cpu_cfs_period: bool,
+    pub cpu_cfs_period: bool,
     #[serde(rename = "CpuCfsQuota")]
-    cpu_cfs_quota: bool,
+    pub cpu_cfs_quota: bool,
     #[serde(rename = "CPUShares")]
-    cpu_shares: bool,
+    pub cpu_shares: bool,
     #[serde(rename = "CPUSet")]
-    cpu_set: bool,
+    pub cpu_set: bool,
     #[serde(rename = "OomKillDisable")]
-    oom_kill_disable: bool,
+    pub oom_kill_disable: bool,
     #[serde(rename = "IPv4Forwarding")]
-    i_pv4_forwarding: bool,
+    pub i_pv4_forwarding: bool,
     #[serde(rename = "BridgeNfIptables")]
-    bridge_nf_iptables: bool,
+    pub bridge_nf_iptables: bool,
     #[serde(rename = "BridgeNfIp6tables")]
-    bridge_nf_ip6tables: bool,
+    pub bridge_nf_ip6tables: bool,
     #[serde(rename = "Debug")]
-    debug: bool,
+    pub debug: bool,
     #[serde(rename = "NFd")]
-    n_fd: i64,
+    pub n_fd: i64,
     #[serde(rename = "NGoroutines")]
-    n_goroutines: i64,
+    pub n_goroutines: i64,
     #[serde(rename = "SystemTime")]
-    system_time: String,
+    pub system_time: String,
     #[serde(rename = "LoggingDriver")]
-    logging_driver: String,
+    pub logging_driver: String,
     #[serde(rename = "CgroupDriver")]
-    cgroup_driver: SystemInfoCgroupDriver,
+    pub cgroup_driver: SystemInfoCgroupDriver,
     #[serde(rename = "NEventsListener")]
-    n_events_listener: i64,
+    pub n_events_listener: i64,
     #[serde(rename = "KernelVersion")]
-    kernel_version: String,
+    pub kernel_version: String,
     #[serde(rename = "OperatingSystem")]
-    operating_system: String,
+    pub operating_system: String,
     #[serde(rename = "OSType")]
-    os_type: String,
+    pub os_type: String,
     #[serde(rename = "Architecture")]
-    architecture: String,
+    pub architecture: String,
     #[serde(rename = "NCPU")]
-    ncpu: i64,
+    pub ncpu: i64,
     #[serde(rename = "MemTotal")]
-    mem_total: i64,
+    pub mem_total: i64,
     #[serde(rename = "IndexServerAddress")]
-    index_server_address: String,
+    pub index_server_address: String,
     #[serde(rename = "RegistryConfig")]
-    registry_config: RegistryServiceConfig,
+    pub registry_config: RegistryServiceConfig,
     #[serde(rename = "GenericResources")]
-    generic_resources: Vec<SystemInfoGenericResources>,
+    pub generic_resources: Vec<SystemInfoGenericResources>,
     #[serde(rename = "HttpProxy")]
-    http_proxy: String,
+    pub http_proxy: String,
     #[serde(rename = "HttpsProxy")]
-    https_proxy: String,
+    pub https_proxy: String,
     #[serde(rename = "NoProxy")]
-    no_proxy: String,
+    pub no_proxy: String,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: Vec<String>,
+    pub labels: Vec<String>,
     #[serde(rename = "ExperimentalBuild")]
-    experimental_build: bool,
+    pub experimental_build: bool,
     #[serde(rename = "ServerVersion")]
-    server_version: String,
+    pub server_version: String,
     #[serde(rename = "ClusterStore")]
-    cluster_store: String,
+    pub cluster_store: String,
     #[serde(rename = "ClusterAdvertise")]
-    cluster_advertise: String,
+    pub cluster_advertise: String,
     #[serde(rename = "Runtimes")]
-    runtimes: ::serde_json::Value,
+    pub runtimes: ::serde_json::Value,
     #[serde(rename = "DefaultRuntime")]
-    default_runtime: String,
+    pub default_runtime: String,
     #[serde(rename = "Swarm")]
-    swarm: SwarmInfo,
+    pub swarm: SwarmInfo,
     #[serde(rename = "LiveRestoreEnabled")]
-    live_restore_enabled: bool,
+    pub live_restore_enabled: bool,
     #[serde(rename = "Isolation")]
-    isolation: SystemInfoIsolation,
+    pub isolation: SystemInfoIsolation,
     #[serde(rename = "InitBinary")]
-    init_binary: String,
+    pub init_binary: String,
     #[serde(rename = "ContainerdCommit")]
-    containerd_commit: Commit,
+    pub containerd_commit: Commit,
     #[serde(rename = "RuncCommit")]
-    runc_commit: Commit,
+    pub runc_commit: Commit,
     #[serde(rename = "InitCommit")]
-    init_commit: Commit,
+    pub init_commit: Commit,
     #[serde(rename = "SecurityOptions")]
-    security_options: Vec<String>,
+    pub security_options: Vec<String>,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum SystemInfoCgroupDriver {
+pub enum SystemInfoCgroupDriver {
     #[serde(rename = "cgroupfs")]
     Cgroupfs,
     #[serde(rename = "systemd")]
@@ -2826,31 +2827,31 @@ impl ToString for SystemInfoCgroupDriver {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoGenericResources {
+pub struct SystemInfoGenericResources {
     #[serde(rename = "NamedResourceSpec")]
-    named_resource_spec: SystemInfoGenericResourcesNamedResourceSpec,
+    pub named_resource_spec: SystemInfoGenericResourcesNamedResourceSpec,
     #[serde(rename = "DiscreteResourceSpec")]
-    discrete_resource_spec: SystemInfoGenericResourcesDiscreteResourceSpec,
+    pub discrete_resource_spec: SystemInfoGenericResourcesDiscreteResourceSpec,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoGenericResourcesDiscreteResourceSpec {
+pub struct SystemInfoGenericResourcesDiscreteResourceSpec {
     #[serde(rename = "Kind")]
-    kind: String,
+    pub kind: String,
     #[serde(rename = "Value")]
-    value: i64,
+    pub value: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoGenericResourcesNamedResourceSpec {
+pub struct SystemInfoGenericResourcesNamedResourceSpec {
     #[serde(rename = "Kind")]
-    kind: String,
+    pub kind: String,
     #[serde(rename = "Value")]
-    value: String,
+    pub value: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum SystemInfoIsolation {
+pub enum SystemInfoIsolation {
     #[serde(rename = "default")]
     Default,
     #[serde(rename = "hyperv")]
@@ -2876,33 +2877,33 @@ impl ToString for SystemInfoIsolation {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecCAConfig {
+pub struct SystemInfoSwarmClusterSpecCAConfig {
     #[serde(rename = "NodeCertExpiry")]
-    node_cert_expiry: i64,
+    pub node_cert_expiry: i64,
     #[serde(rename = "ExternalCAs")]
-    external_c_as: Vec<SystemInfoSwarmClusterSpecCAConfigExternalCAs>,
+    pub external_c_as: Vec<SystemInfoSwarmClusterSpecCAConfigExternalCAs>,
     #[serde(rename = "SigningCACert")]
-    signing_ca_cert: String,
+    pub signing_ca_cert: String,
     #[serde(rename = "SigningCAKey")]
-    signing_ca_key: String,
+    pub signing_ca_key: String,
     #[serde(rename = "ForceRotate")]
-    force_rotate: u64,
+    pub force_rotate: u64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecCAConfigExternalCAs {
+pub struct SystemInfoSwarmClusterSpecCAConfigExternalCAs {
     #[serde(rename = "Protocol")]
-    protocol: SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol,
+    pub protocol: SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol,
     #[serde(rename = "URL")]
-    url: String,
+    pub url: String,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
     #[serde(rename = "CACert")]
-    ca_cert: String,
+    pub ca_cert: String,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
+pub enum SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
     #[serde(rename = "cfssl")]
     Cfssl,
 }
@@ -2922,185 +2923,185 @@ impl ToString for SystemInfoSwarmClusterSpecCAConfigExternalCAsProtocol {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecDispatcher {
+pub struct SystemInfoSwarmClusterSpecDispatcher {
     #[serde(rename = "HeartbeatPeriod")]
-    heartbeat_period: i64,
+    pub heartbeat_period: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecEncryptionConfig {
+pub struct SystemInfoSwarmClusterSpecEncryptionConfig {
     #[serde(rename = "AutoLockManagers")]
-    auto_lock_managers: bool,
+    pub auto_lock_managers: bool,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecOrchestration {
+pub struct SystemInfoSwarmClusterSpecOrchestration {
     #[serde(rename = "TaskHistoryRetentionLimit")]
-    task_history_retention_limit: i64,
+    pub task_history_retention_limit: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecRaft {
+pub struct SystemInfoSwarmClusterSpecRaft {
     #[serde(rename = "SnapshotInterval")]
-    snapshot_interval: u64,
+    pub snapshot_interval: u64,
     #[serde(rename = "KeepOldSnapshots")]
-    keep_old_snapshots: u64,
+    pub keep_old_snapshots: u64,
     #[serde(rename = "LogEntriesForSlowFollowers")]
-    log_entries_for_slow_followers: u64,
+    pub log_entries_for_slow_followers: u64,
     #[serde(rename = "ElectionTick")]
-    election_tick: i64,
+    pub election_tick: i64,
     #[serde(rename = "HeartbeatTick")]
-    heartbeat_tick: i64,
+    pub heartbeat_tick: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecTaskDefaults {
+pub struct SystemInfoSwarmClusterSpecTaskDefaults {
     #[serde(rename = "LogDriver")]
-    log_driver: SystemInfoSwarmClusterSpecTaskDefaultsLogDriver,
+    pub log_driver: SystemInfoSwarmClusterSpecTaskDefaultsLogDriver,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemInfoSwarmClusterSpecTaskDefaultsLogDriver {
+pub struct SystemInfoSwarmClusterSpecTaskDefaultsLogDriver {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemVersion {
+pub struct SystemVersion {
     #[serde(rename = "Platform")]
-    platform: SystemVersionPlatform,
+    pub platform: SystemVersionPlatform,
     #[serde(rename = "Components")]
-    components: Vec<SystemVersionComponents>,
+    pub components: Vec<SystemVersionComponents>,
     #[serde(rename = "Version")]
-    version: String,
+    pub version: String,
     #[serde(rename = "ApiVersion")]
-    api_version: String,
+    pub api_version: String,
     #[serde(rename = "MinAPIVersion")]
-    min_api_version: String,
+    pub min_api_version: String,
     #[serde(rename = "GitCommit")]
-    git_commit: String,
+    pub git_commit: String,
     #[serde(rename = "GoVersion")]
-    go_version: String,
+    pub go_version: String,
     #[serde(rename = "Os")]
-    os: String,
+    pub os: String,
     #[serde(rename = "Arch")]
-    arch: String,
+    pub arch: String,
     #[serde(rename = "KernelVersion")]
-    kernel_version: String,
+    pub kernel_version: String,
     #[serde(rename = "Experimental")]
-    experimental: bool,
+    pub experimental: bool,
     #[serde(rename = "BuildTime")]
-    build_time: String,
+    pub build_time: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemVersionComponents {
+pub struct SystemVersionComponents {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Version")]
-    version: String,
+    pub version: String,
     #[serde(rename = "Details")]
-    details: ::serde_json::Value,
+    pub details: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct SystemVersionPlatform {
+pub struct SystemVersionPlatform {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct TLSInfo {
+pub struct TLSInfo {
     #[serde(rename = "TrustRoot")]
-    trust_root: String,
+    pub trust_root: String,
     #[serde(rename = "CertIssuerSubject")]
-    cert_issuer_subject: String,
+    pub cert_issuer_subject: String,
     #[serde(rename = "CertIssuerPublicKey")]
-    cert_issuer_public_key: String,
+    pub cert_issuer_public_key: String,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Task {
+pub struct Task {
     #[serde(rename = "ID")]
-    id: String,
+    pub id: String,
     #[serde(rename = "Version")]
-    version: ObjectVersion,
+    pub version: ObjectVersion,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "UpdatedAt")]
-    updated_at: ::chrono::DateTime<::chrono::Utc>,
+    pub updated_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Spec")]
-    spec: TaskSpec,
+    pub spec: TaskSpec,
     #[serde(rename = "ServiceID")]
-    service_id: String,
+    pub service_id: String,
     #[serde(rename = "Slot")]
-    slot: i64,
+    pub slot: i64,
     #[serde(rename = "NodeID")]
-    node_id: String,
+    pub node_id: String,
     #[serde(rename = "AssignedGenericResources")]
-    assigned_generic_resources: Vec<SystemInfoGenericResources>,
+    pub assigned_generic_resources: Vec<SystemInfoGenericResources>,
     #[serde(rename = "Status")]
-    status: TaskListStatus,
+    pub status: TaskListStatus,
     #[serde(rename = "DesiredState")]
-    desired_state: TaskState,
+    pub desired_state: TaskState,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct TaskListStatus {
+pub struct TaskListStatus {
     #[serde(rename = "Timestamp")]
-    timestamp: ::chrono::DateTime<::chrono::Utc>,
+    pub timestamp: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "State")]
-    state: TaskState,
+    pub state: TaskState,
     #[serde(rename = "Message")]
-    message: String,
+    pub message: String,
     #[serde(rename = "Err")]
-    err: String,
+    pub err: String,
     #[serde(rename = "ContainerStatus")]
-    container_status: TaskListStatusContainerStatus,
+    pub container_status: TaskListStatusContainerStatus,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct TaskListStatusContainerStatus {
+pub struct TaskListStatusContainerStatus {
     #[serde(rename = "ContainerID")]
-    container_id: String,
+    pub container_id: String,
     #[serde(rename = "PID")]
-    pid: i64,
+    pub pid: i64,
     #[serde(rename = "ExitCode")]
-    exit_code: i64,
+    pub exit_code: i64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct TaskSpec {
+pub struct TaskSpec {
     #[serde(rename = "PluginSpec")]
-    plugin_spec: ServiceListSpecTaskTemplatePluginSpec,
+    pub plugin_spec: ServiceListSpecTaskTemplatePluginSpec,
     #[serde(rename = "ContainerSpec")]
-    container_spec: ServiceListSpecTaskTemplateContainerSpec,
+    pub container_spec: ServiceListSpecTaskTemplateContainerSpec,
     #[serde(rename = "NetworkAttachmentSpec")]
-    network_attachment_spec: ServiceListSpecTaskTemplateNetworkAttachmentSpec,
+    pub network_attachment_spec: ServiceListSpecTaskTemplateNetworkAttachmentSpec,
     #[serde(rename = "Resources")]
-    resources: ServiceListSpecTaskTemplateResources,
+    pub resources: ServiceListSpecTaskTemplateResources,
     #[serde(rename = "RestartPolicy")]
-    restart_policy: ServiceListSpecTaskTemplateRestartPolicy,
+    pub restart_policy: ServiceListSpecTaskTemplateRestartPolicy,
     #[serde(rename = "Placement")]
-    placement: ServiceListSpecTaskTemplatePlacement,
+    pub placement: ServiceListSpecTaskTemplatePlacement,
     #[serde(rename = "ForceUpdate")]
-    force_update: i64,
+    pub force_update: i64,
     #[serde(rename = "Runtime")]
-    runtime: String,
+    pub runtime: String,
     #[serde(rename = "Networks")]
-    networks: Vec<ServiceListSpecTaskTemplateNetworks>,
+    pub networks: Vec<ServiceListSpecTaskTemplateNetworks>,
     #[serde(rename = "LogDriver")]
-    log_driver: ServiceListSpecTaskTemplateLogDriver,
+    pub log_driver: ServiceListSpecTaskTemplateLogDriver,
 }
 
 #[derive(Copy, Clone, PartialEq, Eq, Hash, Serialize, Deserialize)]
-enum TaskState {
+pub enum TaskState {
     #[serde(rename = "new")]
     New,
     #[serde(rename = "allocated")]
@@ -3156,65 +3157,65 @@ impl ToString for TaskState {
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct ThrottleDevice {
+pub struct ThrottleDevice {
     #[serde(rename = "Path")]
-    path: String,
+    pub path: String,
     #[serde(rename = "Rate")]
-    rate: u64,
+    pub rate: u64,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct Volume {
+pub struct Volume {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "Mountpoint")]
-    mountpoint: String,
+    pub mountpoint: String,
     #[serde(rename = "CreatedAt")]
-    created_at: ::chrono::DateTime<::chrono::Utc>,
+    pub created_at: ::chrono::DateTime<::chrono::Utc>,
     #[serde(rename = "Status")]
-    status: ::serde_json::Value,
+    pub status: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
     #[serde(rename = "Scope")]
-    scope: SystemDataUsageVolumesScope,
+    pub scope: SystemDataUsageVolumesScope,
     #[serde(rename = "Options")]
-    options: ::serde_json::Value,
+    pub options: ::serde_json::Value,
     #[serde(rename = "UsageData")]
-    usage_data: SystemDataUsageVolumesUsageData,
+    pub usage_data: SystemDataUsageVolumesUsageData,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct VolumeCreate {
+pub struct VolumeCreate {
     #[serde(rename = "Name")]
-    name: String,
+    pub name: String,
     #[serde(rename = "Driver")]
-    driver: String,
+    pub driver: String,
     #[serde(rename = "DriverOpts")]
-    driver_opts: ::serde_json::Value,
+    pub driver_opts: ::serde_json::Value,
     #[serde(rename = "Labels")]
-    labels: ::serde_json::Value,
+    pub labels: ::serde_json::Value,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct VolumeList {
+pub struct VolumeList {
     #[serde(rename = "Volumes")]
-    volumes: Vec<Volume>,
+    pub volumes: Vec<Volume>,
     #[serde(rename = "Warnings")]
-    warnings: Vec<String>,
+    pub warnings: Vec<String>,
 }
 
 #[derive(Clone, PartialEq, Serialize, Deserialize)]
-struct VolumePrune {
+pub struct VolumePrune {
     #[serde(rename = "VolumesDeleted")]
-    volumes_deleted: Vec<String>,
+    pub volumes_deleted: Vec<String>,
     #[serde(rename = "SpaceReclaimed")]
-    space_reclaimed: i64,
+    pub space_reclaimed: i64,
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerListCodes {
+pub enum ContainerListCodes {
     /// no error
     Ok(Vec<ContainerList>),
     /// bad parameter
@@ -3223,7 +3224,7 @@ enum ContainerListCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_list(
+pub fn container_list(
     client: &Client,
     all: Option<bool>,
     limit: Option<i64>,
@@ -3259,7 +3260,7 @@ fn container_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerCreateCodes {
+pub enum ContainerCreateCodes {
     /// Container created successfully
     Created(ContainerCreateCreated),
     /// bad parameter
@@ -3272,7 +3273,7 @@ enum ContainerCreateCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_create(
+pub fn container_create(
     client: &Client,
     name: Option<&str>,
     body: &ContainerCreateBody,
@@ -3300,7 +3301,7 @@ fn container_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerInspectCodes {
+pub enum ContainerInspectCodes {
     /// no error
     Ok(ContainerInspect),
     /// no such container
@@ -3309,7 +3310,7 @@ enum ContainerInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_inspect(
+pub fn container_inspect(
     client: &Client,
     id: &str,
     size: Option<bool>,
@@ -3338,7 +3339,7 @@ fn container_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerTopCodes {
+pub enum ContainerTopCodes {
     /// no error
     Ok(ContainerTop),
     /// no such container
@@ -3347,7 +3348,7 @@ enum ContainerTopCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_top(
+pub fn container_top(
     client: &Client,
     id: &str,
     ps_args: Option<&str>,
@@ -3376,7 +3377,7 @@ fn container_top(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerLogsCodes {
+pub enum ContainerLogsCodes {
     /// logs returned as a stream
     SwitchingProtocols((/* binary */)),
     /// logs returned as a string in response body
@@ -3387,7 +3388,7 @@ enum ContainerLogsCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_logs(
+pub fn container_logs(
     client: &Client,
     id: &str,
     follow: Option<bool>,
@@ -3441,7 +3442,7 @@ fn container_logs(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerChangesCodes {
+pub enum ContainerChangesCodes {
     /// The list of changes
     Ok(Vec<ContainerChanges>),
     /// no such container
@@ -3450,7 +3451,7 @@ enum ContainerChangesCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_changes(
+pub fn container_changes(
     client: &Client,
     id: &str,
 ) -> Result<ContainerChangesCodes, Error> {
@@ -3470,7 +3471,7 @@ fn container_changes(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerExportCodes {
+pub enum ContainerExportCodes {
     /// no error
     Ok,
     /// no such container
@@ -3479,7 +3480,7 @@ enum ContainerExportCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_export(
+pub fn container_export(
     client: &Client,
     id: &str,
 ) -> Result<ContainerExportCodes, Error> {
@@ -3499,7 +3500,7 @@ fn container_export(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerStatsCodes {
+pub enum ContainerStatsCodes {
     /// no error
     Ok(::serde_json::Value),
     /// no such container
@@ -3508,7 +3509,7 @@ enum ContainerStatsCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_stats(
+pub fn container_stats(
     client: &Client,
     id: &str,
     stream: Option<bool>,
@@ -3537,7 +3538,7 @@ fn container_stats(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerResizeCodes {
+pub enum ContainerResizeCodes {
     /// no error
     Ok,
     /// no such container
@@ -3546,7 +3547,7 @@ enum ContainerResizeCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_resize(
+pub fn container_resize(
     client: &Client,
     id: &str,
     h: Option<i64>,
@@ -3579,7 +3580,7 @@ fn container_resize(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerStartCodes {
+pub enum ContainerStartCodes {
     /// no error
     NoContent,
     /// container already started
@@ -3590,7 +3591,7 @@ enum ContainerStartCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_start(
+pub fn container_start(
     client: &Client,
     id: &str,
     detach_keys: Option<&str>,
@@ -3620,7 +3621,7 @@ fn container_start(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerStopCodes {
+pub enum ContainerStopCodes {
     /// no error
     NoContent,
     /// container already stopped
@@ -3631,7 +3632,7 @@ enum ContainerStopCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_stop(
+pub fn container_stop(
     client: &Client,
     id: &str,
     t: Option<i64>,
@@ -3661,7 +3662,7 @@ fn container_stop(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerRestartCodes {
+pub enum ContainerRestartCodes {
     /// no error
     NoContent,
     /// no such container
@@ -3670,7 +3671,7 @@ enum ContainerRestartCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_restart(
+pub fn container_restart(
     client: &Client,
     id: &str,
     t: Option<i64>,
@@ -3699,7 +3700,7 @@ fn container_restart(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerKillCodes {
+pub enum ContainerKillCodes {
     /// no error
     NoContent,
     /// no such container
@@ -3710,7 +3711,7 @@ enum ContainerKillCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_kill(
+pub fn container_kill(
     client: &Client,
     id: &str,
     signal: Option<&str>,
@@ -3740,7 +3741,7 @@ fn container_kill(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerUpdateCodes {
+pub enum ContainerUpdateCodes {
     /// The container has been updated.
     Ok(ContainerUpdateOk),
     /// no such container
@@ -3749,7 +3750,7 @@ enum ContainerUpdateCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_update(
+pub fn container_update(
     client: &Client,
     id: &str,
     update: &ContainerUpdateUpdate,
@@ -3771,7 +3772,7 @@ fn container_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerRenameCodes {
+pub enum ContainerRenameCodes {
     /// no error
     NoContent,
     /// no such container
@@ -3782,7 +3783,7 @@ enum ContainerRenameCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_rename(
+pub fn container_rename(
     client: &Client,
     id: &str,
     name: &str,
@@ -3810,7 +3811,7 @@ fn container_rename(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerPauseCodes {
+pub enum ContainerPauseCodes {
     /// no error
     NoContent,
     /// no such container
@@ -3819,7 +3820,7 @@ enum ContainerPauseCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_pause(
+pub fn container_pause(
     client: &Client,
     id: &str,
 ) -> Result<ContainerPauseCodes, Error> {
@@ -3839,7 +3840,7 @@ fn container_pause(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerUnpauseCodes {
+pub enum ContainerUnpauseCodes {
     /// no error
     NoContent,
     /// no such container
@@ -3848,7 +3849,7 @@ enum ContainerUnpauseCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_unpause(
+pub fn container_unpause(
     client: &Client,
     id: &str,
 ) -> Result<ContainerUnpauseCodes, Error> {
@@ -3868,7 +3869,7 @@ fn container_unpause(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerAttachCodes {
+pub enum ContainerAttachCodes {
     /// no error, hints proxy about hijacking
     SwitchingProtocols,
     /// no error, no upgrade header found
@@ -3881,7 +3882,7 @@ enum ContainerAttachCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_attach(
+pub fn container_attach(
     client: &Client,
     id: &str,
     detach_keys: Option<&str>,
@@ -3932,7 +3933,7 @@ fn container_attach(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerAttachWebsocketCodes {
+pub enum ContainerAttachWebsocketCodes {
     /// no error, hints proxy about hijacking
     SwitchingProtocols,
     /// no error, no upgrade header found
@@ -3945,7 +3946,7 @@ enum ContainerAttachWebsocketCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_attach_websocket(
+pub fn container_attach_websocket(
     client: &Client,
     id: &str,
     detach_keys: Option<&str>,
@@ -3996,7 +3997,7 @@ fn container_attach_websocket(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerWaitCodes {
+pub enum ContainerWaitCodes {
     /// The container has exit.
     Ok(ContainerWait),
     /// no such container
@@ -4005,7 +4006,7 @@ enum ContainerWaitCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_wait(
+pub fn container_wait(
     client: &Client,
     id: &str,
     condition: Option<&str>,
@@ -4034,7 +4035,7 @@ fn container_wait(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerDeleteCodes {
+pub enum ContainerDeleteCodes {
     /// no error
     NoContent,
     /// bad parameter
@@ -4047,7 +4048,7 @@ enum ContainerDeleteCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_delete(
+pub fn container_delete(
     client: &Client,
     id: &str,
     v: Option<bool>,
@@ -4086,7 +4087,7 @@ fn container_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerArchiveCodes {
+pub enum ContainerArchiveCodes {
     /// no error
     Ok,
     /// Bad parameter
@@ -4097,7 +4098,7 @@ enum ContainerArchiveCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_archive(
+pub fn container_archive(
     client: &Client,
     id: &str,
     path: &str,
@@ -4125,7 +4126,7 @@ fn container_archive(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerArchiveInfoCodes {
+pub enum ContainerArchiveInfoCodes {
     /// no error
     Ok,
     /// Bad parameter
@@ -4136,7 +4137,7 @@ enum ContainerArchiveInfoCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_archive_info(
+pub fn container_archive_info(
     client: &Client,
     id: &str,
     path: &str,
@@ -4164,7 +4165,7 @@ fn container_archive_info(
 }
 
 #[derive(Clone, PartialEq)]
-enum PutContainerArchiveCodes {
+pub enum PutContainerArchiveCodes {
     /// The content was extracted successfully
     Ok,
     /// Bad parameter
@@ -4177,7 +4178,7 @@ enum PutContainerArchiveCodes {
     ServerError(ErrorResponse),
 }
 
-fn put_container_archive(
+pub fn put_container_archive(
     client: &Client,
     id: &str,
     path: &str,
@@ -4212,14 +4213,14 @@ fn put_container_archive(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerPruneCodes {
+pub enum ContainerPruneCodes {
     /// No error
     Ok(ContainerPrune),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn container_prune(
+pub fn container_prune(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<ContainerPruneCodes, Error> {
@@ -4242,14 +4243,14 @@ fn container_prune(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageListCodes {
+pub enum ImageListCodes {
     /// Summary image data for the images matching the query
     Ok(Vec<ImageSummary>),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn image_list(
+pub fn image_list(
     client: &Client,
     all: Option<bool>,
     filters: Option<&str>,
@@ -4280,7 +4281,7 @@ fn image_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageBuildCodes {
+pub enum ImageBuildCodes {
     /// no error
     Ok,
     /// Bad parameter
@@ -4289,7 +4290,7 @@ enum ImageBuildCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_build(
+pub fn image_build(
     client: &Client,
     input_stream: (/* binary */),
     dockerfile: Option<&str>,
@@ -4414,14 +4415,14 @@ fn image_build(
 }
 
 #[derive(Clone, PartialEq)]
-enum BuildPruneCodes {
+pub enum BuildPruneCodes {
     /// No error
     Ok(BuildPrune),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn build_prune(
+pub fn build_prune(
     client: &Client,
 ) -> Result<BuildPruneCodes, Error> {
     let mut resp = client.post("/build/prune")
@@ -4435,7 +4436,7 @@ fn build_prune(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageCreateCodes {
+pub enum ImageCreateCodes {
     /// no error
     Ok,
     /// repository does not exist or no read access
@@ -4444,7 +4445,7 @@ enum ImageCreateCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_create(
+pub fn image_create(
     client: &Client,
     from_image: Option<&str>,
     from_src: Option<&str>,
@@ -4493,7 +4494,7 @@ fn image_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageInspectCodes {
+pub enum ImageInspectCodes {
     /// No error
     Ok(Image),
     /// No such image
@@ -4502,7 +4503,7 @@ enum ImageInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_inspect(
+pub fn image_inspect(
     client: &Client,
     name: &str,
 ) -> Result<ImageInspectCodes, Error> {
@@ -4522,7 +4523,7 @@ fn image_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageHistoryCodes {
+pub enum ImageHistoryCodes {
     /// List of image layers
     Ok(Vec<ImageHistory>),
     /// No such image
@@ -4531,7 +4532,7 @@ enum ImageHistoryCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_history(
+pub fn image_history(
     client: &Client,
     name: &str,
 ) -> Result<ImageHistoryCodes, Error> {
@@ -4551,7 +4552,7 @@ fn image_history(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImagePushCodes {
+pub enum ImagePushCodes {
     /// No error
     Ok,
     /// No such image
@@ -4560,7 +4561,7 @@ enum ImagePushCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_push(
+pub fn image_push(
     client: &Client,
     name: &str,
     tag: Option<&str>,
@@ -4594,7 +4595,7 @@ fn image_push(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageTagCodes {
+pub enum ImageTagCodes {
     /// No error
     Created,
     /// Bad parameter
@@ -4607,7 +4608,7 @@ enum ImageTagCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_tag(
+pub fn image_tag(
     client: &Client,
     name: &str,
     repo: Option<&str>,
@@ -4642,7 +4643,7 @@ fn image_tag(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageDeleteCodes {
+pub enum ImageDeleteCodes {
     /// The image was deleted successfully
     Ok(Vec<ImageDeleteResponseItem>),
     /// No such image
@@ -4653,7 +4654,7 @@ enum ImageDeleteCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_delete(
+pub fn image_delete(
     client: &Client,
     name: &str,
     force: Option<bool>,
@@ -4687,14 +4688,14 @@ fn image_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageSearchCodes {
+pub enum ImageSearchCodes {
     /// No error
     Ok(Vec<ImageSearch>),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn image_search(
+pub fn image_search(
     client: &Client,
     term: &str,
     limit: Option<i64>,
@@ -4723,14 +4724,14 @@ fn image_search(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImagePruneCodes {
+pub enum ImagePruneCodes {
     /// No error
     Ok(ImagePrune),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn image_prune(
+pub fn image_prune(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<ImagePruneCodes, Error> {
@@ -4753,7 +4754,7 @@ fn image_prune(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemAuthCodes {
+pub enum SystemAuthCodes {
     /// An identity token was generated successfully.
     Ok(SystemAuth),
     /// No error
@@ -4762,7 +4763,7 @@ enum SystemAuthCodes {
     ServerError(ErrorResponse),
 }
 
-fn system_auth(
+pub fn system_auth(
     client: &Client,
     auth_config: &AuthConfig,
 ) -> Result<SystemAuthCodes, Error> {
@@ -4779,14 +4780,14 @@ fn system_auth(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemInfoCodes {
+pub enum SystemInfoCodes {
     /// No error
     Ok(SystemInfo),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn system_info(
+pub fn system_info(
     client: &Client,
 ) -> Result<SystemInfoCodes, Error> {
     let mut resp = client.get("/info")
@@ -4800,14 +4801,14 @@ fn system_info(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemVersionCodes {
+pub enum SystemVersionCodes {
     /// no error
     Ok(SystemVersion),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn system_version(
+pub fn system_version(
     client: &Client,
 ) -> Result<SystemVersionCodes, Error> {
     let mut resp = client.get("/version")
@@ -4821,14 +4822,14 @@ fn system_version(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemPingCodes {
+pub enum SystemPingCodes {
     /// no error
     Ok(String),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn system_ping(
+pub fn system_ping(
     client: &Client,
 ) -> Result<SystemPingCodes, Error> {
     let mut resp = client.get("/_ping")
@@ -4842,7 +4843,7 @@ fn system_ping(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageCommitCodes {
+pub enum ImageCommitCodes {
     /// no error
     Created(IdResponse),
     /// no such container
@@ -4851,7 +4852,7 @@ enum ImageCommitCodes {
     ServerError(ErrorResponse),
 }
 
-fn image_commit(
+pub fn image_commit(
     client: &Client,
     container_config: &ContainerConfig,
     container: Option<&str>,
@@ -4901,7 +4902,7 @@ fn image_commit(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemEventsCodes {
+pub enum SystemEventsCodes {
     /// no error
     Ok(SystemEvents),
     /// bad parameter
@@ -4910,7 +4911,7 @@ enum SystemEventsCodes {
     ServerError(ErrorResponse),
 }
 
-fn system_events(
+pub fn system_events(
     client: &Client,
     since: Option<&str>,
     until: Option<&str>,
@@ -4942,14 +4943,14 @@ fn system_events(
 }
 
 #[derive(Clone, PartialEq)]
-enum SystemDataUsageCodes {
+pub enum SystemDataUsageCodes {
     /// no error
     Ok(SystemDataUsage),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn system_data_usage(
+pub fn system_data_usage(
     client: &Client,
 ) -> Result<SystemDataUsageCodes, Error> {
     let mut resp = client.get("/system/df")
@@ -4963,14 +4964,14 @@ fn system_data_usage(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageGetCodes {
+pub enum ImageGetCodes {
     /// no error
     Ok((/* binary */)),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn image_get(
+pub fn image_get(
     client: &Client,
     name: &str,
 ) -> Result<ImageGetCodes, Error> {
@@ -4989,14 +4990,14 @@ fn image_get(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageGetAllCodes {
+pub enum ImageGetAllCodes {
     /// no error
     Ok((/* binary */)),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn image_get_all(
+pub fn image_get_all(
     client: &Client,
     names: Option<&[String]>,
 ) -> Result<ImageGetAllCodes, Error> {
@@ -5019,14 +5020,14 @@ fn image_get_all(
 }
 
 #[derive(Clone, PartialEq)]
-enum ImageLoadCodes {
+pub enum ImageLoadCodes {
     /// no error
     Ok,
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn image_load(
+pub fn image_load(
     client: &Client,
     images_tarball: (/* binary */),
     quiet: Option<bool>,
@@ -5051,7 +5052,7 @@ fn image_load(
 }
 
 #[derive(Clone, PartialEq)]
-enum ContainerExecCodes {
+pub enum ContainerExecCodes {
     /// no error
     Created(IdResponse),
     /// no such container
@@ -5062,7 +5063,7 @@ enum ContainerExecCodes {
     ServerError(ErrorResponse),
 }
 
-fn container_exec(
+pub fn container_exec(
     client: &Client,
     exec_config: &ContainerExec,
     id: &str,
@@ -5085,7 +5086,7 @@ fn container_exec(
 }
 
 #[derive(Clone, PartialEq)]
-enum ExecStartCodes {
+pub enum ExecStartCodes {
     /// No error
     Ok,
     /// No such exec instance
@@ -5094,7 +5095,7 @@ enum ExecStartCodes {
     Conflict(ErrorResponse),
 }
 
-fn exec_start(
+pub fn exec_start(
     client: &Client,
     exec_start_config: &ExecStart,
     id: &str,
@@ -5116,14 +5117,14 @@ fn exec_start(
 }
 
 #[derive(Clone, PartialEq)]
-enum ExecResizeCodes {
+pub enum ExecResizeCodes {
     /// No error
     Created,
     /// No such exec instance
     NotFound(ErrorResponse),
 }
 
-fn exec_resize(
+pub fn exec_resize(
     client: &Client,
     id: &str,
     h: Option<i64>,
@@ -5155,7 +5156,7 @@ fn exec_resize(
 }
 
 #[derive(Clone, PartialEq)]
-enum ExecInspectCodes {
+pub enum ExecInspectCodes {
     /// No error
     Ok(ExecInspect),
     /// No such exec instance
@@ -5164,7 +5165,7 @@ enum ExecInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn exec_inspect(
+pub fn exec_inspect(
     client: &Client,
     id: &str,
 ) -> Result<ExecInspectCodes, Error> {
@@ -5184,14 +5185,14 @@ fn exec_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum VolumeListCodes {
+pub enum VolumeListCodes {
     /// Summary volume data that matches the query
     Ok(VolumeList),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn volume_list(
+pub fn volume_list(
     client: &Client,
     filters: Option<::serde_json::Value>,
 ) -> Result<VolumeListCodes, Error> {
@@ -5214,14 +5215,14 @@ fn volume_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum VolumeCreateCodes {
+pub enum VolumeCreateCodes {
     /// The volume was created successfully
     Created(Volume),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn volume_create(
+pub fn volume_create(
     client: &Client,
     volume_config: &VolumeCreate,
 ) -> Result<VolumeCreateCodes, Error> {
@@ -5237,7 +5238,7 @@ fn volume_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum VolumeInspectCodes {
+pub enum VolumeInspectCodes {
     /// No error
     Ok(Volume),
     /// No such volume
@@ -5246,7 +5247,7 @@ enum VolumeInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn volume_inspect(
+pub fn volume_inspect(
     client: &Client,
     name: &str,
 ) -> Result<VolumeInspectCodes, Error> {
@@ -5266,7 +5267,7 @@ fn volume_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum VolumeDeleteCodes {
+pub enum VolumeDeleteCodes {
     /// The volume was removed
     NoContent,
     /// No such volume or volume driver
@@ -5277,7 +5278,7 @@ enum VolumeDeleteCodes {
     ServerError(ErrorResponse),
 }
 
-fn volume_delete(
+pub fn volume_delete(
     client: &Client,
     name: &str,
     force: Option<bool>,
@@ -5307,14 +5308,14 @@ fn volume_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum VolumePruneCodes {
+pub enum VolumePruneCodes {
     /// No error
     Ok(VolumePrune),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn volume_prune(
+pub fn volume_prune(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<VolumePruneCodes, Error> {
@@ -5337,14 +5338,14 @@ fn volume_prune(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkListCodes {
+pub enum NetworkListCodes {
     /// No error
     Ok(Vec<Network>),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn network_list(
+pub fn network_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<NetworkListCodes, Error> {
@@ -5367,7 +5368,7 @@ fn network_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkInspectCodes {
+pub enum NetworkInspectCodes {
     /// No error
     Ok(Network),
     /// Network not found
@@ -5376,7 +5377,7 @@ enum NetworkInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn network_inspect(
+pub fn network_inspect(
     client: &Client,
     id: &str,
     verbose: Option<bool>,
@@ -5409,7 +5410,7 @@ fn network_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkDeleteCodes {
+pub enum NetworkDeleteCodes {
     /// No error
     NoContent,
     /// operation not supported for pre-defined networks
@@ -5420,7 +5421,7 @@ enum NetworkDeleteCodes {
     ServerError(ErrorResponse),
 }
 
-fn network_delete(
+pub fn network_delete(
     client: &Client,
     id: &str,
 ) -> Result<NetworkDeleteCodes, Error> {
@@ -5441,7 +5442,7 @@ fn network_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkCreateCodes {
+pub enum NetworkCreateCodes {
     /// No error
     Created(NetworkCreateCreated),
     /// operation not supported for pre-defined networks
@@ -5452,7 +5453,7 @@ enum NetworkCreateCodes {
     ServerError(ErrorResponse),
 }
 
-fn network_create(
+pub fn network_create(
     client: &Client,
     network_config: &NetworkCreateNetworkConfig,
 ) -> Result<NetworkCreateCodes, Error> {
@@ -5470,7 +5471,7 @@ fn network_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkConnectCodes {
+pub enum NetworkConnectCodes {
     /// No error
     Ok,
     /// Operation not supported for swarm scoped networks
@@ -5481,7 +5482,7 @@ enum NetworkConnectCodes {
     ServerError(ErrorResponse),
 }
 
-fn network_connect(
+pub fn network_connect(
     client: &Client,
     id: &str,
     container: &NetworkConnect,
@@ -5504,7 +5505,7 @@ fn network_connect(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkDisconnectCodes {
+pub enum NetworkDisconnectCodes {
     /// No error
     Ok,
     /// Operation not supported for swarm scoped networks
@@ -5515,7 +5516,7 @@ enum NetworkDisconnectCodes {
     ServerError(ErrorResponse),
 }
 
-fn network_disconnect(
+pub fn network_disconnect(
     client: &Client,
     id: &str,
     container: &NetworkDisconnect,
@@ -5538,14 +5539,14 @@ fn network_disconnect(
 }
 
 #[derive(Clone, PartialEq)]
-enum NetworkPruneCodes {
+pub enum NetworkPruneCodes {
     /// No error
     Ok(NetworkPrune),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn network_prune(
+pub fn network_prune(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<NetworkPruneCodes, Error> {
@@ -5568,14 +5569,14 @@ fn network_prune(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginListCodes {
+pub enum PluginListCodes {
     /// No error
     Ok(Vec<Plugin>),
     /// Server error
     ServerError(ErrorResponse),
 }
 
-fn plugin_list(
+pub fn plugin_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<PluginListCodes, Error> {
@@ -5598,14 +5599,14 @@ fn plugin_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum GetPluginPrivilegesCodes {
+pub enum GetPluginPrivilegesCodes {
     /// no error
     Ok(Vec<GetPluginPrivileges>),
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn get_plugin_privileges(
+pub fn get_plugin_privileges(
     client: &Client,
     remote: &str,
 ) -> Result<GetPluginPrivilegesCodes, Error> {
@@ -5626,14 +5627,14 @@ fn get_plugin_privileges(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginPullCodes {
+pub enum PluginPullCodes {
     /// no error
     NoContent,
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn plugin_pull(
+pub fn plugin_pull(
     client: &Client,
     remote: &str,
     name: Option<&str>,
@@ -5667,7 +5668,7 @@ fn plugin_pull(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginInspectCodes {
+pub enum PluginInspectCodes {
     /// no error
     Ok(Plugin),
     /// plugin is not installed
@@ -5676,7 +5677,7 @@ enum PluginInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_inspect(
+pub fn plugin_inspect(
     client: &Client,
     name: &str,
 ) -> Result<PluginInspectCodes, Error> {
@@ -5696,7 +5697,7 @@ fn plugin_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginDeleteCodes {
+pub enum PluginDeleteCodes {
     /// no error
     Ok(Plugin),
     /// plugin is not installed
@@ -5705,7 +5706,7 @@ enum PluginDeleteCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_delete(
+pub fn plugin_delete(
     client: &Client,
     name: &str,
     force: Option<bool>,
@@ -5734,7 +5735,7 @@ fn plugin_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginEnableCodes {
+pub enum PluginEnableCodes {
     /// no error
     Ok,
     /// plugin is not installed
@@ -5743,7 +5744,7 @@ enum PluginEnableCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_enable(
+pub fn plugin_enable(
     client: &Client,
     name: &str,
     timeout: Option<i64>,
@@ -5772,7 +5773,7 @@ fn plugin_enable(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginDisableCodes {
+pub enum PluginDisableCodes {
     /// no error
     Ok,
     /// plugin is not installed
@@ -5781,7 +5782,7 @@ enum PluginDisableCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_disable(
+pub fn plugin_disable(
     client: &Client,
     name: &str,
 ) -> Result<PluginDisableCodes, Error> {
@@ -5801,7 +5802,7 @@ fn plugin_disable(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginUpgradeCodes {
+pub enum PluginUpgradeCodes {
     /// no error
     NoContent,
     /// plugin not installed
@@ -5810,7 +5811,7 @@ enum PluginUpgradeCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_upgrade(
+pub fn plugin_upgrade(
     client: &Client,
     name: &str,
     remote: &str,
@@ -5846,14 +5847,14 @@ fn plugin_upgrade(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginCreateCodes {
+pub enum PluginCreateCodes {
     /// no error
     NoContent,
     /// server error
     ServerError(ErrorResponse),
 }
 
-fn plugin_create(
+pub fn plugin_create(
     client: &Client,
     name: &str,
     tar_context: (/* binary */),
@@ -5876,7 +5877,7 @@ fn plugin_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginPushCodes {
+pub enum PluginPushCodes {
     /// no error
     Ok,
     /// plugin not installed
@@ -5885,7 +5886,7 @@ enum PluginPushCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_push(
+pub fn plugin_push(
     client: &Client,
     name: &str,
 ) -> Result<PluginPushCodes, Error> {
@@ -5905,7 +5906,7 @@ fn plugin_push(
 }
 
 #[derive(Clone, PartialEq)]
-enum PluginSetCodes {
+pub enum PluginSetCodes {
     /// No error
     NoContent,
     /// Plugin not installed
@@ -5914,7 +5915,7 @@ enum PluginSetCodes {
     ServerError(ErrorResponse),
 }
 
-fn plugin_set(
+pub fn plugin_set(
     client: &Client,
     name: &str,
     body: &[String],
@@ -5936,7 +5937,7 @@ fn plugin_set(
 }
 
 #[derive(Clone, PartialEq)]
-enum NodeListCodes {
+pub enum NodeListCodes {
     /// no error
     Ok(Vec<Node>),
     /// server error
@@ -5945,7 +5946,7 @@ enum NodeListCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn node_list(
+pub fn node_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<NodeListCodes, Error> {
@@ -5969,7 +5970,7 @@ fn node_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum NodeInspectCodes {
+pub enum NodeInspectCodes {
     /// no error
     Ok(Node),
     /// no such node
@@ -5980,7 +5981,7 @@ enum NodeInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn node_inspect(
+pub fn node_inspect(
     client: &Client,
     id: &str,
 ) -> Result<NodeInspectCodes, Error> {
@@ -6001,7 +6002,7 @@ fn node_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum NodeDeleteCodes {
+pub enum NodeDeleteCodes {
     /// no error
     Ok,
     /// no such node
@@ -6012,7 +6013,7 @@ enum NodeDeleteCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn node_delete(
+pub fn node_delete(
     client: &Client,
     id: &str,
     force: Option<bool>,
@@ -6042,7 +6043,7 @@ fn node_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum NodeUpdateCodes {
+pub enum NodeUpdateCodes {
     /// no error
     Ok,
     /// bad parameter
@@ -6055,7 +6056,7 @@ enum NodeUpdateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn node_update(
+pub fn node_update(
     client: &Client,
     id: &str,
     body: &NodeSpec,
@@ -6086,7 +6087,7 @@ fn node_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmInspectCodes {
+pub enum SwarmInspectCodes {
     /// no error
     Ok(Swarm),
     /// no such swarm
@@ -6097,7 +6098,7 @@ enum SwarmInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_inspect(
+pub fn swarm_inspect(
     client: &Client,
 ) -> Result<SwarmInspectCodes, Error> {
     let mut resp = client.get("/swarm")
@@ -6113,7 +6114,7 @@ fn swarm_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmInitCodes {
+pub enum SwarmInitCodes {
     /// no error
     Ok(String),
     /// bad parameter
@@ -6124,7 +6125,7 @@ enum SwarmInitCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_init(
+pub fn swarm_init(
     client: &Client,
     body: &SwarmInit,
 ) -> Result<SwarmInitCodes, Error> {
@@ -6142,7 +6143,7 @@ fn swarm_init(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmJoinCodes {
+pub enum SwarmJoinCodes {
     /// no error
     Ok,
     /// bad parameter
@@ -6153,7 +6154,7 @@ enum SwarmJoinCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_join(
+pub fn swarm_join(
     client: &Client,
     body: &SwarmJoin,
 ) -> Result<SwarmJoinCodes, Error> {
@@ -6171,7 +6172,7 @@ fn swarm_join(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmLeaveCodes {
+pub enum SwarmLeaveCodes {
     /// no error
     Ok,
     /// server error
@@ -6180,7 +6181,7 @@ enum SwarmLeaveCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_leave(
+pub fn swarm_leave(
     client: &Client,
     force: Option<bool>,
 ) -> Result<SwarmLeaveCodes, Error> {
@@ -6204,7 +6205,7 @@ fn swarm_leave(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmUpdateCodes {
+pub enum SwarmUpdateCodes {
     /// no error
     Ok,
     /// bad parameter
@@ -6215,7 +6216,7 @@ enum SwarmUpdateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_update(
+pub fn swarm_update(
     client: &Client,
     body: &SwarmSpec,
     version: i64,
@@ -6252,7 +6253,7 @@ fn swarm_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmUnlockkeyCodes {
+pub enum SwarmUnlockkeyCodes {
     /// no error
     Ok(SwarmUnlockkey),
     /// server error
@@ -6261,7 +6262,7 @@ enum SwarmUnlockkeyCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_unlockkey(
+pub fn swarm_unlockkey(
     client: &Client,
 ) -> Result<SwarmUnlockkeyCodes, Error> {
     let mut resp = client.get("/swarm/unlockkey")
@@ -6276,7 +6277,7 @@ fn swarm_unlockkey(
 }
 
 #[derive(Clone, PartialEq)]
-enum SwarmUnlockCodes {
+pub enum SwarmUnlockCodes {
     /// no error
     Ok,
     /// server error
@@ -6285,7 +6286,7 @@ enum SwarmUnlockCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn swarm_unlock(
+pub fn swarm_unlock(
     client: &Client,
     body: &SwarmUnlockkey,
 ) -> Result<SwarmUnlockCodes, Error> {
@@ -6302,7 +6303,7 @@ fn swarm_unlock(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceListCodes {
+pub enum ServiceListCodes {
     /// no error
     Ok(Vec<Service>),
     /// server error
@@ -6311,7 +6312,7 @@ enum ServiceListCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_list(
+pub fn service_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<ServiceListCodes, Error> {
@@ -6335,7 +6336,7 @@ fn service_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceCreateCodes {
+pub enum ServiceCreateCodes {
     /// no error
     Created(ServiceCreate),
     /// bad parameter
@@ -6350,7 +6351,7 @@ enum ServiceCreateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_create(
+pub fn service_create(
     client: &Client,
     body: &ServiceSpec,
     x_registry_auth: Option<&str>,
@@ -6377,7 +6378,7 @@ fn service_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceInspectCodes {
+pub enum ServiceInspectCodes {
     /// no error
     Ok(Service),
     /// no such service
@@ -6388,7 +6389,7 @@ enum ServiceInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_inspect(
+pub fn service_inspect(
     client: &Client,
     id: &str,
     insert_defaults: Option<bool>,
@@ -6418,7 +6419,7 @@ fn service_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceDeleteCodes {
+pub enum ServiceDeleteCodes {
     /// no error
     Ok,
     /// no such service
@@ -6429,7 +6430,7 @@ enum ServiceDeleteCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_delete(
+pub fn service_delete(
     client: &Client,
     id: &str,
 ) -> Result<ServiceDeleteCodes, Error> {
@@ -6450,7 +6451,7 @@ fn service_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceUpdateCodes {
+pub enum ServiceUpdateCodes {
     /// no error
     Ok(ServiceUpdateResponse),
     /// bad parameter
@@ -6463,7 +6464,7 @@ enum ServiceUpdateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_update(
+pub fn service_update(
     client: &Client,
     id: &str,
     body: &ServiceSpec,
@@ -6509,7 +6510,7 @@ fn service_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum ServiceLogsCodes {
+pub enum ServiceLogsCodes {
     /// logs returned as a stream
     SwitchingProtocols((/* binary */)),
     /// logs returned as a string in response body
@@ -6522,7 +6523,7 @@ enum ServiceLogsCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn service_logs(
+pub fn service_logs(
     client: &Client,
     id: &str,
     details: Option<bool>,
@@ -6577,7 +6578,7 @@ fn service_logs(
 }
 
 #[derive(Clone, PartialEq)]
-enum TaskListCodes {
+pub enum TaskListCodes {
     /// no error
     Ok(Vec<Task>),
     /// server error
@@ -6586,7 +6587,7 @@ enum TaskListCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn task_list(
+pub fn task_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<TaskListCodes, Error> {
@@ -6610,7 +6611,7 @@ fn task_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum TaskInspectCodes {
+pub enum TaskInspectCodes {
     /// no error
     Ok(Task),
     /// no such task
@@ -6621,7 +6622,7 @@ enum TaskInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn task_inspect(
+pub fn task_inspect(
     client: &Client,
     id: &str,
 ) -> Result<TaskInspectCodes, Error> {
@@ -6642,7 +6643,7 @@ fn task_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum TaskLogsCodes {
+pub enum TaskLogsCodes {
     /// logs returned as a stream
     SwitchingProtocols((/* binary */)),
     /// logs returned as a string in response body
@@ -6655,7 +6656,7 @@ enum TaskLogsCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn task_logs(
+pub fn task_logs(
     client: &Client,
     id: &str,
     details: Option<bool>,
@@ -6710,7 +6711,7 @@ fn task_logs(
 }
 
 #[derive(Clone, PartialEq)]
-enum SecretListCodes {
+pub enum SecretListCodes {
     /// no error
     Ok(Vec<Secret>),
     /// server error
@@ -6719,7 +6720,7 @@ enum SecretListCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn secret_list(
+pub fn secret_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<SecretListCodes, Error> {
@@ -6743,7 +6744,7 @@ fn secret_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum SecretCreateCodes {
+pub enum SecretCreateCodes {
     /// no error
     Created(IdResponse),
     /// name conflicts with an existing object
@@ -6754,7 +6755,7 @@ enum SecretCreateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn secret_create(
+pub fn secret_create(
     client: &Client,
     body: &SecretSpec,
 ) -> Result<SecretCreateCodes, Error> {
@@ -6772,7 +6773,7 @@ fn secret_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum SecretInspectCodes {
+pub enum SecretInspectCodes {
     /// no error
     Ok(Secret),
     /// secret not found
@@ -6783,7 +6784,7 @@ enum SecretInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn secret_inspect(
+pub fn secret_inspect(
     client: &Client,
     id: &str,
 ) -> Result<SecretInspectCodes, Error> {
@@ -6804,7 +6805,7 @@ fn secret_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum SecretDeleteCodes {
+pub enum SecretDeleteCodes {
     /// no error
     NoContent,
     /// secret not found
@@ -6815,7 +6816,7 @@ enum SecretDeleteCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn secret_delete(
+pub fn secret_delete(
     client: &Client,
     id: &str,
 ) -> Result<SecretDeleteCodes, Error> {
@@ -6836,7 +6837,7 @@ fn secret_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum SecretUpdateCodes {
+pub enum SecretUpdateCodes {
     /// no error
     Ok,
     /// bad parameter
@@ -6849,7 +6850,7 @@ enum SecretUpdateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn secret_update(
+pub fn secret_update(
     client: &Client,
     id: &str,
     body: &SecretSpec,
@@ -6880,7 +6881,7 @@ fn secret_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum ConfigListCodes {
+pub enum ConfigListCodes {
     /// no error
     Ok(Vec<Config>),
     /// server error
@@ -6889,7 +6890,7 @@ enum ConfigListCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn config_list(
+pub fn config_list(
     client: &Client,
     filters: Option<&str>,
 ) -> Result<ConfigListCodes, Error> {
@@ -6913,7 +6914,7 @@ fn config_list(
 }
 
 #[derive(Clone, PartialEq)]
-enum ConfigCreateCodes {
+pub enum ConfigCreateCodes {
     /// no error
     Created(IdResponse),
     /// name conflicts with an existing object
@@ -6924,7 +6925,7 @@ enum ConfigCreateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn config_create(
+pub fn config_create(
     client: &Client,
     body: &ConfigSpec,
 ) -> Result<ConfigCreateCodes, Error> {
@@ -6942,7 +6943,7 @@ fn config_create(
 }
 
 #[derive(Clone, PartialEq)]
-enum ConfigInspectCodes {
+pub enum ConfigInspectCodes {
     /// no error
     Ok(Config),
     /// config not found
@@ -6953,7 +6954,7 @@ enum ConfigInspectCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn config_inspect(
+pub fn config_inspect(
     client: &Client,
     id: &str,
 ) -> Result<ConfigInspectCodes, Error> {
@@ -6974,7 +6975,7 @@ fn config_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum ConfigDeleteCodes {
+pub enum ConfigDeleteCodes {
     /// no error
     NoContent,
     /// config not found
@@ -6985,7 +6986,7 @@ enum ConfigDeleteCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn config_delete(
+pub fn config_delete(
     client: &Client,
     id: &str,
 ) -> Result<ConfigDeleteCodes, Error> {
@@ -7006,7 +7007,7 @@ fn config_delete(
 }
 
 #[derive(Clone, PartialEq)]
-enum ConfigUpdateCodes {
+pub enum ConfigUpdateCodes {
     /// no error
     Ok,
     /// bad parameter
@@ -7019,7 +7020,7 @@ enum ConfigUpdateCodes {
     ServiceUnavailable(ErrorResponse),
 }
 
-fn config_update(
+pub fn config_update(
     client: &Client,
     id: &str,
     body: &ConfigSpec,
@@ -7050,7 +7051,7 @@ fn config_update(
 }
 
 #[derive(Clone, PartialEq)]
-enum DistributionInspectCodes {
+pub enum DistributionInspectCodes {
     /// descriptor and platform information
     Ok(DistributionInspect),
     /// Failed authentication or no image found
@@ -7059,7 +7060,7 @@ enum DistributionInspectCodes {
     ServerError(ErrorResponse),
 }
 
-fn distribution_inspect(
+pub fn distribution_inspect(
     client: &Client,
     name: &str,
 ) -> Result<DistributionInspectCodes, Error> {
@@ -7079,7 +7080,7 @@ fn distribution_inspect(
 }
 
 #[derive(Clone, PartialEq)]
-enum SessionCodes {
+pub enum SessionCodes {
     /// no error, hijacking successful
     SwitchingProtocols,
     /// bad parameter
@@ -7088,7 +7089,7 @@ enum SessionCodes {
     ServerError(ErrorResponse),
 }
 
-fn session(
+pub fn session(
     client: &Client,
 ) -> Result<SessionCodes, Error> {
     let mut resp = client.post("/session")

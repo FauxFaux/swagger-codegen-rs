@@ -7,7 +7,7 @@ extern crate serde;
 extern crate serde_derive;
 extern crate serde_json;
 
-mod docker_gen;
+pub mod docker_gen;
 
 #[cfg(test)]
 mod tests {}
