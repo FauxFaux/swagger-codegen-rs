@@ -14,6 +14,7 @@ use swagger::NamedType;
 use swagger::NamingType;
 use swagger::Operation;
 use swagger::ParamLocation;
+use swagger::Response;
 
 pub fn render_definitions<W: Write>(
     mut into: W,
@@ -267,6 +268,26 @@ fn render_op<W: Write>(
         _ => bail!("wrong number of consumptions: {:?}", op.consumes),
     }
 
+    let mut resp_codes: Vec<(&u16, &Response<NamedType>)> = op.responses.iter().collect();
+    resp_codes.sort_by_key(|(&code, _)| code);
+
+    let codes_enum_name = format!("{}Codes", op.id);
+
+    writeln!(into, "#[derive(Clone, PartialEq)]")?;
+    writeln!(into, "enum {} {{", codes_enum_name)?;
+    for (&resp_code, response) in &resp_codes {
+        if !response.description.is_empty() {
+            writeln!(into, "    /// {}", response.description)?;
+        }
+        if let Some(resp_type) = response.resp_type.as_ref() {
+            writeln!(into, "    {}({}),", code_enum_for_http_code(resp_code), render(resp_type))?;
+        } else {
+            writeln!(into, "    {},", code_enum_for_http_code(resp_code))?;
+        }
+    }
+    writeln!(into, "}}")?;
+    writeln!(into)?;
+
     writeln!(into, "fn {}(", rustify_field_name(&op.id))?;
     writeln!(into, "    client: &Client,")?;
 
@@ -298,7 +319,7 @@ fn render_op<W: Write>(
     queries.sort_by_key(|p| &p.name);
     headers.sort_by_key(|p| &p.name);
 
-    writeln!(into, ") -> Result<(), Error> {{")?;
+    writeln!(into, ") -> Result<{}, Error> {{", codes_enum_name)?;
     let mut url = if paths.is_empty() {
         format!("\"{}\"", path_url)
     } else {
@@ -371,7 +392,12 @@ fn render_op<W: Write>(
         writeln!(into)?;
     }
 
-    writeln!(into, "    client.{}({})", method.reqwest_method_name(), url,)?;
+    writeln!(
+        into,
+        "    let mut resp = client.{}({})",
+        method.reqwest_method_name(),
+        url,
+    )?;
 
     if !headers.is_empty() {
         writeln!(into, "        .headers(headers)")?;
@@ -386,10 +412,41 @@ fn render_op<W: Write>(
         }
     }
     writeln!(into, "        .send()?;")?;
+    writeln!(into)?;
 
-    writeln!(into, "    Ok(())")?;
+    writeln!(into, "    Ok(match resp.status().as_u16() {{")?;
+
+    for (&resp_code, response) in resp_codes {
+        if response.resp_type.is_some() {
+            writeln!(
+                into,
+                "        {} => {}::{}(resp.json()?),",
+                resp_code, codes_enum_name, code_enum_for_http_code(resp_code)
+            )?;
+        } else {
+            writeln!(
+                into,
+                "        {} => {}::{},",
+                resp_code, codes_enum_name, code_enum_for_http_code(resp_code)
+            )?;
+        }
+    }
+
+    writeln!(
+        into,
+        "        other => bail!(\"unexpected server response {{}}\", other),"
+    )?;
+    writeln!(into, "    }})")?;
     writeln!(into, "}}")?;
     writeln!(into)?;
 
     Ok(())
+}
+
+fn code_enum_for_http_code(code: u16) -> String {
+    if let Some(nice) = super::swagger::name_http_code(code) {
+        nice.to_string()
+    } else {
+        format!("Http{}", code)
+    }
 }

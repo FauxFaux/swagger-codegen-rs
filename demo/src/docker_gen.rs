@@ -3213,13 +3213,23 @@ struct VolumePrune {
     space_reclaimed: i64,
 }
 
+#[derive(Clone, PartialEq)]
+enum ContainerListCodes {
+    /// no error
+    Ok(Vec<ContainerList>),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+}
+
 fn container_list(
     client: &Client,
     all: Option<bool>,
     limit: Option<i64>,
     size: Option<bool>,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(4);
         if let Some(all) = all {
@@ -3237,16 +3247,36 @@ fn container_list(
         Url::parse_with_params("/containers/json", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerListCodes::Ok(resp.json()?),
+        400 => ContainerListCodes::BadRequest(resp.json()?),
+        500 => ContainerListCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerCreateCodes {
+    /// Container created successfully
+    Created(ContainerCreateCreated),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// conflict
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_create(
     client: &Client,
     name: Option<&str>,
     body: &ContainerCreateBody,
-) -> Result<(), Error> {
+) -> Result<ContainerCreateCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(name) = name {
@@ -3255,17 +3285,35 @@ fn container_create(
         Url::parse_with_params("/containers/create", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ContainerCreateCodes::Created(resp.json()?),
+        400 => ContainerCreateCodes::BadRequest(resp.json()?),
+        404 => ContainerCreateCodes::NotFound(resp.json()?),
+        409 => ContainerCreateCodes::Conflict(resp.json()?),
+        500 => ContainerCreateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerInspectCodes {
+    /// no error
+    Ok(ContainerInspect),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_inspect(
     client: &Client,
     id: &str,
     size: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ContainerInspectCodes, Error> {
     let url = format!("/containers/{id}/json",
         id=id,
     );
@@ -3278,16 +3326,32 @@ fn container_inspect(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerInspectCodes::Ok(resp.json()?),
+        404 => ContainerInspectCodes::NotFound(resp.json()?),
+        500 => ContainerInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerTopCodes {
+    /// no error
+    Ok(ContainerTop),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_top(
     client: &Client,
     id: &str,
     ps_args: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerTopCodes, Error> {
     let url = format!("/containers/{id}/top",
         id=id,
     );
@@ -3300,9 +3364,27 @@ fn container_top(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerTopCodes::Ok(resp.json()?),
+        404 => ContainerTopCodes::NotFound(resp.json()?),
+        500 => ContainerTopCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerLogsCodes {
+    /// logs returned as a stream
+    SwitchingProtocols((/* binary */)),
+    /// logs returned as a string in response body
+    Ok(String),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_logs(
@@ -3315,7 +3397,7 @@ fn container_logs(
     until: Option<i64>,
     timestamps: Option<bool>,
     tail: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerLogsCodes, Error> {
     let url = format!("/containers/{id}/logs",
         id=id,
     );
@@ -3346,42 +3428,91 @@ fn container_logs(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => ContainerLogsCodes::SwitchingProtocols(resp.json()?),
+        200 => ContainerLogsCodes::Ok(resp.json()?),
+        404 => ContainerLogsCodes::NotFound(resp.json()?),
+        500 => ContainerLogsCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerChangesCodes {
+    /// The list of changes
+    Ok(Vec<ContainerChanges>),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_changes(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerChangesCodes, Error> {
     let url = format!("/containers/{id}/changes",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerChangesCodes::Ok(resp.json()?),
+        404 => ContainerChangesCodes::NotFound(resp.json()?),
+        500 => ContainerChangesCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerExportCodes {
+    /// no error
+    Ok,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_export(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerExportCodes, Error> {
     let url = format!("/containers/{id}/export",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerExportCodes::Ok,
+        404 => ContainerExportCodes::NotFound(resp.json()?),
+        500 => ContainerExportCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerStatsCodes {
+    /// no error
+    Ok(::serde_json::Value),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_stats(
     client: &Client,
     id: &str,
     stream: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ContainerStatsCodes, Error> {
     let url = format!("/containers/{id}/stats",
         id=id,
     );
@@ -3394,9 +3525,25 @@ fn container_stats(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerStatsCodes::Ok(resp.json()?),
+        404 => ContainerStatsCodes::NotFound(resp.json()?),
+        500 => ContainerStatsCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerResizeCodes {
+    /// no error
+    Ok,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// cannot resize container
+    ServerError(ErrorResponse),
 }
 
 fn container_resize(
@@ -3404,7 +3551,7 @@ fn container_resize(
     id: &str,
     h: Option<i64>,
     w: Option<i64>,
-) -> Result<(), Error> {
+) -> Result<ContainerResizeCodes, Error> {
     let url = format!("/containers/{id}/resize",
         id=id,
     );
@@ -3420,16 +3567,34 @@ fn container_resize(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerResizeCodes::Ok,
+        404 => ContainerResizeCodes::NotFound(resp.json()?),
+        500 => ContainerResizeCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerStartCodes {
+    /// no error
+    NoContent,
+    /// container already started
+    NotModified(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_start(
     client: &Client,
     id: &str,
     detach_keys: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerStartCodes, Error> {
     let url = format!("/containers/{id}/start",
         id=id,
     );
@@ -3442,16 +3607,35 @@ fn container_start(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerStartCodes::NoContent,
+        304 => ContainerStartCodes::NotModified(resp.json()?),
+        404 => ContainerStartCodes::NotFound(resp.json()?),
+        500 => ContainerStartCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerStopCodes {
+    /// no error
+    NoContent,
+    /// container already stopped
+    NotModified(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_stop(
     client: &Client,
     id: &str,
     t: Option<i64>,
-) -> Result<(), Error> {
+) -> Result<ContainerStopCodes, Error> {
     let url = format!("/containers/{id}/stop",
         id=id,
     );
@@ -3464,16 +3648,33 @@ fn container_stop(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerStopCodes::NoContent,
+        304 => ContainerStopCodes::NotModified(resp.json()?),
+        404 => ContainerStopCodes::NotFound(resp.json()?),
+        500 => ContainerStopCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerRestartCodes {
+    /// no error
+    NoContent,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_restart(
     client: &Client,
     id: &str,
     t: Option<i64>,
-) -> Result<(), Error> {
+) -> Result<ContainerRestartCodes, Error> {
     let url = format!("/containers/{id}/restart",
         id=id,
     );
@@ -3486,16 +3687,34 @@ fn container_restart(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerRestartCodes::NoContent,
+        404 => ContainerRestartCodes::NotFound(resp.json()?),
+        500 => ContainerRestartCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerKillCodes {
+    /// no error
+    NoContent,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// container is not running
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_kill(
     client: &Client,
     id: &str,
     signal: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerKillCodes, Error> {
     let url = format!("/containers/{id}/kill",
         id=id,
     );
@@ -3508,31 +3727,66 @@ fn container_kill(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerKillCodes::NoContent,
+        404 => ContainerKillCodes::NotFound(resp.json()?),
+        409 => ContainerKillCodes::Conflict(resp.json()?),
+        500 => ContainerKillCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerUpdateCodes {
+    /// The container has been updated.
+    Ok(ContainerUpdateOk),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_update(
     client: &Client,
     id: &str,
     update: &ContainerUpdateUpdate,
-) -> Result<(), Error> {
+) -> Result<ContainerUpdateCodes, Error> {
     let url = format!("/containers/{id}/update",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(update)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerUpdateCodes::Ok(resp.json()?),
+        404 => ContainerUpdateCodes::NotFound(resp.json()?),
+        500 => ContainerUpdateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerRenameCodes {
+    /// no error
+    NoContent,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// name already in use
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_rename(
     client: &Client,
     id: &str,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerRenameCodes, Error> {
     let url = format!("/containers/{id}/rename",
         id=id,
     );
@@ -3543,35 +3797,88 @@ fn container_rename(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerRenameCodes::NoContent,
+        404 => ContainerRenameCodes::NotFound(resp.json()?),
+        409 => ContainerRenameCodes::Conflict(resp.json()?),
+        500 => ContainerRenameCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerPauseCodes {
+    /// no error
+    NoContent,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_pause(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerPauseCodes, Error> {
     let url = format!("/containers/{id}/pause",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerPauseCodes::NoContent,
+        404 => ContainerPauseCodes::NotFound(resp.json()?),
+        500 => ContainerPauseCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerUnpauseCodes {
+    /// no error
+    NoContent,
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_unpause(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerUnpauseCodes, Error> {
     let url = format!("/containers/{id}/unpause",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerUnpauseCodes::NoContent,
+        404 => ContainerUnpauseCodes::NotFound(resp.json()?),
+        500 => ContainerUnpauseCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerAttachCodes {
+    /// no error, hints proxy about hijacking
+    SwitchingProtocols,
+    /// no error, no upgrade header found
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_attach(
@@ -3583,7 +3890,7 @@ fn container_attach(
     stdin: Option<bool>,
     stdout: Option<bool>,
     stderr: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ContainerAttachCodes, Error> {
     let url = format!("/containers/{id}/attach",
         id=id,
     );
@@ -3611,9 +3918,31 @@ fn container_attach(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => ContainerAttachCodes::SwitchingProtocols,
+        200 => ContainerAttachCodes::Ok,
+        400 => ContainerAttachCodes::BadRequest(resp.json()?),
+        404 => ContainerAttachCodes::NotFound(resp.json()?),
+        500 => ContainerAttachCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerAttachWebsocketCodes {
+    /// no error, hints proxy about hijacking
+    SwitchingProtocols,
+    /// no error, no upgrade header found
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_attach_websocket(
@@ -3625,7 +3954,7 @@ fn container_attach_websocket(
     stdin: Option<bool>,
     stdout: Option<bool>,
     stderr: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ContainerAttachWebsocketCodes, Error> {
     let url = format!("/containers/{id}/attach/ws",
         id=id,
     );
@@ -3653,16 +3982,34 @@ fn container_attach_websocket(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => ContainerAttachWebsocketCodes::SwitchingProtocols,
+        200 => ContainerAttachWebsocketCodes::Ok,
+        400 => ContainerAttachWebsocketCodes::BadRequest(resp.json()?),
+        404 => ContainerAttachWebsocketCodes::NotFound(resp.json()?),
+        500 => ContainerAttachWebsocketCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerWaitCodes {
+    /// The container has exit.
+    Ok(ContainerWait),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_wait(
     client: &Client,
     id: &str,
     condition: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerWaitCodes, Error> {
     let url = format!("/containers/{id}/wait",
         id=id,
     );
@@ -3675,9 +4022,29 @@ fn container_wait(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerWaitCodes::Ok(resp.json()?),
+        404 => ContainerWaitCodes::NotFound(resp.json()?),
+        500 => ContainerWaitCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerDeleteCodes {
+    /// no error
+    NoContent,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// conflict
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_delete(
@@ -3686,7 +4053,7 @@ fn container_delete(
     v: Option<bool>,
     force: Option<bool>,
     link: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ContainerDeleteCodes, Error> {
     let url = format!("/containers/{id}",
         id=id,
     );
@@ -3705,16 +4072,36 @@ fn container_delete(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.delete(url)
+    let mut resp = client.delete(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ContainerDeleteCodes::NoContent,
+        400 => ContainerDeleteCodes::BadRequest(resp.json()?),
+        404 => ContainerDeleteCodes::NotFound(resp.json()?),
+        409 => ContainerDeleteCodes::Conflict(resp.json()?),
+        500 => ContainerDeleteCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerArchiveCodes {
+    /// no error
+    Ok,
+    /// Bad parameter
+    BadRequest(ErrorResponse),
+    /// Container or path does not exist
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn container_archive(
     client: &Client,
     id: &str,
     path: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerArchiveCodes, Error> {
     let url = format!("/containers/{id}/archive",
         id=id,
     );
@@ -3725,16 +4112,35 @@ fn container_archive(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerArchiveCodes::Ok,
+        400 => ContainerArchiveCodes::BadRequest(resp.json()?),
+        404 => ContainerArchiveCodes::NotFound(resp.json()?),
+        500 => ContainerArchiveCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerArchiveInfoCodes {
+    /// no error
+    Ok,
+    /// Bad parameter
+    BadRequest(ErrorResponse),
+    /// Container or path does not exist
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn container_archive_info(
     client: &Client,
     id: &str,
     path: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerArchiveInfoCodes, Error> {
     let url = format!("/containers/{id}/archive",
         id=id,
     );
@@ -3745,9 +4151,30 @@ fn container_archive_info(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.head(url)
+    let mut resp = client.head(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerArchiveInfoCodes::Ok,
+        400 => ContainerArchiveInfoCodes::BadRequest(resp.json()?),
+        404 => ContainerArchiveInfoCodes::NotFound(resp.json()?),
+        500 => ContainerArchiveInfoCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PutContainerArchiveCodes {
+    /// The content was extracted successfully
+    Ok,
+    /// Bad parameter
+    BadRequest(ErrorResponse),
+    /// Permission denied, the volume or container rootfs is marked as read-only.
+    Forbidden(ErrorResponse),
+    /// No such container or path does not exist inside the container
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn put_container_archive(
@@ -3756,7 +4183,7 @@ fn put_container_archive(
     path: &str,
     no_overwrite_dir_non_dir: Option<&str>,
     input_stream: &str,
-) -> Result<(), Error> {
+) -> Result<PutContainerArchiveCodes, Error> {
     let url = format!("/containers/{id}/archive",
         id=id,
     );
@@ -3770,16 +4197,32 @@ fn put_container_archive(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.put(url)
+    let mut resp = client.put(url)
         .json(input_stream)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PutContainerArchiveCodes::Ok,
+        400 => PutContainerArchiveCodes::BadRequest(resp.json()?),
+        403 => PutContainerArchiveCodes::Forbidden(resp.json()?),
+        404 => PutContainerArchiveCodes::NotFound(resp.json()?),
+        500 => PutContainerArchiveCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerPruneCodes {
+    /// No error
+    Ok(ContainerPrune),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn container_prune(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ContainerPruneCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -3788,9 +4231,22 @@ fn container_prune(
         Url::parse_with_params("/containers/prune", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ContainerPruneCodes::Ok(resp.json()?),
+        500 => ContainerPruneCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageListCodes {
+    /// Summary image data for the images matching the query
+    Ok(Vec<ImageSummary>),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_list(
@@ -3798,7 +4254,7 @@ fn image_list(
     all: Option<bool>,
     filters: Option<&str>,
     digests: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ImageListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(3);
         if let Some(all) = all {
@@ -3813,9 +4269,24 @@ fn image_list(
         Url::parse_with_params("/images/json", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageListCodes::Ok(resp.json()?),
+        500 => ImageListCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageBuildCodes {
+    /// no error
+    Ok,
+    /// Bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_build(
@@ -3846,7 +4317,7 @@ fn image_build(
     x_registry_config: Option<&str>,
     platform: Option<&str>,
     target: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImageBuildCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(23);
         if let Some(buildargs) = buildargs {
@@ -3929,19 +4400,48 @@ fn image_build(
         headers.set_raw("X-Registry-Config", x_registry_config.to_string());
     }
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         // TODO: unknown body type
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageBuildCodes::Ok,
+        400 => ImageBuildCodes::BadRequest(resp.json()?),
+        500 => ImageBuildCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum BuildPruneCodes {
+    /// No error
+    Ok(BuildPrune),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn build_prune(
     client: &Client,
-) -> Result<(), Error> {
-    client.post("/build/prune")
+) -> Result<BuildPruneCodes, Error> {
+    let mut resp = client.post("/build/prune")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => BuildPruneCodes::Ok(resp.json()?),
+        500 => BuildPruneCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageCreateCodes {
+    /// no error
+    Ok,
+    /// repository does not exist or no read access
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_create(
@@ -3953,7 +4453,7 @@ fn image_create(
     input_image: &str,
     x_registry_auth: Option<&str>,
     platform: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImageCreateCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(5);
         if let Some(from_image) = from_image {
@@ -3979,37 +4479,85 @@ fn image_create(
         headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     }
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         .json(input_image)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageCreateCodes::Ok,
+        404 => ImageCreateCodes::NotFound(resp.json()?),
+        500 => ImageCreateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageInspectCodes {
+    /// No error
+    Ok(Image),
+    /// No such image
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_inspect(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<ImageInspectCodes, Error> {
     let url = format!("/images/{name}/json",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageInspectCodes::Ok(resp.json()?),
+        404 => ImageInspectCodes::NotFound(resp.json()?),
+        500 => ImageInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageHistoryCodes {
+    /// List of image layers
+    Ok(Vec<ImageHistory>),
+    /// No such image
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_history(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<ImageHistoryCodes, Error> {
     let url = format!("/images/{name}/history",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageHistoryCodes::Ok(resp.json()?),
+        404 => ImageHistoryCodes::NotFound(resp.json()?),
+        500 => ImageHistoryCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImagePushCodes {
+    /// No error
+    Ok,
+    /// No such image
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_push(
@@ -4017,7 +4565,7 @@ fn image_push(
     name: &str,
     tag: Option<&str>,
     x_registry_auth: &str,
-) -> Result<(), Error> {
+) -> Result<ImagePushCodes, Error> {
     let url = format!("/images/{name}/push",
         name=name,
     );
@@ -4033,10 +4581,30 @@ fn image_push(
     let mut headers = Headers::new();
     headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImagePushCodes::Ok,
+        404 => ImagePushCodes::NotFound(resp.json()?),
+        500 => ImagePushCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageTagCodes {
+    /// No error
+    Created,
+    /// Bad parameter
+    BadRequest(ErrorResponse),
+    /// No such image
+    NotFound(ErrorResponse),
+    /// Conflict
+    Conflict(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_tag(
@@ -4044,7 +4612,7 @@ fn image_tag(
     name: &str,
     repo: Option<&str>,
     tag: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImageTagCodes, Error> {
     let url = format!("/images/{name}/tag",
         name=name,
     );
@@ -4060,9 +4628,29 @@ fn image_tag(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ImageTagCodes::Created,
+        400 => ImageTagCodes::BadRequest(resp.json()?),
+        404 => ImageTagCodes::NotFound(resp.json()?),
+        409 => ImageTagCodes::Conflict(resp.json()?),
+        500 => ImageTagCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageDeleteCodes {
+    /// The image was deleted successfully
+    Ok(Vec<ImageDeleteResponseItem>),
+    /// No such image
+    NotFound(ErrorResponse),
+    /// Conflict
+    Conflict(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_delete(
@@ -4070,7 +4658,7 @@ fn image_delete(
     name: &str,
     force: Option<bool>,
     noprune: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ImageDeleteCodes, Error> {
     let url = format!("/images/{name}",
         name=name,
     );
@@ -4086,9 +4674,24 @@ fn image_delete(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.delete(url)
+    let mut resp = client.delete(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageDeleteCodes::Ok(resp.json()?),
+        404 => ImageDeleteCodes::NotFound(resp.json()?),
+        409 => ImageDeleteCodes::Conflict(resp.json()?),
+        500 => ImageDeleteCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageSearchCodes {
+    /// No error
+    Ok(Vec<ImageSearch>),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_search(
@@ -4096,7 +4699,7 @@ fn image_search(
     term: &str,
     limit: Option<i64>,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImageSearchCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(3);
         if let Some(filters) = filters {
@@ -4109,15 +4712,28 @@ fn image_search(
         Url::parse_with_params("/images/search", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageSearchCodes::Ok(resp.json()?),
+        500 => ImageSearchCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImagePruneCodes {
+    /// No error
+    Ok(ImagePrune),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn image_prune(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImagePruneCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4126,43 +4742,113 @@ fn image_prune(
         Url::parse_with_params("/images/prune", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImagePruneCodes::Ok(resp.json()?),
+        500 => ImagePruneCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemAuthCodes {
+    /// An identity token was generated successfully.
+    Ok(SystemAuth),
+    /// No error
+    NoContent,
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn system_auth(
     client: &Client,
     auth_config: &AuthConfig,
-) -> Result<(), Error> {
-    client.post("/auth")
+) -> Result<SystemAuthCodes, Error> {
+    let mut resp = client.post("/auth")
         .json(auth_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemAuthCodes::Ok(resp.json()?),
+        204 => SystemAuthCodes::NoContent,
+        500 => SystemAuthCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemInfoCodes {
+    /// No error
+    Ok(SystemInfo),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn system_info(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/info")
+) -> Result<SystemInfoCodes, Error> {
+    let mut resp = client.get("/info")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemInfoCodes::Ok(resp.json()?),
+        500 => SystemInfoCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemVersionCodes {
+    /// no error
+    Ok(SystemVersion),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn system_version(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/version")
+) -> Result<SystemVersionCodes, Error> {
+    let mut resp = client.get("/version")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemVersionCodes::Ok(resp.json()?),
+        500 => SystemVersionCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemPingCodes {
+    /// no error
+    Ok(String),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn system_ping(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/_ping")
+) -> Result<SystemPingCodes, Error> {
+    let mut resp = client.get("/_ping")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemPingCodes::Ok(resp.json()?),
+        500 => SystemPingCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageCommitCodes {
+    /// no error
+    Created(IdResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_commit(
@@ -4175,7 +4861,7 @@ fn image_commit(
     author: Option<&str>,
     pause: Option<bool>,
     changes: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ImageCommitCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(7);
         if let Some(author) = author {
@@ -4202,10 +4888,26 @@ fn image_commit(
         Url::parse_with_params("/commit", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(container_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ImageCommitCodes::Created(resp.json()?),
+        404 => ImageCommitCodes::NotFound(resp.json()?),
+        500 => ImageCommitCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemEventsCodes {
+    /// no error
+    Ok(SystemEvents),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn system_events(
@@ -4213,7 +4915,7 @@ fn system_events(
     since: Option<&str>,
     until: Option<&str>,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<SystemEventsCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(3);
         if let Some(filters) = filters {
@@ -4228,36 +4930,76 @@ fn system_events(
         Url::parse_with_params("/events", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemEventsCodes::Ok(resp.json()?),
+        400 => SystemEventsCodes::BadRequest(resp.json()?),
+        500 => SystemEventsCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SystemDataUsageCodes {
+    /// no error
+    Ok(SystemDataUsage),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn system_data_usage(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/system/df")
+) -> Result<SystemDataUsageCodes, Error> {
+    let mut resp = client.get("/system/df")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SystemDataUsageCodes::Ok(resp.json()?),
+        500 => SystemDataUsageCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageGetCodes {
+    /// no error
+    Ok((/* binary */)),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_get(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<ImageGetCodes, Error> {
     let url = format!("/images/{name}/get",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageGetCodes::Ok(resp.json()?),
+        500 => ImageGetCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageGetAllCodes {
+    /// no error
+    Ok((/* binary */)),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_get_all(
     client: &Client,
     names: Option<&[String]>,
-) -> Result<(), Error> {
+) -> Result<ImageGetAllCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(names) = names {
@@ -4266,16 +5008,29 @@ fn image_get_all(
         Url::parse_with_params("/images/get", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageGetAllCodes::Ok(resp.json()?),
+        500 => ImageGetAllCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ImageLoadCodes {
+    /// no error
+    Ok,
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn image_load(
     client: &Client,
     images_tarball: (/* binary */),
     quiet: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ImageLoadCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(quiet) = quiet {
@@ -4284,40 +5039,88 @@ fn image_load(
         Url::parse_with_params("/images/load", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         // TODO: unknown body type
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ImageLoadCodes::Ok,
+        500 => ImageLoadCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ContainerExecCodes {
+    /// no error
+    Created(IdResponse),
+    /// no such container
+    NotFound(ErrorResponse),
+    /// container is paused
+    Conflict(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn container_exec(
     client: &Client,
     exec_config: &ContainerExec,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ContainerExecCodes, Error> {
     let url = format!("/containers/{id}/exec",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(exec_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ContainerExecCodes::Created(resp.json()?),
+        404 => ContainerExecCodes::NotFound(resp.json()?),
+        409 => ContainerExecCodes::Conflict(resp.json()?),
+        500 => ContainerExecCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ExecStartCodes {
+    /// No error
+    Ok,
+    /// No such exec instance
+    NotFound(ErrorResponse),
+    /// Container is stopped or paused
+    Conflict(ErrorResponse),
 }
 
 fn exec_start(
     client: &Client,
     exec_start_config: &ExecStart,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ExecStartCodes, Error> {
     let url = format!("/exec/{id}/start",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(exec_start_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ExecStartCodes::Ok,
+        404 => ExecStartCodes::NotFound(resp.json()?),
+        409 => ExecStartCodes::Conflict(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ExecResizeCodes {
+    /// No error
+    Created,
+    /// No such exec instance
+    NotFound(ErrorResponse),
 }
 
 fn exec_resize(
@@ -4325,7 +5128,7 @@ fn exec_resize(
     id: &str,
     h: Option<i64>,
     w: Option<i64>,
-) -> Result<(), Error> {
+) -> Result<ExecResizeCodes, Error> {
     let url = format!("/exec/{id}/resize",
         id=id,
     );
@@ -4341,28 +5144,57 @@ fn exec_resize(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ExecResizeCodes::Created,
+        404 => ExecResizeCodes::NotFound(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ExecInspectCodes {
+    /// No error
+    Ok(ExecInspect),
+    /// No such exec instance
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn exec_inspect(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ExecInspectCodes, Error> {
     let url = format!("/exec/{id}/json",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ExecInspectCodes::Ok(resp.json()?),
+        404 => ExecInspectCodes::NotFound(resp.json()?),
+        500 => ExecInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum VolumeListCodes {
+    /// Summary volume data that matches the query
+    Ok(VolumeList),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn volume_list(
     client: &Client,
     filters: Option<::serde_json::Value>,
-) -> Result<(), Error> {
+) -> Result<VolumeListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4371,39 +5203,85 @@ fn volume_list(
         Url::parse_with_params("/volumes", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => VolumeListCodes::Ok(resp.json()?),
+        500 => VolumeListCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum VolumeCreateCodes {
+    /// The volume was created successfully
+    Created(Volume),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn volume_create(
     client: &Client,
     volume_config: &VolumeCreate,
-) -> Result<(), Error> {
-    client.post("/volumes/create")
+) -> Result<VolumeCreateCodes, Error> {
+    let mut resp = client.post("/volumes/create")
         .json(volume_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => VolumeCreateCodes::Created(resp.json()?),
+        500 => VolumeCreateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum VolumeInspectCodes {
+    /// No error
+    Ok(Volume),
+    /// No such volume
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn volume_inspect(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<VolumeInspectCodes, Error> {
     let url = format!("/volumes/{name}",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => VolumeInspectCodes::Ok(resp.json()?),
+        404 => VolumeInspectCodes::NotFound(resp.json()?),
+        500 => VolumeInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum VolumeDeleteCodes {
+    /// The volume was removed
+    NoContent,
+    /// No such volume or volume driver
+    NotFound(ErrorResponse),
+    /// Volume is in use and cannot be removed
+    Conflict(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn volume_delete(
     client: &Client,
     name: &str,
     force: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<VolumeDeleteCodes, Error> {
     let url = format!("/volumes/{name}",
         name=name,
     );
@@ -4416,15 +5294,30 @@ fn volume_delete(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.delete(url)
+    let mut resp = client.delete(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => VolumeDeleteCodes::NoContent,
+        404 => VolumeDeleteCodes::NotFound(resp.json()?),
+        409 => VolumeDeleteCodes::Conflict(resp.json()?),
+        500 => VolumeDeleteCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum VolumePruneCodes {
+    /// No error
+    Ok(VolumePrune),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn volume_prune(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<VolumePruneCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4433,15 +5326,28 @@ fn volume_prune(
         Url::parse_with_params("/volumes/prune", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => VolumePruneCodes::Ok(resp.json()?),
+        500 => VolumePruneCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkListCodes {
+    /// No error
+    Ok(Vec<Network>),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<NetworkListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4450,9 +5356,24 @@ fn network_list(
         Url::parse_with_params("/networks", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NetworkListCodes::Ok(resp.json()?),
+        500 => NetworkListCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkInspectCodes {
+    /// No error
+    Ok(Network),
+    /// Network not found
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_inspect(
@@ -4460,7 +5381,7 @@ fn network_inspect(
     id: &str,
     verbose: Option<bool>,
     scope: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<NetworkInspectCodes, Error> {
     let url = format!("/networks/{id}",
         id=id,
     );
@@ -4476,68 +5397,158 @@ fn network_inspect(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NetworkInspectCodes::Ok(resp.json()?),
+        404 => NetworkInspectCodes::NotFound(resp.json()?),
+        500 => NetworkInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkDeleteCodes {
+    /// No error
+    NoContent,
+    /// operation not supported for pre-defined networks
+    Forbidden(ErrorResponse),
+    /// no such network
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_delete(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<NetworkDeleteCodes, Error> {
     let url = format!("/networks/{id}",
         id=id,
     );
 
-    client.delete(&url)
+    let mut resp = client.delete(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => NetworkDeleteCodes::NoContent,
+        403 => NetworkDeleteCodes::Forbidden(resp.json()?),
+        404 => NetworkDeleteCodes::NotFound(resp.json()?),
+        500 => NetworkDeleteCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkCreateCodes {
+    /// No error
+    Created(NetworkCreateCreated),
+    /// operation not supported for pre-defined networks
+    Forbidden(ErrorResponse),
+    /// plugin not found
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_create(
     client: &Client,
     network_config: &NetworkCreateNetworkConfig,
-) -> Result<(), Error> {
-    client.post("/networks/create")
+) -> Result<NetworkCreateCodes, Error> {
+    let mut resp = client.post("/networks/create")
         .json(network_config)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => NetworkCreateCodes::Created(resp.json()?),
+        403 => NetworkCreateCodes::Forbidden(resp.json()?),
+        404 => NetworkCreateCodes::NotFound(resp.json()?),
+        500 => NetworkCreateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkConnectCodes {
+    /// No error
+    Ok,
+    /// Operation not supported for swarm scoped networks
+    Forbidden(ErrorResponse),
+    /// Network or container not found
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_connect(
     client: &Client,
     id: &str,
     container: &NetworkConnect,
-) -> Result<(), Error> {
+) -> Result<NetworkConnectCodes, Error> {
     let url = format!("/networks/{id}/connect",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(container)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NetworkConnectCodes::Ok,
+        403 => NetworkConnectCodes::Forbidden(resp.json()?),
+        404 => NetworkConnectCodes::NotFound(resp.json()?),
+        500 => NetworkConnectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkDisconnectCodes {
+    /// No error
+    Ok,
+    /// Operation not supported for swarm scoped networks
+    Forbidden(ErrorResponse),
+    /// Network or container not found
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_disconnect(
     client: &Client,
     id: &str,
     container: &NetworkDisconnect,
-) -> Result<(), Error> {
+) -> Result<NetworkDisconnectCodes, Error> {
     let url = format!("/networks/{id}/disconnect",
         id=id,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(container)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NetworkDisconnectCodes::Ok,
+        403 => NetworkDisconnectCodes::Forbidden(resp.json()?),
+        404 => NetworkDisconnectCodes::NotFound(resp.json()?),
+        500 => NetworkDisconnectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NetworkPruneCodes {
+    /// No error
+    Ok(NetworkPrune),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn network_prune(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<NetworkPruneCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4546,15 +5557,28 @@ fn network_prune(
         Url::parse_with_params("/networks/prune", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NetworkPruneCodes::Ok(resp.json()?),
+        500 => NetworkPruneCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginListCodes {
+    /// No error
+    Ok(Vec<Plugin>),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<PluginListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4563,24 +5587,50 @@ fn plugin_list(
         Url::parse_with_params("/plugins", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginListCodes::Ok(resp.json()?),
+        500 => PluginListCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum GetPluginPrivilegesCodes {
+    /// no error
+    Ok(Vec<GetPluginPrivileges>),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn get_plugin_privileges(
     client: &Client,
     remote: &str,
-) -> Result<(), Error> {
+) -> Result<GetPluginPrivilegesCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         params.push(("remote", remote.to_string()));
         Url::parse_with_params("/plugins/privileges", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => GetPluginPrivilegesCodes::Ok(resp.json()?),
+        500 => GetPluginPrivilegesCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginPullCodes {
+    /// no error
+    NoContent,
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_pull(
@@ -4589,7 +5639,7 @@ fn plugin_pull(
     name: Option<&str>,
     x_registry_auth: Option<&str>,
     body: &[GetPluginPrivileges],
-) -> Result<(), Error> {
+) -> Result<PluginPullCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(2);
         if let Some(name) = name {
@@ -4604,31 +5654,62 @@ fn plugin_pull(
         headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     }
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => PluginPullCodes::NoContent,
+        500 => PluginPullCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginInspectCodes {
+    /// no error
+    Ok(Plugin),
+    /// plugin is not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_inspect(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<PluginInspectCodes, Error> {
     let url = format!("/plugins/{name}/json",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginInspectCodes::Ok(resp.json()?),
+        404 => PluginInspectCodes::NotFound(resp.json()?),
+        500 => PluginInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginDeleteCodes {
+    /// no error
+    Ok(Plugin),
+    /// plugin is not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_delete(
     client: &Client,
     name: &str,
     force: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<PluginDeleteCodes, Error> {
     let url = format!("/plugins/{name}",
         name=name,
     );
@@ -4641,16 +5722,32 @@ fn plugin_delete(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.delete(url)
+    let mut resp = client.delete(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginDeleteCodes::Ok(resp.json()?),
+        404 => PluginDeleteCodes::NotFound(resp.json()?),
+        500 => PluginDeleteCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginEnableCodes {
+    /// no error
+    Ok,
+    /// plugin is not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_enable(
     client: &Client,
     name: &str,
     timeout: Option<i64>,
-) -> Result<(), Error> {
+) -> Result<PluginEnableCodes, Error> {
     let url = format!("/plugins/{name}/enable",
         name=name,
     );
@@ -4663,22 +5760,54 @@ fn plugin_enable(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginEnableCodes::Ok,
+        404 => PluginEnableCodes::NotFound(resp.json()?),
+        500 => PluginEnableCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginDisableCodes {
+    /// no error
+    Ok,
+    /// plugin is not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_disable(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<PluginDisableCodes, Error> {
     let url = format!("/plugins/{name}/disable",
         name=name,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginDisableCodes::Ok,
+        404 => PluginDisableCodes::NotFound(resp.json()?),
+        500 => PluginDisableCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginUpgradeCodes {
+    /// no error
+    NoContent,
+    /// plugin not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_upgrade(
@@ -4687,7 +5816,7 @@ fn plugin_upgrade(
     remote: &str,
     x_registry_auth: Option<&str>,
     body: &[GetPluginPrivileges],
-) -> Result<(), Error> {
+) -> Result<PluginUpgradeCodes, Error> {
     let url = format!("/plugins/{name}/upgrade",
         name=name,
     );
@@ -4703,62 +5832,123 @@ fn plugin_upgrade(
         headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     }
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => PluginUpgradeCodes::NoContent,
+        404 => PluginUpgradeCodes::NotFound(resp.json()?),
+        500 => PluginUpgradeCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginCreateCodes {
+    /// no error
+    NoContent,
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_create(
     client: &Client,
     name: &str,
     tar_context: (/* binary */),
-) -> Result<(), Error> {
+) -> Result<PluginCreateCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         params.push(("name", name.to_string()));
         Url::parse_with_params("/plugins/create", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         // TODO: unknown body type
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => PluginCreateCodes::NoContent,
+        500 => PluginCreateCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginPushCodes {
+    /// no error
+    Ok,
+    /// plugin not installed
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_push(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<PluginPushCodes, Error> {
     let url = format!("/plugins/{name}/push",
         name=name,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => PluginPushCodes::Ok,
+        404 => PluginPushCodes::NotFound(resp.json()?),
+        500 => PluginPushCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum PluginSetCodes {
+    /// No error
+    NoContent,
+    /// Plugin not installed
+    NotFound(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn plugin_set(
     client: &Client,
     name: &str,
     body: &[String],
-) -> Result<(), Error> {
+) -> Result<PluginSetCodes, Error> {
     let url = format!("/plugins/{name}/set",
         name=name,
     );
 
-    client.post(&url)
+    let mut resp = client.post(&url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => PluginSetCodes::NoContent,
+        404 => PluginSetCodes::NotFound(resp.json()?),
+        500 => PluginSetCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NodeListCodes {
+    /// no error
+    Ok(Vec<Node>),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn node_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<NodeListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4767,29 +5957,66 @@ fn node_list(
         Url::parse_with_params("/nodes", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NodeListCodes::Ok(resp.json()?),
+        500 => NodeListCodes::ServerError(resp.json()?),
+        503 => NodeListCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NodeInspectCodes {
+    /// no error
+    Ok(Node),
+    /// no such node
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn node_inspect(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<NodeInspectCodes, Error> {
     let url = format!("/nodes/{id}",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NodeInspectCodes::Ok(resp.json()?),
+        404 => NodeInspectCodes::NotFound(resp.json()?),
+        500 => NodeInspectCodes::ServerError(resp.json()?),
+        503 => NodeInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NodeDeleteCodes {
+    /// no error
+    Ok,
+    /// no such node
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn node_delete(
     client: &Client,
     id: &str,
     force: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<NodeDeleteCodes, Error> {
     let url = format!("/nodes/{id}",
         id=id,
     );
@@ -4802,9 +6029,30 @@ fn node_delete(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.delete(url)
+    let mut resp = client.delete(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NodeDeleteCodes::Ok,
+        404 => NodeDeleteCodes::NotFound(resp.json()?),
+        500 => NodeDeleteCodes::ServerError(resp.json()?),
+        503 => NodeDeleteCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum NodeUpdateCodes {
+    /// no error
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such node
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn node_update(
@@ -4812,7 +6060,7 @@ fn node_update(
     id: &str,
     body: &NodeSpec,
     version: i64,
-) -> Result<(), Error> {
+) -> Result<NodeUpdateCodes, Error> {
     let url = format!("/nodes/{id}/update",
         id=id,
     );
@@ -4823,44 +6071,119 @@ fn node_update(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => NodeUpdateCodes::Ok,
+        400 => NodeUpdateCodes::BadRequest(resp.json()?),
+        404 => NodeUpdateCodes::NotFound(resp.json()?),
+        500 => NodeUpdateCodes::ServerError(resp.json()?),
+        503 => NodeUpdateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmInspectCodes {
+    /// no error
+    Ok(Swarm),
+    /// no such swarm
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_inspect(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/swarm")
+) -> Result<SwarmInspectCodes, Error> {
+    let mut resp = client.get("/swarm")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmInspectCodes::Ok(resp.json()?),
+        404 => SwarmInspectCodes::NotFound(resp.json()?),
+        500 => SwarmInspectCodes::ServerError(resp.json()?),
+        503 => SwarmInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmInitCodes {
+    /// no error
+    Ok(String),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is already part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_init(
     client: &Client,
     body: &SwarmInit,
-) -> Result<(), Error> {
-    client.post("/swarm/init")
+) -> Result<SwarmInitCodes, Error> {
+    let mut resp = client.post("/swarm/init")
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmInitCodes::Ok(resp.json()?),
+        400 => SwarmInitCodes::BadRequest(resp.json()?),
+        500 => SwarmInitCodes::ServerError(resp.json()?),
+        503 => SwarmInitCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmJoinCodes {
+    /// no error
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is already part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_join(
     client: &Client,
     body: &SwarmJoin,
-) -> Result<(), Error> {
-    client.post("/swarm/join")
+) -> Result<SwarmJoinCodes, Error> {
+    let mut resp = client.post("/swarm/join")
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmJoinCodes::Ok,
+        400 => SwarmJoinCodes::BadRequest(resp.json()?),
+        500 => SwarmJoinCodes::ServerError(resp.json()?),
+        503 => SwarmJoinCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmLeaveCodes {
+    /// no error
+    Ok,
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_leave(
     client: &Client,
     force: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<SwarmLeaveCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(force) = force {
@@ -4869,9 +6192,27 @@ fn swarm_leave(
         Url::parse_with_params("/swarm/leave", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmLeaveCodes::Ok,
+        500 => SwarmLeaveCodes::ServerError(resp.json()?),
+        503 => SwarmLeaveCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmUpdateCodes {
+    /// no error
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_update(
@@ -4881,7 +6222,7 @@ fn swarm_update(
     rotate_worker_token: Option<bool>,
     rotate_manager_token: Option<bool>,
     rotate_manager_unlock_key: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<SwarmUpdateCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(4);
         if let Some(rotate_manager_token) = rotate_manager_token {
@@ -4897,34 +6238,83 @@ fn swarm_update(
         Url::parse_with_params("/swarm/update", &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmUpdateCodes::Ok,
+        400 => SwarmUpdateCodes::BadRequest(resp.json()?),
+        500 => SwarmUpdateCodes::ServerError(resp.json()?),
+        503 => SwarmUpdateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmUnlockkeyCodes {
+    /// no error
+    Ok(SwarmUnlockkey),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_unlockkey(
     client: &Client,
-) -> Result<(), Error> {
-    client.get("/swarm/unlockkey")
+) -> Result<SwarmUnlockkeyCodes, Error> {
+    let mut resp = client.get("/swarm/unlockkey")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmUnlockkeyCodes::Ok(resp.json()?),
+        500 => SwarmUnlockkeyCodes::ServerError(resp.json()?),
+        503 => SwarmUnlockkeyCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SwarmUnlockCodes {
+    /// no error
+    Ok,
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn swarm_unlock(
     client: &Client,
     body: &SwarmUnlockkey,
-) -> Result<(), Error> {
-    client.post("/swarm/unlock")
+) -> Result<SwarmUnlockCodes, Error> {
+    let mut resp = client.post("/swarm/unlock")
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SwarmUnlockCodes::Ok,
+        500 => SwarmUnlockCodes::ServerError(resp.json()?),
+        503 => SwarmUnlockCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceListCodes {
+    /// no error
+    Ok(Vec<Service>),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ServiceListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -4933,33 +6323,76 @@ fn service_list(
         Url::parse_with_params("/services", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ServiceListCodes::Ok(resp.json()?),
+        500 => ServiceListCodes::ServerError(resp.json()?),
+        503 => ServiceListCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceCreateCodes {
+    /// no error
+    Created(ServiceCreate),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// network is not eligible for services
+    Forbidden(ErrorResponse),
+    /// name conflicts with an existing service
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_create(
     client: &Client,
     body: &ServiceSpec,
     x_registry_auth: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ServiceCreateCodes, Error> {
     let mut headers = Headers::new();
     if let Some(x_registry_auth) = x_registry_auth {
         headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     }
 
-    client.post("/services/create")
+    let mut resp = client.post("/services/create")
         .headers(headers)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ServiceCreateCodes::Created(resp.json()?),
+        400 => ServiceCreateCodes::BadRequest(resp.json()?),
+        403 => ServiceCreateCodes::Forbidden(resp.json()?),
+        409 => ServiceCreateCodes::Conflict(resp.json()?),
+        500 => ServiceCreateCodes::ServerError(resp.json()?),
+        503 => ServiceCreateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceInspectCodes {
+    /// no error
+    Ok(Service),
+    /// no such service
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_inspect(
     client: &Client,
     id: &str,
     insert_defaults: Option<bool>,
-) -> Result<(), Error> {
+) -> Result<ServiceInspectCodes, Error> {
     let url = format!("/services/{id}",
         id=id,
     );
@@ -4972,22 +6405,62 @@ fn service_inspect(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ServiceInspectCodes::Ok(resp.json()?),
+        404 => ServiceInspectCodes::NotFound(resp.json()?),
+        500 => ServiceInspectCodes::ServerError(resp.json()?),
+        503 => ServiceInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceDeleteCodes {
+    /// no error
+    Ok,
+    /// no such service
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_delete(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ServiceDeleteCodes, Error> {
     let url = format!("/services/{id}",
         id=id,
     );
 
-    client.delete(&url)
+    let mut resp = client.delete(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ServiceDeleteCodes::Ok,
+        404 => ServiceDeleteCodes::NotFound(resp.json()?),
+        500 => ServiceDeleteCodes::ServerError(resp.json()?),
+        503 => ServiceDeleteCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceUpdateCodes {
+    /// no error
+    Ok(ServiceUpdateResponse),
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such service
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_update(
@@ -4998,7 +6471,7 @@ fn service_update(
     registry_auth_from: Option<&str>,
     rollback: Option<&str>,
     x_registry_auth: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ServiceUpdateCodes, Error> {
     let url = format!("/services/{id}/update",
         id=id,
     );
@@ -5020,11 +6493,33 @@ fn service_update(
         headers.set_raw("X-Registry-Auth", x_registry_auth.to_string());
     }
 
-    client.post(url)
+    let mut resp = client.post(url)
         .headers(headers)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ServiceUpdateCodes::Ok(resp.json()?),
+        400 => ServiceUpdateCodes::BadRequest(resp.json()?),
+        404 => ServiceUpdateCodes::NotFound(resp.json()?),
+        500 => ServiceUpdateCodes::ServerError(resp.json()?),
+        503 => ServiceUpdateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ServiceLogsCodes {
+    /// logs returned as a stream
+    SwitchingProtocols((/* binary */)),
+    /// logs returned as a string in response body
+    Ok(String),
+    /// no such service
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn service_logs(
@@ -5037,7 +6532,7 @@ fn service_logs(
     since: Option<i64>,
     timestamps: Option<bool>,
     tail: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ServiceLogsCodes, Error> {
     let url = format!("/services/{id}/logs",
         id=id,
     );
@@ -5068,15 +6563,33 @@ fn service_logs(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => ServiceLogsCodes::SwitchingProtocols(resp.json()?),
+        200 => ServiceLogsCodes::Ok(resp.json()?),
+        404 => ServiceLogsCodes::NotFound(resp.json()?),
+        500 => ServiceLogsCodes::ServerError(resp.json()?),
+        503 => ServiceLogsCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum TaskListCodes {
+    /// no error
+    Ok(Vec<Task>),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn task_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<TaskListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -5085,22 +6598,61 @@ fn task_list(
         Url::parse_with_params("/tasks", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => TaskListCodes::Ok(resp.json()?),
+        500 => TaskListCodes::ServerError(resp.json()?),
+        503 => TaskListCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum TaskInspectCodes {
+    /// no error
+    Ok(Task),
+    /// no such task
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn task_inspect(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<TaskInspectCodes, Error> {
     let url = format!("/tasks/{id}",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => TaskInspectCodes::Ok(resp.json()?),
+        404 => TaskInspectCodes::NotFound(resp.json()?),
+        500 => TaskInspectCodes::ServerError(resp.json()?),
+        503 => TaskInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum TaskLogsCodes {
+    /// logs returned as a stream
+    SwitchingProtocols((/* binary */)),
+    /// logs returned as a string in response body
+    Ok(String),
+    /// no such task
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn task_logs(
@@ -5113,7 +6665,7 @@ fn task_logs(
     since: Option<i64>,
     timestamps: Option<bool>,
     tail: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<TaskLogsCodes, Error> {
     let url = format!("/tasks/{id}/logs",
         id=id,
     );
@@ -5144,15 +6696,33 @@ fn task_logs(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => TaskLogsCodes::SwitchingProtocols(resp.json()?),
+        200 => TaskLogsCodes::Ok(resp.json()?),
+        404 => TaskLogsCodes::NotFound(resp.json()?),
+        500 => TaskLogsCodes::ServerError(resp.json()?),
+        503 => TaskLogsCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SecretListCodes {
+    /// no error
+    Ok(Vec<Secret>),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn secret_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<SecretListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -5161,45 +6731,122 @@ fn secret_list(
         Url::parse_with_params("/secrets", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SecretListCodes::Ok(resp.json()?),
+        500 => SecretListCodes::ServerError(resp.json()?),
+        503 => SecretListCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SecretCreateCodes {
+    /// no error
+    Created(IdResponse),
+    /// name conflicts with an existing object
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn secret_create(
     client: &Client,
     body: &SecretSpec,
-) -> Result<(), Error> {
-    client.post("/secrets/create")
+) -> Result<SecretCreateCodes, Error> {
+    let mut resp = client.post("/secrets/create")
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => SecretCreateCodes::Created(resp.json()?),
+        409 => SecretCreateCodes::Conflict(resp.json()?),
+        500 => SecretCreateCodes::ServerError(resp.json()?),
+        503 => SecretCreateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SecretInspectCodes {
+    /// no error
+    Ok(Secret),
+    /// secret not found
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn secret_inspect(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<SecretInspectCodes, Error> {
     let url = format!("/secrets/{id}",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SecretInspectCodes::Ok(resp.json()?),
+        404 => SecretInspectCodes::NotFound(resp.json()?),
+        500 => SecretInspectCodes::ServerError(resp.json()?),
+        503 => SecretInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SecretDeleteCodes {
+    /// no error
+    NoContent,
+    /// secret not found
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn secret_delete(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<SecretDeleteCodes, Error> {
     let url = format!("/secrets/{id}",
         id=id,
     );
 
-    client.delete(&url)
+    let mut resp = client.delete(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => SecretDeleteCodes::NoContent,
+        404 => SecretDeleteCodes::NotFound(resp.json()?),
+        500 => SecretDeleteCodes::ServerError(resp.json()?),
+        503 => SecretDeleteCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SecretUpdateCodes {
+    /// no error
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such secret
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn secret_update(
@@ -5207,7 +6854,7 @@ fn secret_update(
     id: &str,
     body: &SecretSpec,
     version: i64,
-) -> Result<(), Error> {
+) -> Result<SecretUpdateCodes, Error> {
     let url = format!("/secrets/{id}/update",
         id=id,
     );
@@ -5218,16 +6865,34 @@ fn secret_update(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => SecretUpdateCodes::Ok,
+        400 => SecretUpdateCodes::BadRequest(resp.json()?),
+        404 => SecretUpdateCodes::NotFound(resp.json()?),
+        500 => SecretUpdateCodes::ServerError(resp.json()?),
+        503 => SecretUpdateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ConfigListCodes {
+    /// no error
+    Ok(Vec<Config>),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn config_list(
     client: &Client,
     filters: Option<&str>,
-) -> Result<(), Error> {
+) -> Result<ConfigListCodes, Error> {
     let url = {
         let mut params = Vec::with_capacity(1);
         if let Some(filters) = filters {
@@ -5236,45 +6901,122 @@ fn config_list(
         Url::parse_with_params("/configs", &params)?
     };
 
-    client.get(url)
+    let mut resp = client.get(url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ConfigListCodes::Ok(resp.json()?),
+        500 => ConfigListCodes::ServerError(resp.json()?),
+        503 => ConfigListCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ConfigCreateCodes {
+    /// no error
+    Created(IdResponse),
+    /// name conflicts with an existing object
+    Conflict(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn config_create(
     client: &Client,
     body: &ConfigSpec,
-) -> Result<(), Error> {
-    client.post("/configs/create")
+) -> Result<ConfigCreateCodes, Error> {
+    let mut resp = client.post("/configs/create")
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        201 => ConfigCreateCodes::Created(resp.json()?),
+        409 => ConfigCreateCodes::Conflict(resp.json()?),
+        500 => ConfigCreateCodes::ServerError(resp.json()?),
+        503 => ConfigCreateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ConfigInspectCodes {
+    /// no error
+    Ok(Config),
+    /// config not found
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn config_inspect(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ConfigInspectCodes, Error> {
     let url = format!("/configs/{id}",
         id=id,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ConfigInspectCodes::Ok(resp.json()?),
+        404 => ConfigInspectCodes::NotFound(resp.json()?),
+        500 => ConfigInspectCodes::ServerError(resp.json()?),
+        503 => ConfigInspectCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ConfigDeleteCodes {
+    /// no error
+    NoContent,
+    /// config not found
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn config_delete(
     client: &Client,
     id: &str,
-) -> Result<(), Error> {
+) -> Result<ConfigDeleteCodes, Error> {
     let url = format!("/configs/{id}",
         id=id,
     );
 
-    client.delete(&url)
+    let mut resp = client.delete(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        204 => ConfigDeleteCodes::NoContent,
+        404 => ConfigDeleteCodes::NotFound(resp.json()?),
+        500 => ConfigDeleteCodes::ServerError(resp.json()?),
+        503 => ConfigDeleteCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum ConfigUpdateCodes {
+    /// no error
+    Ok,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// no such config
+    NotFound(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
+    /// node is not part of a swarm
+    ServiceUnavailable(ErrorResponse),
 }
 
 fn config_update(
@@ -5282,7 +7024,7 @@ fn config_update(
     id: &str,
     body: &ConfigSpec,
     version: i64,
-) -> Result<(), Error> {
+) -> Result<ConfigUpdateCodes, Error> {
     let url = format!("/configs/{id}/update",
         id=id,
     );
@@ -5293,30 +7035,70 @@ fn config_update(
         Url::parse_with_params(&url, &params)?
     };
 
-    client.post(url)
+    let mut resp = client.post(url)
         .json(body)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => ConfigUpdateCodes::Ok,
+        400 => ConfigUpdateCodes::BadRequest(resp.json()?),
+        404 => ConfigUpdateCodes::NotFound(resp.json()?),
+        500 => ConfigUpdateCodes::ServerError(resp.json()?),
+        503 => ConfigUpdateCodes::ServiceUnavailable(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum DistributionInspectCodes {
+    /// descriptor and platform information
+    Ok(DistributionInspect),
+    /// Failed authentication or no image found
+    Unauthorised(ErrorResponse),
+    /// Server error
+    ServerError(ErrorResponse),
 }
 
 fn distribution_inspect(
     client: &Client,
     name: &str,
-) -> Result<(), Error> {
+) -> Result<DistributionInspectCodes, Error> {
     let url = format!("/distribution/{name}/json",
         name=name,
     );
 
-    client.get(&url)
+    let mut resp = client.get(&url)
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        200 => DistributionInspectCodes::Ok(resp.json()?),
+        401 => DistributionInspectCodes::Unauthorised(resp.json()?),
+        500 => DistributionInspectCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
+}
+
+#[derive(Clone, PartialEq)]
+enum SessionCodes {
+    /// no error, hijacking successful
+    SwitchingProtocols,
+    /// bad parameter
+    BadRequest(ErrorResponse),
+    /// server error
+    ServerError(ErrorResponse),
 }
 
 fn session(
     client: &Client,
-) -> Result<(), Error> {
-    client.post("/session")
+) -> Result<SessionCodes, Error> {
+    let mut resp = client.post("/session")
         .send()?;
-    Ok(())
+
+    Ok(match resp.status().as_u16() {
+        101 => SessionCodes::SwitchingProtocols,
+        400 => SessionCodes::BadRequest(resp.json()?),
+        500 => SessionCodes::ServerError(resp.json()?),
+        other => bail!("unexpected server response {}", other),
+    })
 }
 

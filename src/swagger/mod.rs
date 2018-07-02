@@ -168,13 +168,13 @@ pub struct Param<T> {
 
 #[derive(Debug, Clone)]
 pub struct Response<T> {
-    description: String,
-    headers: HashMap<String, Header>,
-    resp_type: Option<T>,
+    pub description: String,
+    pub headers: HashMap<String, Header>,
+    pub resp_type: Option<T>,
 }
 
 #[derive(Debug, Clone)]
-struct Header {
+pub struct Header {
     header_type: DataType,
 }
 
@@ -380,26 +380,50 @@ impl StructContext {
     }
 }
 
-// intentionally not an exhaustive list
-fn name_http_code(code: u16) -> Option<&'static str> {
+// not an exhaustive list
+pub fn name_http_code(code: u16) -> Option<&'static str> {
     match code {
+        100 => Some("Continue"),
+        101 => Some("SwitchingProtocols"),
+        102 => Some("Processing"),
+        103 => Some("EarlyHints"),
         200 => Some("Ok"),
         201 => Some("Created"),
         202 => Some("Accepted"),
+        203 => Some("NonAuthoritativeInformation"),
         204 => Some("NoContent"),
+        205 => Some("ResetContent"),
         206 => Some("PartialContent"),
+        207 => Some("MultiStatus"),
+        208 => Some("AlreadyReported"),
         300 => Some("MultipleChoices"),
         301 => Some("MovedPermanently"),
         302 => Some("Found"),
         303 => Some("SeeOther"),
+        304 => Some("NotModified"),
+        305 => Some("UseProxy"),
+        306 => Some("SwitchProxy"),
         307 => Some("TemporaryRedirect"),
+        308 => Some("PermanentRedirect"),
         400 => Some("BadRequest"),
         401 => Some("Unauthorised"),
         403 => Some("Forbidden"),
         404 => Some("NotFound"),
+        405 => Some("MethodNotAllowed"),
+        406 => Some("NotAcceptable"),
+        407 => Some("ProxyAuthenticationRequired"),
+        408 => Some("RequestTimeout"),
         409 => Some("Conflict"),
         410 => Some("Gone"),
+        411 => Some("LengthRequired"),
         412 => Some("PreconditionFailed"),
+        413 => Some("PayloadTooLarge"),
+        414 => Some("UriTooLong"),
+        415 => Some("UnsupportedMediaType"),
+        416 => Some("RangeNotSatisfiable"),
+        417 => Some("ExpectationFailed"),
+        426 => Some("UpgradeRequired"),
+        428 => Some("TooManyRequests"),
         500 => Some("ServerError"),
         501 => Some("NotImplemented"),
         503 => Some("ServiceUnavailable"),
